@@ -42,6 +42,7 @@ func (r *CognitoUserRepository) SignUp(user *entities.User) error {
 		Password:   aws.String(user.Password),
 		UserAttributes: []types.AttributeType{
 			{Name: aws.String("email"), Value: aws.String(user.Email)},
+			{Name: aws.String("preferred_username"), Value: aws.String(user.Username)},
 		},
 	}
 	_, err := r.cognitoClient.SignUp(context.Background(), input)

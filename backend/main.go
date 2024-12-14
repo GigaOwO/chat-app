@@ -3,9 +3,11 @@ package main
 import (
 	"api/controllers"
 	"api/infrastructure"
+	"api/infrastructure/env"
 	"api/infrastructure/repositories"
 	usecases "api/usecases/auth"
 	"context"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 )
@@ -16,7 +18,11 @@ func main() {
 		panic(err)
 	}
 
-	userRepository := repositories.NewCognitoUserRepository(cfg, "6q5utjvmm1vqpmlm9c7u3s046h", "1hpbc5jrapi8q40j0joil9aa359dir3hho5efvjj310bg1m41e0q")
+	env.LoadEnv()
+	clientId := os.Getenv("clientId")
+	clientSecret := os.Getenv("clientSecret")
+
+	userRepository := repositories.NewCognitoUserRepository(cfg, clientId, clientSecret)
 	userInteractor := &usecases.SignUpInteractor{
 		UserRepository: userRepository,
 	}
