@@ -17,10 +17,25 @@ type SignUpOutput struct {
 }
 
 type SignUpInteractor struct {
-	UserRepository repositories.UserRepository
+	UserRepository       repositories.UserRepository
+	DynamoUserRepository repositories.DynamoUserRepository
 }
 
 func (i *SignUpInteractor) SignUp(input SignUpInput) (SignUpOutput, error) {
+	exists, err := i.DynamoUserRepository.CheckUsernameExists(input.Username)
+	if err != nil {
+		return SignUpOutput{
+			Success: false,
+			Message: "Error checking username",
+		}, err
+	}
+	if exists {
+		return SignUpOutput{
+			Success: false,
+			Message: "Username already exists",
+		}, nil
+	}
+
 	user := &entities.User{
 		Username: input.Username,
 		Email:    input.Email,

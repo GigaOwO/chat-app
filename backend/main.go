@@ -21,13 +21,17 @@ func main() {
 	env.LoadEnv()
 	clientId := os.Getenv("clientId")
 	clientSecret := os.Getenv("clientSecret")
+	tableName := os.Getenv("DYNAMODB_USERS_TABLE")
 
 	userRepository := repositories.NewCognitoUserRepository(cfg, clientId, clientSecret)
+	dynamoUserRepository := repositories.NewDynamoUserRepository(cfg, tableName)
 	userInteractor := &usecases.SignUpInteractor{
-		UserRepository: userRepository,
+		UserRepository:       userRepository,
+		DynamoUserRepository: dynamoUserRepository,
 	}
 	confirmInteractor := &usecases.ConfirmSignUpInteractor{
-		UserRepository: userRepository,
+		UserRepository:       userRepository,
+		DynamoUserRepository: dynamoUserRepository,
 	}
 	userController := &controllers.UserController{
 		SignUpInteractor:        userInteractor,
