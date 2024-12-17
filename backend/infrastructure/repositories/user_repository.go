@@ -62,6 +62,17 @@ func (r *CognitoUserRepository) ConfirmSignUp(email, confirmationCode string) er
 	return err
 }
 
+func (r *CognitoUserRepository) ResendConfirmationCode(email string) error {
+	secretHash := calculateSecretHash(r.clientSecret, r.clientId, email)
+	input := &cognitoidentityprovider.ResendConfirmationCodeInput{
+		ClientId:   aws.String(r.clientId),
+		SecretHash: aws.String(secretHash),
+		Username:   aws.String(email),
+	}
+	_, err := r.cognitoClient.ResendConfirmationCode(context.Background(), input)
+	return err
+}
+
 func (r *CognitoUserRepository) DeleteUser(email string) error {
 	input := &cognitoidentityprovider.AdminDeleteUserInput{
 		UserPoolId: aws.String(r.userpoolId),

@@ -16,5 +16,9 @@ func SetupRouter(userController *controllers.UserController) *gin.Engine {
 	router.POST("/confirm", func(c *gin.Context) {
 		userController.ConfirmSignUpHandler(c.Writer, c.Request)
 	})
+
+	router.POST("/resend-confirmation-code", func(c *gin.Context) {
+		userController.ResendConfirmationCodeHandler(c.Writer, c.Request)
+	})
 	return router
 }

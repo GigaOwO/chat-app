@@ -34,9 +34,13 @@ func main() {
 		UserRepository:       userRepository,
 		DynamoUserRepository: dynamoUserRepository,
 	}
+	resendInteractor := &usecases.ResendConfirmationCodeInteractor{
+		UserRepository: userRepository,
+	}
 	userController := &controllers.UserController{
-		SignUpInteractor:        userInteractor,
-		ConfirmSignUpInteractor: confirmInteractor,
+		SignUpInteractor:                 userInteractor,
+		ConfirmSignUpInteractor:          confirmInteractor,
+		ResendConfirmationCodeInteractor: resendInteractor,
 	}
 
 	router := infrastructure.SetupRouter(userController)

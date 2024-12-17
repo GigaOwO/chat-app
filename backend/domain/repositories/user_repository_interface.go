@@ -7,6 +7,7 @@ import (
 type UserRepository interface {
 	SignUp(user *entities.User) error
 	ConfirmSignUp(email, confirmationCode string) error
+	ResendConfirmationCode(email string) error
 	DeleteUser(email string) error
 }
 
