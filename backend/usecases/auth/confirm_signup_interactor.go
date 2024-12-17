@@ -3,6 +3,7 @@ package usecases
 import (
 	"api/domain/entities"
 	"api/domain/repositories"
+	"fmt"
 )
 
 type ConfirmSignUpInput struct {
@@ -34,7 +35,40 @@ func (i *ConfirmSignUpInteractor) ConfirmSignUp(input ConfirmSignUpInput) (Confi
 	}
 	err := i.UserRepository.ConfirmSignUp(input.Email, input.ConfirmationCode)
 	if err != nil {
-		return ConfirmSignUpOutput{Success: false, Message: err.Error()}, err
+		retryCount, updateErr := i.DynamoUserRepository.IncrementRetryCount(input.Username)
+		if updateErr != nil {
+			return ConfirmSignUpOutput{
+				Success: false,
+				Message: "Failed to increment retry count",
+			}, updateErr
+		}
+
+		if retryCount >= 5 {
+			deleteDBErr := i.DynamoUserRepository.DeleteUser(input.Username)
+			if deleteDBErr != nil {
+				return ConfirmSignUpOutput{
+					Success: false,
+					Message: "Failed to delete user from database",
+				}, deleteDBErr
+			}
+
+			deleteCognitoErr := i.UserRepository.DeleteUser(input.Email)
+			if deleteCognitoErr != nil {
+				return ConfirmSignUpOutput{
+					Success: false,
+					Message: "Failed to delete user from Cognito",
+				}, deleteCognitoErr
+			}
+
+			return ConfirmSignUpOutput{
+				Success: false,
+				Message: "Authentication failed 5 times. Please register again.",
+			}, nil
+		}
+		return ConfirmSignUpOutput{
+			Success: false,
+			Message: fmt.Sprintf("Authentication failed. Retry count: %d", retryCount),
+		}, err
 	}
 
 	return ConfirmSignUpOutput{

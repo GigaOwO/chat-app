@@ -16,6 +16,7 @@ type CognitoUserRepository struct {
 	cognitoClient *cognitoidentityprovider.Client
 	clientId      string
 	clientSecret  string
+	userpoolId    string
 }
 
 func calculateSecretHash(clientSecret, clientId, username string) string {
@@ -24,12 +25,13 @@ func calculateSecretHash(clientSecret, clientId, username string) string {
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
-func NewCognitoUserRepository(cfg aws.Config, clientId string, clientSecret string) *CognitoUserRepository {
+func NewCognitoUserRepository(cfg aws.Config, clientId string, clientSecret string, userpoolId string) *CognitoUserRepository {
 	client := cognitoidentityprovider.NewFromConfig(cfg)
 	return &CognitoUserRepository{
 		cognitoClient: client,
 		clientId:      clientId,
 		clientSecret:  clientSecret,
+		userpoolId:    userpoolId,
 	}
 }
 
@@ -57,5 +59,14 @@ func (r *CognitoUserRepository) ConfirmSignUp(email, confirmationCode string) er
 		ConfirmationCode: aws.String(confirmationCode),
 	}
 	_, err := r.cognitoClient.ConfirmSignUp(context.Background(), input)
+	return err
+}
+
+func (r *CognitoUserRepository) DeleteUser(email string) error {
+	input := &cognitoidentityprovider.AdminDeleteUserInput{
+		UserPoolId: aws.String(r.userpoolId),
+		Username:   aws.String(email),
+	}
+	_, err := r.cognitoClient.AdminDeleteUser(context.Background(), input)
 	return err
 }

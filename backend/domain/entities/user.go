@@ -7,7 +7,8 @@ type User struct {
 }
 
 type DynamoUser struct {
-	Username string `dynamodbav:"username"`
-	Email    string `dynamodbav:"email"`
-	Sub      string `dynamodbav:"sub"`
+	Username   string `dynamodbav:"username"`
+	Email      string `dynamodbav:"email"`
+	Sub        string `dynamodbav:"sub"`
+	RetryCount int    `dynamodbav:"retry_count"`
 }

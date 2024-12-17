@@ -22,8 +22,9 @@ func main() {
 	clientId := os.Getenv("clientId")
 	clientSecret := os.Getenv("clientSecret")
 	tableName := os.Getenv("DYNAMODB_USERS_TABLE")
+	userpoolId := os.Getenv("userpoolId")
 
-	userRepository := repositories.NewCognitoUserRepository(cfg, clientId, clientSecret)
+	userRepository := repositories.NewCognitoUserRepository(cfg, clientId, clientSecret, userpoolId)
 	dynamoUserRepository := repositories.NewDynamoUserRepository(cfg, tableName)
 	userInteractor := &usecases.SignUpInteractor{
 		UserRepository:       userRepository,
