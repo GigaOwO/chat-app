@@ -13,6 +13,5 @@ type UserRepository interface {
 type DynamoUserRepository interface {
 	CheckUsernameExists(username string) (bool, error)
 	AddUser(user *entities.DynamoUser) error
-	IncrementRetryCount(username string) (int, error)
 	DeleteUser(username string) error
 }
