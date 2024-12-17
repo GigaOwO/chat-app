@@ -5,3 +5,9 @@ type User struct {
 	Email    string
 	Password string
 }
+
+type DynamoUser struct {
+	Username string `dynamodbav:"username"`
+	Email    string `dynamodbav:"email"`
+	Sub      string `dynamodbav:"sub"`
+}

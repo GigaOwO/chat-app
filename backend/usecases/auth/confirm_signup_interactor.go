@@ -22,11 +22,7 @@ type ConfirmSignUpInteractor struct {
 }
 
 func (i *ConfirmSignUpInteractor) ConfirmSignUp(input ConfirmSignUpInput) (ConfirmSignUpOutput, error) {
-	err := i.UserRepository.ConfirmSignUp(input.Username, input.ConfirmationCode)
-	if err != nil {
-		return ConfirmSignUpOutput{Success: false, Message: err.Error()}, err
-	}
-	user := &entities.User{
+	user := &entities.DynamoUser{
 		Username: input.Username,
 		Email:    input.Email,
 	}
@@ -35,6 +31,10 @@ func (i *ConfirmSignUpInteractor) ConfirmSignUp(input ConfirmSignUpInput) (Confi
 			Success: false,
 			Message: "Failed to add user to database",
 		}, err
+	}
+	err := i.UserRepository.ConfirmSignUp(input.Email, input.ConfirmationCode)
+	if err != nil {
+		return ConfirmSignUpOutput{Success: false, Message: err.Error()}, err
 	}
 
 	return ConfirmSignUpOutput{

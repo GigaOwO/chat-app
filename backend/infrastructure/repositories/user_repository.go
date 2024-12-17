@@ -48,12 +48,12 @@ func (r *CognitoUserRepository) SignUp(user *entities.User) error {
 	return err
 }
 
-func (r *CognitoUserRepository) ConfirmSignUp(username, confirmationCode string) error {
-	secretHash := calculateSecretHash(r.clientSecret, r.clientId, username)
+func (r *CognitoUserRepository) ConfirmSignUp(email, confirmationCode string) error {
+	secretHash := calculateSecretHash(r.clientSecret, r.clientId, email)
 	input := &cognitoidentityprovider.ConfirmSignUpInput{
 		ClientId:         aws.String(r.clientId),
 		SecretHash:       aws.String(secretHash),
-		Username:         aws.String(username),
+		Username:         aws.String(email),
 		ConfirmationCode: aws.String(confirmationCode),
 	}
 	_, err := r.cognitoClient.ConfirmSignUp(context.Background(), input)

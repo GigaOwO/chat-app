@@ -37,7 +37,7 @@ func (r *DynamoUserRepository) CheckUsernameExists(username string) (bool, error
 	return result.Item != nil, nil
 }
 
-func (r *DynamoUserRepository) AddUser(user *entities.User) error {
+func (r *DynamoUserRepository) AddUser(user *entities.DynamoUser) error {
 	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
 		return err
