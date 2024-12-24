@@ -16,6 +16,7 @@ type CognitoUserRepository struct {
 	cognitoClient *cognitoidentityprovider.Client
 	clientId      string
 	clientSecret  string
+	userpoolId    string
 }
 
 func calculateSecretHash(clientSecret, clientId, username string) string {
@@ -24,12 +25,13 @@ func calculateSecretHash(clientSecret, clientId, username string) string {
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
-func NewCognitoUserRepository(cfg aws.Config, clientId string, clientSecret string) *CognitoUserRepository {
+func NewCognitoUserRepository(cfg aws.Config, clientId string, clientSecret string, userpoolId string) *CognitoUserRepository {
 	client := cognitoidentityprovider.NewFromConfig(cfg)
 	return &CognitoUserRepository{
 		cognitoClient: client,
 		clientId:      clientId,
 		clientSecret:  clientSecret,
+		userpoolId:    userpoolId,
 	}
 }
 
@@ -48,14 +50,34 @@ func (r *CognitoUserRepository) SignUp(user *entities.User) error {
 	return err
 }
 
-func (r *CognitoUserRepository) ConfirmSignUp(username, confirmationCode string) error {
-	secretHash := calculateSecretHash(r.clientSecret, r.clientId, username)
+func (r *CognitoUserRepository) ConfirmSignUp(email, confirmationCode string) error {
+	secretHash := calculateSecretHash(r.clientSecret, r.clientId, email)
 	input := &cognitoidentityprovider.ConfirmSignUpInput{
 		ClientId:         aws.String(r.clientId),
 		SecretHash:       aws.String(secretHash),
-		Username:         aws.String(username),
+		Username:         aws.String(email),
 		ConfirmationCode: aws.String(confirmationCode),
 	}
 	_, err := r.cognitoClient.ConfirmSignUp(context.Background(), input)
+	return err
+}
+
+func (r *CognitoUserRepository) ResendConfirmationCode(email string) error {
+	secretHash := calculateSecretHash(r.clientSecret, r.clientId, email)
+	input := &cognitoidentityprovider.ResendConfirmationCodeInput{
+		ClientId:   aws.String(r.clientId),
+		SecretHash: aws.String(secretHash),
+		Username:   aws.String(email),
+	}
+	_, err := r.cognitoClient.ResendConfirmationCode(context.Background(), input)
+	return err
+}
+
+func (r *CognitoUserRepository) DeleteUser(email string) error {
+	input := &cognitoidentityprovider.AdminDeleteUserInput{
+		UserPoolId: aws.String(r.userpoolId),
+		Username:   aws.String(email),
+	}
+	_, err := r.cognitoClient.AdminDeleteUser(context.Background(), input)
 	return err
 }

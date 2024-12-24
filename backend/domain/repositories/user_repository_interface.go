@@ -6,5 +6,13 @@ import (
 
 type UserRepository interface {
 	SignUp(user *entities.User) error
-	ConfirmSignUp(username, confirmationCode string) error
+	ConfirmSignUp(email, confirmationCode string) error
+	ResendConfirmationCode(email string) error
+	DeleteUser(email string) error
+}
+
+type DynamoUserRepository interface {
+	CheckUsernameExists(username string) (bool, error)
+	AddUser(user *entities.DynamoUser) error
+	DeleteUser(username string) error
 }
