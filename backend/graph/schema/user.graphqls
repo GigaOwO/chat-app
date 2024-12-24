@@ -1,0 +1,23 @@
+type User {
+  username: String!
+  email: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type AuthResponse {
+  success: Boolean!
+  message: String!
+}
+
+input SignUpInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
+input ConfirmSignUpInput {
+  username: String!
+  email: String!
+  confirmationCode: String!
+}

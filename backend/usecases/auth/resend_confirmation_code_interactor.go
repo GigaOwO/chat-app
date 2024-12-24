@@ -1,4 +1,4 @@
-package usecases
+package auth
 
 import "api/domain/repositories"
 
