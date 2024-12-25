@@ -10,6 +10,18 @@ type AuthResponse {
   message: String!
 }
 
+type SignInResponse {
+  success: Boolean!
+  message: String!
+  tokens: Tokens
+}
+
+type Tokens {
+  accessToken: String!
+  idToken: String!
+  refreshToken: String!
+}
+
 input SignUpInput {
   username: String!
   email: String!
@@ -20,4 +32,9 @@ input ConfirmSignUpInput {
   username: String!
   email: String!
   confirmationCode: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
 }

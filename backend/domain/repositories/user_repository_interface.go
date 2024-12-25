@@ -9,6 +9,7 @@ type UserRepository interface {
 	ConfirmSignUp(email, confirmationCode string) error
 	ResendConfirmationCode(email string) error
 	DeleteUser(email string) error
+	SignIn(email, password string) (*entities.AuthTokens, error)
 }
 
 type DynamoUserRepository interface {

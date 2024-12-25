@@ -75,6 +75,32 @@ func (r *mutationResolver) ResendConfirmationCode(ctx context.Context, email str
 	}, nil
 }
 
+// SignIn is the resolver for the signIn field.
+func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) (*model.SignInResponse, error) {
+	usecaseInput := auth.SignInInput{
+		Email:    input.Email,
+		Password: input.Password,
+	}
+
+	result, err := r.SignInInteractor.SignIn(usecaseInput)
+	if err != nil {
+		return &model.SignInResponse{
+			Success: false,
+			Message: err.Error(),
+		}, nil
+	}
+
+	return &model.SignInResponse{
+		Success: true,
+		Message: result.Message,
+		Tokens: &model.Tokens{
+			AccessToken:  result.Tokens.AccessToken,
+			IDToken:      result.Tokens.IdToken,
+			RefreshToken: result.Tokens.RefreshToken,
+		},
+	}, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

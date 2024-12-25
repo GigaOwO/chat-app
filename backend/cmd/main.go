@@ -46,11 +46,15 @@ func main() {
 	resendConfirmationCodeInteractor := &auth.ResendConfirmationCodeInteractor{
 		UserRepository: userRepository,
 	}
+	signInInteractor := &auth.SignInInteractor{
+		UserRepository: userRepository,
+	}
 
 	resolver := resolvers.NewResolver(
 		signUpInteractor,
 		confirmSignUpInteractor,
 		resendConfirmationCodeInteractor,
+		signInInteractor,
 	)
 
 	srv := server.NewServer(port, resolver)

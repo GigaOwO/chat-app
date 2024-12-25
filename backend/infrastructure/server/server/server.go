@@ -17,7 +17,9 @@ type Server struct {
 func NewServer(port string, resolver *resolvers.Resolver) *Server {
 	engine := gin.Default()
 
+	engine.Use(middleware.CorsMiddleware())
 	engine.Use(middleware.GinContextToContextMiddleware())
+	engine.Use(middleware.SetRefreshTokenCookie())
 
 	engine.POST("/query", handler.NewGraphQLHandler(resolver))
 	engine.GET("/", handler.NewPlaygroundHandler())
