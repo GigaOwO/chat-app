@@ -8,16 +8,16 @@ import { redirect } from 'next/navigation'
 export async function signIn(input: SignInInput) {
   try {
     const response = await graphqlClient.request<SignInResponse>(SIGN_IN, { input })
-    
-    if (response.signIn.success) {
-      redirect('/chat')
+
+    if (!response.signIn.success) {
+      return response.signIn
     }
-    
-    return response.signIn
+
   } catch (err) {
     return {
       success: false,
       message: err instanceof Error ? err.message : 'An error occurred'
     }
   }
+  redirect('/chat')
 }

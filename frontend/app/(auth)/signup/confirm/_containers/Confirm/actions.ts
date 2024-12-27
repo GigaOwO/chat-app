@@ -14,18 +14,18 @@ export async function confirmSignUp(input: SignUpConfirmInput) {
         confirmationCode: input.confirmationCode,
       },
     })
-    
-    if (response.confirmSignUp.success) {
-      redirect('/signin')
+
+    if (!response.confirmSignUp.success) {
+      return response.confirmSignUp
     }
-    
-    return response.confirmSignUp
+
   } catch (err) {
     return {
       success: false,
       message: err instanceof Error ? err.message : 'An error occurred'
     }
   }
+  redirect('/signin')
 }
 
 export async function resendConfirmationCode(email: string) {
