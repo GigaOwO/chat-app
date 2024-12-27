@@ -18,6 +18,15 @@ export const CONFIRM_SIGN_UP = gql`
   }
 `
 
+export const RESEND_CONFIRMATION_CODE = gql`
+  mutation ResendConfirmationCode($email: String!) {
+    resendConfirmationCode(email: $email) {
+      success
+      message
+    }
+  }
+`
+
 export const SIGN_IN = gql`
   mutation SignIn($input: SignInInput!) {
     signIn(input: $input) {

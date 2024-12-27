@@ -10,7 +10,7 @@ export async function signUp(input: SignUpInput) {
     const response = await graphqlClient.request<SignUpResponse>(SIGN_UP, { input })
     
     if (response.signUp.success) {
-      redirect('/sign-up/confirm')
+      redirect('/signup/confirm')
     }
     
     return response.signUp
