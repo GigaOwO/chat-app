@@ -1,4 +1,4 @@
-import { SignUpConfirmContainer } from './_containers/SignUpContainers/container'
+import { SignUpConfirmContainer } from './_containers/Confirm/container'
 
 export default function SignUpConfirmPage() {
   return (
