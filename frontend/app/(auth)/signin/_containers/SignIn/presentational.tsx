@@ -7,12 +7,14 @@ import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
 import { signIn } from './actions'
+import { useRouter } from 'next/navigation'
 
 type Props = {
   csrfToken?: string | null
 }
 
 export function SignInForm({ csrfToken }: Props) {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string>()
@@ -24,8 +26,10 @@ export function SignInForm({ csrfToken }: Props) {
     
     try {
       const result = await signIn({ email, password })
-      if (!result.success) {
-        setError(result.message)
+      if (result.signIn.success) {
+        router.push('/chat')
+      } else {
+        setError(result.signIn.message)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

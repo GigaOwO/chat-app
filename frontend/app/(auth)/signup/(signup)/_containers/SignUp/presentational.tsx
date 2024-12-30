@@ -7,12 +7,14 @@ import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
 import { signUp } from './actions'
+import { useRouter } from 'next/navigation'
 
 type Props = {
   csrfToken?: string | null
 }
 
 export function SignUpForm({ csrfToken }: Props) {
+  const router = useRouter()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,8 +27,14 @@ export function SignUpForm({ csrfToken }: Props) {
     
     try {
       const result = await signUp({ username, email, password })
-      if (!result.success) {
-        setError(result.message)
+      if (result.signUp.success) {
+        const userParams = new URLSearchParams({
+          email,
+          username,
+        })
+        router.push(`/signup/confirm?${userParams.toString()}`)
+      } else {
+        setError(result.signUp.message)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

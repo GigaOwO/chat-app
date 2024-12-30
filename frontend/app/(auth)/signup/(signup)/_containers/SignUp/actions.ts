@@ -2,13 +2,24 @@
 
 import { signUpUser } from '@/(auth)/_lib/featcher/auth';
 import { SignUpInput, SignUpResponse } from '@/(auth)/_types'
-import { redirect } from 'next/navigation'
 
 export async function signUp(input: SignUpInput): Promise<SignUpResponse> {
-  let response;
-
   try {
-    response = await signUpUser(input)
+    const response = await signUpUser(input)
+    if (response.signUp.success) {
+      return {
+        signUp: {
+          success: true,
+          message: response.signUp.message
+        }
+      }
+    }  
+    return {
+      signUp: {
+        success: false,
+        message: response.signUp.message
+      }
+    }
   } catch (err) {
     return {
       signUp: { 
@@ -18,13 +29,4 @@ export async function signUp(input: SignUpInput): Promise<SignUpResponse> {
     }
   }
   
-  if (response.signUp.success) {
-    const userParams = new URLSearchParams({
-      email: input.email,
-      username: input.username,
-    })
-    redirect(`/signup/confirm?${userParams.toString()}`)
-  }
-
-  return response
 }

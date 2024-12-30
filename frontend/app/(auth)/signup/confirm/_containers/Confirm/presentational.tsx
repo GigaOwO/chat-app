@@ -8,9 +8,11 @@ import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
 import { confirmSignUp, resendConfirmationCode } from './actions'
 import { SignUpConfirmFormProps } from '@/(auth)/_types'
+import { useRouter } from 'next/navigation'
 
 
 export function SignUpConfirmForm({ csrfToken, email, username }: SignUpConfirmFormProps) {
+  const router = useRouter()
   const [confirmationCode, setConfirmationCode] = useState('')
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
@@ -22,7 +24,9 @@ export function SignUpConfirmForm({ csrfToken, email, username }: SignUpConfirmF
     
     try {
       const result = await confirmSignUp({ email, username, confirmationCode })
-      if (!result.success) {
+      if (result.success) {
+        router.push('/signin')
+      } else {
         setError(result.message)
       }
     } catch (err) {

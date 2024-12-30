@@ -5,21 +5,24 @@ import { SignUpConfirmInput } from '../../../../_types'
 import { confirmSignUpUser, resendConfirmationCodeUser } from '@/(auth)/_lib/featcher/auth'
 
 export async function confirmSignUp(input: SignUpConfirmInput): Promise<{ success: boolean, message?: string }> {
-  let response;
   try {
-    response = await confirmSignUpUser(input)
+    const response = await confirmSignUpUser(input)
+    if (response.success) {
+      return {
+        success: true,
+        message: response.message
+      }
+    }
+    return {
+      success: false,
+      message: response.message
+    }
   } catch (err) {
     return {
       success: false,
       message: err instanceof Error ? err.message : 'An error occurred'
     }
   }
-
-  if (response.success) {
-    redirect('/signin')
-  }
-  
-  return response
 }
 
 export async function resendConfirmationCode(email: string) {
