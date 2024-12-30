@@ -1,23 +1,24 @@
 "use server"
 
-import { SignInResponse } from '@/(auth)/_types'
-import { graphqlClient } from '@/_lib/graphql/client'
-import { SIGN_IN, SignInInput } from '@/_lib/graphql/mutations/auth'
+import { signInUser } from '@/(auth)/_lib/featcher/auth'
+import { SignInInput, SignInResponse } from '@/(auth)/_types'
 import { redirect } from 'next/navigation'
 
-export async function signIn(input: SignInInput) {
+export async function signIn(input: SignInInput): Promise<SignInResponse> {
+  let response;
   try {
-    const response = await graphqlClient.request<SignInResponse>(SIGN_IN, { input })
-
-    if (!response.signIn.success) {
-      return response.signIn
-    }
-
+    response = await signInUser(input)
   } catch (err) {
     return {
-      success: false,
-      message: err instanceof Error ? err.message : 'An error occurred'
+      signIn: {
+        success: false,
+        message: err instanceof Error ? err.message : 'An error occurred'
+      }
     }
   }
-  redirect('/chat')
+  if (response.signIn.success) {
+    redirect('/chat')
+  }
+  
+  return response
 }

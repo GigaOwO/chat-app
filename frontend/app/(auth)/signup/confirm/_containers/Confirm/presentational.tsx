@@ -7,14 +7,10 @@ import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
 import { confirmSignUp, resendConfirmationCode } from './actions'
+import { SignUpConfirmFormProps } from '@/(auth)/_types'
 
-type Props = {
-  csrfToken?: string | null
-}
 
-export function SignUpConfirmForm({ csrfToken }: Props) {
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
+export function SignUpConfirmForm({ csrfToken, email, username }: SignUpConfirmFormProps) {
   const [confirmationCode, setConfirmationCode] = useState('')
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
@@ -54,31 +50,11 @@ export function SignUpConfirmForm({ csrfToken }: Props) {
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>Confirm Sign Up</CardTitle>
-        <CardDescription>Please enter the confirmation code sent to your email</CardDescription>
+        <CardDescription>Enter the confirmation code sent to {email}</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         {csrfToken && <input type="hidden" name="csrf" value={csrfToken} />}
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              type="text"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
           <div className="space-y-2">
             <Label htmlFor="confirmationCode">Confirmation Code</Label>
             <Input

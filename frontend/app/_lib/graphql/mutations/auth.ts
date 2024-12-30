@@ -40,35 +40,3 @@ export const SIGN_IN = gql`
     }
   }
 `
-
-export type SignUpInput = {
-  username: string
-  email: string
-  password: string
-}
-
-export type ConfirmSignUpInput = {
-  username: string
-  email: string
-  confirmationCode: string
-}
-
-export type SignInInput = {
-  email: string
-  password: string
-}
-
-export type AuthResponse = {
-  success: boolean
-  message: string
-}
-
-export type SignInResponse = {
-  success: boolean
-  message: string
-  tokens?: {
-    accessToken: string
-    idToken: string
-    refreshToken: string
-  }
-}

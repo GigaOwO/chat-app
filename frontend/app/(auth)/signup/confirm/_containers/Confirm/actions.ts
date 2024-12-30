@@ -1,37 +1,30 @@
 "use server"
 
-import { graphqlClient } from '@/_lib/graphql/client'
-import { CONFIRM_SIGN_UP, RESEND_CONFIRMATION_CODE } from '@/_lib/graphql/mutations/auth'
 import { redirect } from 'next/navigation'
-import { ResendConfirmationCodeResponse, SignUpConfirmInput, SignUpConfirmResponse } from '../../../../_types'
+import { SignUpConfirmInput } from '../../../../_types'
+import { confirmSignUpUser, resendConfirmationCodeUser } from '@/(auth)/_lib/featcher/auth'
 
-export async function confirmSignUp(input: SignUpConfirmInput) {
+export async function confirmSignUp(input: SignUpConfirmInput): Promise<{ success: boolean, message?: string }> {
+  let response;
   try {
-    const response = await graphqlClient.request<SignUpConfirmResponse>(CONFIRM_SIGN_UP, {
-      input: {
-        username: input.username,
-        email: input.email,
-        confirmationCode: input.confirmationCode,
-      },
-    })
-
-    if (!response.confirmSignUp.success) {
-      return response.confirmSignUp
-    }
-
+    response = await confirmSignUpUser(input)
   } catch (err) {
     return {
       success: false,
       message: err instanceof Error ? err.message : 'An error occurred'
     }
   }
-  redirect('/signin')
+
+  if (response.success) {
+    redirect('/signin')
+  }
+  
+  return response
 }
 
 export async function resendConfirmationCode(email: string) {
   try {
-    const response = await graphqlClient.request<ResendConfirmationCodeResponse>(RESEND_CONFIRMATION_CODE, { email })
-    return response.resendConfirmationCode
+    return await resendConfirmationCodeUser(email)
   } catch (err) {
     return {
       success: false,

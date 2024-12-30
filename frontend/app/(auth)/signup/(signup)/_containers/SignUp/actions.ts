@@ -1,23 +1,30 @@
 "use server"
 
-import { SignUpResponse } from '@/(auth)/_types'
-import { graphqlClient } from '@/_lib/graphql/client'
-import { SIGN_UP, SignUpInput } from '@/_lib/graphql/mutations/auth'
+import { signUpUser } from '@/(auth)/_lib/featcher/auth';
+import { SignUpInput, SignUpResponse } from '@/(auth)/_types'
 import { redirect } from 'next/navigation'
 
-export async function signUp(input: SignUpInput) {
+export async function signUp(input: SignUpInput): Promise<SignUpResponse> {
+  let response;
+
   try {
-    const response = await graphqlClient.request<SignUpResponse>(SIGN_UP, { input })
-
-    if (!response.signUp.success) {
-      return response.signUp
-    }
-
+    response = await signUpUser(input)
   } catch (err) {
     return {
-      success: false,
-      message: err instanceof Error ? err.message : 'An error occurred'
+      signUp: { 
+        success: false,
+        message: err instanceof Error ? err.message : 'An error occurred'
+      }
     }
   }
-  redirect('/signup/confirm')
+  
+  if (response.signUp.success) {
+    const userParams = new URLSearchParams({
+      email: input.email,
+      username: input.username,
+    })
+    redirect(`/signup/confirm?${userParams.toString()}`)
+  }
+
+  return response
 }
