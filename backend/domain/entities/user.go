@@ -11,3 +11,9 @@ type DynamoUser struct {
 	Email    string `dynamodbav:"email"`
 	Sub      string `dynamodbav:"sub"`
 }
+
+type AuthTokens struct {
+	AccessToken  string
+	IdToken      string
+	RefreshToken string
+}

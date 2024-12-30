@@ -19,10 +19,27 @@ type Mutation struct {
 type Query struct {
 }
 
+type SignInInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type SignInResponse struct {
+	Success bool    `json:"success"`
+	Message string  `json:"message"`
+	Tokens  *Tokens `json:"tokens,omitempty"`
+}
+
 type SignUpInput struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type Tokens struct {
+	AccessToken  string `json:"accessToken"`
+	IDToken      string `json:"idToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type User struct {
