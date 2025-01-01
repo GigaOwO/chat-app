@@ -10,6 +10,7 @@ import (
 	"api/infrastructure/server/middleware"
 	"api/usecases/auth"
 	"context"
+	"net/http"
 )
 
 // SignUp is the resolver for the signUp field.
@@ -91,9 +92,19 @@ func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) 
 		}, nil
 	}
 
+	gc, err := middleware.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	gc.SetSameSite(http.SameSiteStrictMode)
+	gc.SetCookie("access_token", result.Tokens.AccessToken, 900, "/", "", false, true)
+	gc.SetCookie("id_token", result.Tokens.IdToken, 900, "/", "", false, true)
+	gc.SetCookie("refresh_token", result.Tokens.RefreshToken, 2592000, "/", "", false, true)
+
 	return &model.SignInResponse{
-		Success: true,
-		Message: result.Message,
+		Success: result.Success,
+		Message: "Sign in successful",
 	}, nil
 }
 
@@ -120,6 +131,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context) (*model.RefreshToke
 		}, nil
 	}
 
+	gc.SetSameSite(http.SameSiteStrictMode)
 	gc.SetCookie("access_token", tokens.AccessToken, 900, "/", "", false, true)
 	gc.SetCookie("id_token", tokens.IdToken, 900, "/", "", false, true)
 	gc.SetCookie("refresh_token", tokens.RefreshToken, 2592000, "/", "", false, true)
