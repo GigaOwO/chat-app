@@ -21,7 +21,9 @@ func main() {
 		port = defaultPort
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("ap-northeast-1"))
+	awsRegion := os.Getenv("AWS_REGION")
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(awsRegion))
 	if err != nil {
 		panic(err)
 	}
