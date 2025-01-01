@@ -24,7 +24,6 @@ export type SignInResponse = {
   signIn: {
     success: boolean
     message?: string
-    token?: string
   }
 }
 
@@ -59,4 +58,11 @@ export type SignUpConfirmFormProps = {
   csrfToken?: string | null
   email: string
   username: string
+}
+
+export type RefreshTokenResponse = {
+  refreshToken: {
+    success: boolean
+    message?: string
+  }
 }

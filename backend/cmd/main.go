@@ -57,6 +57,7 @@ func main() {
 		confirmSignUpInteractor,
 		resendConfirmationCodeInteractor,
 		signInInteractor,
+		userRepository,
 	)
 
 	srv := server.NewServer(port, resolver)

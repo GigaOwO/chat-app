@@ -32,11 +32,15 @@ export const SIGN_IN = gql`
     signIn(input: $input) {
       success
       message
-      tokens {
-        accessToken
-        idToken
-        refreshToken
-      }
+    }
+  }
+`
+
+export const REFRESH_TOKEN = gql`
+  mutation RefreshToken {
+    refreshToken {
+      success
+      message
     }
   }
 `

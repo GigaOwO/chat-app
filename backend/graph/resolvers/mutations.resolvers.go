@@ -7,6 +7,7 @@ package resolvers
 import (
 	"api/graph/generated"
 	"api/graph/model"
+	"api/infrastructure/server/middleware"
 	"api/usecases/auth"
 	"context"
 )
@@ -93,11 +94,39 @@ func (r *mutationResolver) SignIn(ctx context.Context, input model.SignInInput) 
 	return &model.SignInResponse{
 		Success: true,
 		Message: result.Message,
-		Tokens: &model.Tokens{
-			AccessToken:  result.Tokens.AccessToken,
-			IDToken:      result.Tokens.IdToken,
-			RefreshToken: result.Tokens.RefreshToken,
-		},
+	}, nil
+}
+
+// RefreshToken is the resolver for the refreshToken field.
+func (r *mutationResolver) RefreshToken(ctx context.Context) (*model.RefreshTokenResponse, error) {
+	gc, err := middleware.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := gc.Cookie("refresh_token")
+	if err != nil {
+		return &model.RefreshTokenResponse{
+			Success: false,
+			Message: "Refresh token not found",
+		}, nil
+	}
+
+	tokens, err := r.UserRepository.RefreshToken(refreshToken)
+	if err != nil {
+		return &model.RefreshTokenResponse{
+			Success: false,
+			Message: err.Error(),
+		}, nil
+	}
+
+	gc.SetCookie("access_token", tokens.AccessToken, 900, "/", "", false, true)
+	gc.SetCookie("id_token", tokens.IdToken, 900, "/", "", false, true)
+	gc.SetCookie("refresh_token", tokens.RefreshToken, 2592000, "/", "", false, true)
+
+	return &model.RefreshTokenResponse{
+		Success: true,
+		Message: "Token refreshed successfully",
 	}, nil
 }
 

@@ -95,6 +95,27 @@ func (r *CognitoUserRepository) SignIn(email, password string) (*entities.AuthTo
 	}, nil
 }
 
+func (r *CognitoUserRepository) RefreshToken(refreshToken string) (*entities.AuthTokens, error) {
+	input := &cognitoidentityprovider.InitiateAuthInput{
+		AuthFlow: types.AuthFlowTypeRefreshToken,
+		AuthParameters: map[string]string{
+			"REFRESH_TOKEN": refreshToken,
+		},
+		ClientId: aws.String(r.clientId),
+	}
+
+	result, err := r.cognitoClient.InitiateAuth(context.Background(), input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entities.AuthTokens{
+		AccessToken:  *result.AuthenticationResult.AccessToken,
+		IdToken:      *result.AuthenticationResult.IdToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
 func (r *CognitoUserRepository) DeleteUser(email string) error {
 	input := &cognitoidentityprovider.AdminDeleteUserInput{
 		UserPoolId: aws.String(r.userpoolId),

@@ -1,6 +1,9 @@
 package resolvers
 
-import "api/usecases/auth"
+import (
+	"api/domain/repositories"
+	"api/usecases/auth"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -11,6 +14,7 @@ type Resolver struct {
 	ConfirmSignUpInteractor          *auth.ConfirmSignUpInteractor
 	ResendConfirmationCodeInteractor *auth.ResendConfirmationCodeInteractor
 	SignInInteractor                 *auth.SignInInteractor
+	UserRepository                   repositories.UserRepository
 }
 
 func NewResolver(
@@ -18,11 +22,13 @@ func NewResolver(
 	confirmSignUpInteractor *auth.ConfirmSignUpInteractor,
 	resendConfirmationCodeInteractor *auth.ResendConfirmationCodeInteractor,
 	signInInteractor *auth.SignInInteractor,
+	userRepository repositories.UserRepository,
 ) *Resolver {
 	return &Resolver{
 		SignUpInteractor:                 signUpInteractor,
 		ConfirmSignUpInteractor:          confirmSignUpInteractor,
 		ResendConfirmationCodeInteractor: resendConfirmationCodeInteractor,
 		SignInInteractor:                 signInInteractor,
+		UserRepository:                   userRepository,
 	}
 }

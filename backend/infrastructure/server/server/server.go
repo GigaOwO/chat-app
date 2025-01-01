@@ -19,7 +19,7 @@ func NewServer(port string, resolver *resolvers.Resolver) *Server {
 
 	engine.Use(middleware.CorsMiddleware())
 	engine.Use(middleware.GinContextToContextMiddleware())
-	engine.Use(middleware.SetRefreshTokenCookie())
+	engine.Use(middleware.SetAuthCookies())
 
 	engine.POST("/query", handler.NewGraphQLHandler(resolver))
 	engine.GET("/", handler.NewPlaygroundHandler())

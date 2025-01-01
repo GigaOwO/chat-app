@@ -13,7 +13,6 @@ type AuthResponse {
 type SignInResponse {
   success: Boolean!
   message: String!
-  tokens: Tokens
 }
 
 type Tokens {
@@ -37,4 +36,9 @@ input ConfirmSignUpInput {
 input SignInInput {
   email: String!
   password: String!
+}
+
+type RefreshTokenResponse {
+  success: Boolean!
+  message: String!
 }
