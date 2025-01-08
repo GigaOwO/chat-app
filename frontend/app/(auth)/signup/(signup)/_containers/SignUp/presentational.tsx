@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
-import { signUp } from './actions'
 import { useRouter } from 'next/navigation'
+import { signUp } from 'aws-amplify/auth'
 
 type Props = {
   csrfToken?: string | null
@@ -26,15 +26,21 @@ export function SignUpForm({ csrfToken }: Props) {
     setIsLoading(true)
     
     try {
-      const result = await signUp({ username, email, password })
-      if (result.signUp.success) {
+      const { isSignUpComplete, userId, nextStep } = await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes: {
+            email,
+          },
+        }
+      })
+      if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
         const userParams = new URLSearchParams({
           email,
           username,
         })
         router.push(`/signup/confirm?${userParams.toString()}`)
-      } else {
-        setError(result.signUp.message)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -59,7 +65,7 @@ export function SignUpForm({ csrfToken }: Props) {
               type="text"
               required
               value={username}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -69,7 +75,7 @@ export function SignUpForm({ csrfToken }: Props) {
               type="email"
               required
               value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -79,7 +85,10 @@ export function SignUpForm({ csrfToken }: Props) {
               type="password"
               required
               value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+              title="Password must contain at least 8 characters, including uppercase, lowercase, numbers and special characters"
             />
           </div>
           {error && (
