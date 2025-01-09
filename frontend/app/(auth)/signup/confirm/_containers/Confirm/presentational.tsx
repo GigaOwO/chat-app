@@ -7,7 +7,7 @@ import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { confirmSignUp, resendSignUpCode, signIn } from 'aws-amplify/auth'
+import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth'
 import { SignUpConfirmFormProps } from '@/(auth)/_types'
 import { generateClient } from 'aws-amplify/api'
 import { CreateUsersInput, CreateUsersMutation } from '@/_lib/graphql/API'
@@ -15,7 +15,7 @@ import * as mutations from '@/_lib/graphql/mutations'
 
 const client = generateClient()
 
-export function SignUpConfirmForm({ csrfToken, email, username }: SignUpConfirmFormProps) {
+export function SignUpConfirmForm({ csrfToken, email, username, userId }: SignUpConfirmFormProps) {
   const router = useRouter()
   const [confirmationCode, setConfirmationCode] = useState('')
   const [error, setError] = useState<string>()
@@ -27,36 +27,26 @@ export function SignUpConfirmForm({ csrfToken, email, username }: SignUpConfirmF
     setIsLoading(true)
     
     try {
-      const now = new Date().toISOString()
-      const input: CreateUsersInput = {
-        username,
-        email,
-        createdAt: now,
-        updatedAt: now
-      }
-      await client.graphql({
-        query: mutations.createUsers,
-        variables: {
-          input
-        }
-      }) as { data: CreateUsersMutation }
-      
-      const { isSignUpComplete, nextStep } = await confirmSignUp({
+      const { isSignUpComplete } = await confirmSignUp({
         username: email,
         confirmationCode
       })
-
-      if (!isSignUpComplete) {
-        // 4. Cleanup if Cognito confirmation fails
+      if (isSignUpComplete) {
+        const now = new Date().toISOString()
+        const input: CreateUsersInput = {
+          username,
+          email,
+          sub: userId,
+          createdAt: now,
+          updatedAt: now
+        }
         await client.graphql({
-          query: mutations.deleteUsers,
+          query: mutations.createUsers,
           variables: {
-            input: { username }
+            input
           }
-        })
-        throw new Error("Signup confirmation failed")
+        }) as { data: CreateUsersMutation }
       }
-
       router.push('/signin')
     } catch (err) {
       console.error('Error during confirmation:', err)

@@ -26,7 +26,7 @@ export function SignUpForm({ csrfToken }: Props) {
     setIsLoading(true)
     
     try {
-      const { isSignUpComplete, userId, nextStep } = await signUp({
+      const { userId, nextStep } = await signUp({
         username: email,
         password,
         options: {
@@ -39,6 +39,7 @@ export function SignUpForm({ csrfToken }: Props) {
         const userParams = new URLSearchParams({
           email,
           username,
+          userId: userId || '',
         })
         router.push(`/signup/confirm?${userParams.toString()}`)
       }
