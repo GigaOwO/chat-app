@@ -26,20 +26,19 @@ export function SignUpForm({ csrfToken }: Props) {
     setIsLoading(true)
     
     try {
-      const { userId, nextStep } = await signUp({
+      const { nextStep } = await signUp({
         username: email,
         password,
         options: {
           userAttributes: {
             email,
+            preferred_username: username,
           },
         }
       })
       if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
         const userParams = new URLSearchParams({
-          email,
-          username,
-          userId: userId || '',
+          email
         })
         router.push(`/signup/confirm?${userParams.toString()}`)
       }
@@ -60,7 +59,7 @@ export function SignUpForm({ csrfToken }: Props) {
         {csrfToken && <input type="hidden" name="csrf" value={csrfToken} />}
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">UserID</Label>
             <Input
               id="username"
               type="text"

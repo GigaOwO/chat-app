@@ -9,13 +9,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth'
 import { SignUpConfirmFormProps } from '@/(auth)/_types'
-import { generateClient } from 'aws-amplify/api'
-import { CreateUsersInput, CreateUsersMutation } from '@/_lib/graphql/API'
-import * as mutations from '@/_lib/graphql/mutations'
 
-const client = generateClient()
-
-export function SignUpConfirmForm({ csrfToken, email, username, userId }: SignUpConfirmFormProps) {
+export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) {
   const router = useRouter()
   const [confirmationCode, setConfirmationCode] = useState('')
   const [error, setError] = useState<string>()
@@ -32,22 +27,8 @@ export function SignUpConfirmForm({ csrfToken, email, username, userId }: SignUp
         confirmationCode
       })
       if (isSignUpComplete) {
-        const now = new Date().toISOString()
-        const input: CreateUsersInput = {
-          username,
-          email,
-          sub: userId,
-          createdAt: now,
-          updatedAt: now
-        }
-        await client.graphql({
-          query: mutations.createUsers,
-          variables: {
-            input
-          }
-        }) as { data: CreateUsersMutation }
+        router.push('/signin')
       }
-      router.push('/signin')
     } catch (err) {
       console.error('Error during confirmation:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')

@@ -22,6 +22,9 @@ export const amplifyConfig: ResourcesConfig = {
       userAttributes: {
         email: {
           required: true,
+        },
+        preferred_username: {
+          required: true,
         }
       },
       passwordFormat: {
