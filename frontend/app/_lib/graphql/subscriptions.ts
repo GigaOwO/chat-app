@@ -281,3 +281,102 @@ export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
   APITypes.OnDeleteUsersSubscriptionVariables,
   APITypes.OnDeleteUsersSubscription
 >;
+export const onCreateProfiles = /* GraphQL */ `subscription OnCreateProfiles(
+  $profileId: String
+  $userId: String
+  $isActive: Boolean
+  $name: String
+  $avatarKey: String
+) {
+  onCreateProfiles(
+    profileId: $profileId
+    userId: $userId
+    isActive: $isActive
+    name: $name
+    avatarKey: $avatarKey
+  ) {
+    profileId
+    userId
+    isActive
+    name
+    avatarKey
+    bio
+    status
+    order
+    visibility
+    customData
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateProfilesSubscriptionVariables,
+  APITypes.OnCreateProfilesSubscription
+>;
+export const onUpdateProfiles = /* GraphQL */ `subscription OnUpdateProfiles(
+  $profileId: String
+  $userId: String
+  $isActive: Boolean
+  $name: String
+  $avatarKey: String
+) {
+  onUpdateProfiles(
+    profileId: $profileId
+    userId: $userId
+    isActive: $isActive
+    name: $name
+    avatarKey: $avatarKey
+  ) {
+    profileId
+    userId
+    isActive
+    name
+    avatarKey
+    bio
+    status
+    order
+    visibility
+    customData
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateProfilesSubscriptionVariables,
+  APITypes.OnUpdateProfilesSubscription
+>;
+export const onDeleteProfiles = /* GraphQL */ `subscription OnDeleteProfiles(
+  $profileId: String
+  $userId: String
+  $isActive: Boolean
+  $name: String
+  $avatarKey: String
+) {
+  onDeleteProfiles(
+    profileId: $profileId
+    userId: $userId
+    isActive: $isActive
+    name: $name
+    avatarKey: $avatarKey
+  ) {
+    profileId
+    userId
+    isActive
+    name
+    avatarKey
+    bio
+    status
+    order
+    visibility
+    customData
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteProfilesSubscriptionVariables,
+  APITypes.OnDeleteProfilesSubscription
+>;

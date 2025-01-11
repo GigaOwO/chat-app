@@ -222,3 +222,119 @@ export const queryUsersByEmailIndex = /* GraphQL */ `query QueryUsersByEmailInde
   APITypes.QueryUsersByEmailIndexQueryVariables,
   APITypes.QueryUsersByEmailIndexQuery
 >;
+export const getProfiles = /* GraphQL */ `query GetProfiles($userId: String!, $profileId: String!) {
+  getProfiles(userId: $userId, profileId: $profileId) {
+    profileId
+    userId
+    isActive
+    name
+    avatarKey
+    bio
+    status
+    order
+    visibility
+    customData
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetProfilesQueryVariables,
+  APITypes.GetProfilesQuery
+>;
+export const listProfiles = /* GraphQL */ `query ListProfiles(
+  $filter: TableProfilesFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listProfiles(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      profileId
+      userId
+      isActive
+      name
+      avatarKey
+      bio
+      status
+      order
+      visibility
+      customData
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListProfilesQueryVariables,
+  APITypes.ListProfilesQuery
+>;
+export const queryProfilesByProfileIdIndex = /* GraphQL */ `query QueryProfilesByProfileIdIndex(
+  $profileId: String!
+  $first: Int
+  $after: String
+) {
+  queryProfilesByProfileIdIndex(
+    profileId: $profileId
+    first: $first
+    after: $after
+  ) {
+    items {
+      profileId
+      userId
+      isActive
+      name
+      avatarKey
+      bio
+      status
+      order
+      visibility
+      customData
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryProfilesByProfileIdIndexQueryVariables,
+  APITypes.QueryProfilesByProfileIdIndexQuery
+>;
+export const queryProfilesByUserIdIsActiveIndex = /* GraphQL */ `query QueryProfilesByUserIdIsActiveIndex(
+  $userId: String!
+  $first: Int
+  $after: String
+) {
+  queryProfilesByUserIdIsActiveIndex(
+    userId: $userId
+    first: $first
+    after: $after
+  ) {
+    items {
+      profileId
+      userId
+      isActive
+      name
+      avatarKey
+      bio
+      status
+      order
+      visibility
+      customData
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryProfilesByUserIdIsActiveIndexQueryVariables,
+  APITypes.QueryProfilesByUserIdIsActiveIndexQuery
+>;

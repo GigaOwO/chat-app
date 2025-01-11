@@ -173,3 +173,66 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers($input: DeleteUse
   APITypes.DeleteUsersMutationVariables,
   APITypes.DeleteUsersMutation
 >;
+export const createProfiles = /* GraphQL */ `mutation CreateProfiles($input: CreateProfilesInput!) {
+  createProfiles(input: $input) {
+    profileId
+    userId
+    isActive
+    name
+    avatarKey
+    bio
+    status
+    order
+    visibility
+    customData
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateProfilesMutationVariables,
+  APITypes.CreateProfilesMutation
+>;
+export const updateProfiles = /* GraphQL */ `mutation UpdateProfiles($input: UpdateProfilesInput!) {
+  updateProfiles(input: $input) {
+    profileId
+    userId
+    isActive
+    name
+    avatarKey
+    bio
+    status
+    order
+    visibility
+    customData
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateProfilesMutationVariables,
+  APITypes.UpdateProfilesMutation
+>;
+export const deleteProfiles = /* GraphQL */ `mutation DeleteProfiles($input: DeleteProfilesInput!) {
+  deleteProfiles(input: $input) {
+    profileId
+    userId
+    isActive
+    name
+    avatarKey
+    bio
+    status
+    order
+    visibility
+    customData
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteProfilesMutationVariables,
+  APITypes.DeleteProfilesMutation
+>;

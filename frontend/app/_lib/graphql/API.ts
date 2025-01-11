@@ -122,6 +122,73 @@ export type DeleteUsersInput = {
   username: string,
 };
 
+export type CreateProfilesInput = {
+  profileId: string,
+  userId: string,
+  isActive: boolean,
+  name: string,
+  avatarKey?: string | null,
+  bio?: string | null,
+  status?: ProfileStatus | null,
+  order: number,
+  visibility?: ProfileVisibility | null,
+  customData?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export enum ProfileStatus {
+  ONLINE = "ONLINE",
+  OFFLINE = "OFFLINE",
+  AWAY = "AWAY",
+  BUSY = "BUSY",
+  INVISIBLE = "INVISIBLE",
+}
+
+
+export enum ProfileVisibility {
+  PUBLIC = "PUBLIC",
+  FRIENDS = "FRIENDS",
+  PRIVATE = "PRIVATE",
+}
+
+
+export type Profiles = {
+  __typename: "Profiles",
+  profileId: string,
+  userId: string,
+  isActive: boolean,
+  name: string,
+  avatarKey?: string | null,
+  bio?: string | null,
+  status?: ProfileStatus | null,
+  order: number,
+  visibility?: ProfileVisibility | null,
+  customData?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateProfilesInput = {
+  profileId: string,
+  userId: string,
+  isActive?: boolean | null,
+  name?: string | null,
+  avatarKey?: string | null,
+  bio?: string | null,
+  status?: ProfileStatus | null,
+  order?: number | null,
+  visibility?: ProfileVisibility | null,
+  customData?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type DeleteProfilesInput = {
+  profileId: string,
+  userId: string,
+};
+
 export type TableFriendsFilterInput = {
   friendId?: TableStringFilterInput | null,
   userId?: TableStringFilterInput | null,
@@ -175,6 +242,43 @@ export type TableUsersFilterInput = {
 export type UsersConnection = {
   __typename: "UsersConnection",
   items?:  Array<Users | null > | null,
+  nextToken?: string | null,
+};
+
+export type TableProfilesFilterInput = {
+  profileId?: TableStringFilterInput | null,
+  userId?: TableStringFilterInput | null,
+  isActive?: TableBooleanFilterInput | null,
+  name?: TableStringFilterInput | null,
+  avatarKey?: TableStringFilterInput | null,
+  bio?: TableStringFilterInput | null,
+  status?: TableStringFilterInput | null,
+  order?: TableIntFilterInput | null,
+  visibility?: TableStringFilterInput | null,
+  createdAt?: TableStringFilterInput | null,
+  updatedAt?: TableStringFilterInput | null,
+};
+
+export type TableBooleanFilterInput = {
+  ne?: boolean | null,
+  eq?: boolean | null,
+  attributeExists?: boolean | null,
+};
+
+export type TableIntFilterInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  attributeExists?: boolean | null,
+};
+
+export type ProfilesConnection = {
+  __typename: "ProfilesConnection",
+  items?:  Array<Profiles | null > | null,
   nextToken?: string | null,
 };
 
@@ -349,6 +453,72 @@ export type DeleteUsersMutation = {
       __typename: "FriendsConnection",
       nextToken?: string | null,
     } | null,
+  } | null,
+};
+
+export type CreateProfilesMutationVariables = {
+  input: CreateProfilesInput,
+};
+
+export type CreateProfilesMutation = {
+  createProfiles?:  {
+    __typename: "Profiles",
+    profileId: string,
+    userId: string,
+    isActive: boolean,
+    name: string,
+    avatarKey?: string | null,
+    bio?: string | null,
+    status?: ProfileStatus | null,
+    order: number,
+    visibility?: ProfileVisibility | null,
+    customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateProfilesMutationVariables = {
+  input: UpdateProfilesInput,
+};
+
+export type UpdateProfilesMutation = {
+  updateProfiles?:  {
+    __typename: "Profiles",
+    profileId: string,
+    userId: string,
+    isActive: boolean,
+    name: string,
+    avatarKey?: string | null,
+    bio?: string | null,
+    status?: ProfileStatus | null,
+    order: number,
+    visibility?: ProfileVisibility | null,
+    customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteProfilesMutationVariables = {
+  input: DeleteProfilesInput,
+};
+
+export type DeleteProfilesMutation = {
+  deleteProfiles?:  {
+    __typename: "Profiles",
+    profileId: string,
+    userId: string,
+    isActive: boolean,
+    name: string,
+    avatarKey?: string | null,
+    bio?: string | null,
+    status?: ProfileStatus | null,
+    order: number,
+    visibility?: ProfileVisibility | null,
+    customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
   } | null,
 };
 
@@ -554,6 +724,113 @@ export type QueryUsersByEmailIndexQuery = {
       username: string,
       email?: string | null,
       sub?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetProfilesQueryVariables = {
+  userId: string,
+  profileId: string,
+};
+
+export type GetProfilesQuery = {
+  getProfiles?:  {
+    __typename: "Profiles",
+    profileId: string,
+    userId: string,
+    isActive: boolean,
+    name: string,
+    avatarKey?: string | null,
+    bio?: string | null,
+    status?: ProfileStatus | null,
+    order: number,
+    visibility?: ProfileVisibility | null,
+    customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListProfilesQueryVariables = {
+  filter?: TableProfilesFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListProfilesQuery = {
+  listProfiles?:  {
+    __typename: "ProfilesConnection",
+    items?:  Array< {
+      __typename: "Profiles",
+      profileId: string,
+      userId: string,
+      isActive: boolean,
+      name: string,
+      avatarKey?: string | null,
+      bio?: string | null,
+      status?: ProfileStatus | null,
+      order: number,
+      visibility?: ProfileVisibility | null,
+      customData?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type QueryProfilesByProfileIdIndexQueryVariables = {
+  profileId: string,
+  first?: number | null,
+  after?: string | null,
+};
+
+export type QueryProfilesByProfileIdIndexQuery = {
+  queryProfilesByProfileIdIndex?:  {
+    __typename: "ProfilesConnection",
+    items?:  Array< {
+      __typename: "Profiles",
+      profileId: string,
+      userId: string,
+      isActive: boolean,
+      name: string,
+      avatarKey?: string | null,
+      bio?: string | null,
+      status?: ProfileStatus | null,
+      order: number,
+      visibility?: ProfileVisibility | null,
+      customData?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type QueryProfilesByUserIdIsActiveIndexQueryVariables = {
+  userId: string,
+  first?: number | null,
+  after?: string | null,
+};
+
+export type QueryProfilesByUserIdIsActiveIndexQuery = {
+  queryProfilesByUserIdIsActiveIndex?:  {
+    __typename: "ProfilesConnection",
+    items?:  Array< {
+      __typename: "Profiles",
+      profileId: string,
+      userId: string,
+      isActive: boolean,
+      name: string,
+      avatarKey?: string | null,
+      bio?: string | null,
+      status?: ProfileStatus | null,
+      order: number,
+      visibility?: ProfileVisibility | null,
+      customData?: string | null,
       createdAt: string,
       updatedAt: string,
     } | null > | null,
@@ -768,5 +1045,83 @@ export type OnDeleteUsersSubscription = {
       __typename: "FriendsConnection",
       nextToken?: string | null,
     } | null,
+  } | null,
+};
+
+export type OnCreateProfilesSubscriptionVariables = {
+  profileId?: string | null,
+  userId?: string | null,
+  isActive?: boolean | null,
+  name?: string | null,
+  avatarKey?: string | null,
+};
+
+export type OnCreateProfilesSubscription = {
+  onCreateProfiles?:  {
+    __typename: "Profiles",
+    profileId: string,
+    userId: string,
+    isActive: boolean,
+    name: string,
+    avatarKey?: string | null,
+    bio?: string | null,
+    status?: ProfileStatus | null,
+    order: number,
+    visibility?: ProfileVisibility | null,
+    customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateProfilesSubscriptionVariables = {
+  profileId?: string | null,
+  userId?: string | null,
+  isActive?: boolean | null,
+  name?: string | null,
+  avatarKey?: string | null,
+};
+
+export type OnUpdateProfilesSubscription = {
+  onUpdateProfiles?:  {
+    __typename: "Profiles",
+    profileId: string,
+    userId: string,
+    isActive: boolean,
+    name: string,
+    avatarKey?: string | null,
+    bio?: string | null,
+    status?: ProfileStatus | null,
+    order: number,
+    visibility?: ProfileVisibility | null,
+    customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteProfilesSubscriptionVariables = {
+  profileId?: string | null,
+  userId?: string | null,
+  isActive?: boolean | null,
+  name?: string | null,
+  avatarKey?: string | null,
+};
+
+export type OnDeleteProfilesSubscription = {
+  onDeleteProfiles?:  {
+    __typename: "Profiles",
+    profileId: string,
+    userId: string,
+    isActive: boolean,
+    name: string,
+    avatarKey?: string | null,
+    bio?: string | null,
+    status?: ProfileStatus | null,
+    order: number,
+    visibility?: ProfileVisibility | null,
+    customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
   } | null,
 };
