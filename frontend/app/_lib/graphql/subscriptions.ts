@@ -303,7 +303,6 @@ export const onCreateProfiles = /* GraphQL */ `subscription OnCreateProfiles(
     bio
     status
     order
-    visibility
     customData
     createdAt
     updatedAt
@@ -336,7 +335,6 @@ export const onUpdateProfiles = /* GraphQL */ `subscription OnUpdateProfiles(
     bio
     status
     order
-    visibility
     customData
     createdAt
     updatedAt
@@ -369,7 +367,6 @@ export const onDeleteProfiles = /* GraphQL */ `subscription OnDeleteProfiles(
     bio
     status
     order
-    visibility
     customData
     createdAt
     updatedAt

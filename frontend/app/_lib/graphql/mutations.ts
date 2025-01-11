@@ -183,7 +183,6 @@ export const createProfiles = /* GraphQL */ `mutation CreateProfiles($input: Cre
     bio
     status
     order
-    visibility
     customData
     createdAt
     updatedAt
@@ -204,7 +203,6 @@ export const updateProfiles = /* GraphQL */ `mutation UpdateProfiles($input: Upd
     bio
     status
     order
-    visibility
     customData
     createdAt
     updatedAt
@@ -225,7 +223,6 @@ export const deleteProfiles = /* GraphQL */ `mutation DeleteProfiles($input: Del
     bio
     status
     order
-    visibility
     customData
     createdAt
     updatedAt

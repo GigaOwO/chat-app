@@ -232,7 +232,6 @@ export const getProfiles = /* GraphQL */ `query GetProfiles($userId: String!, $p
     bio
     status
     order
-    visibility
     customData
     createdAt
     updatedAt
@@ -258,7 +257,6 @@ export const listProfiles = /* GraphQL */ `query ListProfiles(
       bio
       status
       order
-      visibility
       customData
       createdAt
       updatedAt
@@ -291,7 +289,6 @@ export const queryProfilesByProfileIdIndex = /* GraphQL */ `query QueryProfilesB
       bio
       status
       order
-      visibility
       customData
       createdAt
       updatedAt
@@ -324,7 +321,6 @@ export const queryProfilesByUserIdIsActiveIndex = /* GraphQL */ `query QueryProf
       bio
       status
       order
-      visibility
       customData
       createdAt
       updatedAt
