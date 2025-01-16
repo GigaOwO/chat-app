@@ -46,7 +46,7 @@ export const createUser = gql`
 
 export const updateUser = gql`
   mutation updateUser {
-    updateUsers(input: {createdAt: "false", email: "", sub: "", updatedAt: "false", username: ""}) {
+    updateUsers(input: {createdAt: "", email: "", sub: "", updatedAt: "", username: ""}) {
       createdAt
       email
       friends {
