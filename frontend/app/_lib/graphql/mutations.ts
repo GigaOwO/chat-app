@@ -233,3 +233,147 @@ export const deleteProfiles = /* GraphQL */ `mutation DeleteProfiles($input: Del
   APITypes.DeleteProfilesMutationVariables,
   APITypes.DeleteProfilesMutation
 >;
+export const createConversations = /* GraphQL */ `mutation CreateConversations($input: CreateConversationsInput!) {
+  createConversations(input: $input) {
+    conversationId
+    type
+    name
+    lastMessageAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateConversationsMutationVariables,
+  APITypes.CreateConversationsMutation
+>;
+export const updateConversations = /* GraphQL */ `mutation UpdateConversations($input: UpdateConversationsInput!) {
+  updateConversations(input: $input) {
+    conversationId
+    type
+    name
+    lastMessageAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateConversationsMutationVariables,
+  APITypes.UpdateConversationsMutation
+>;
+export const deleteConversations = /* GraphQL */ `mutation DeleteConversations($input: DeleteConversationsInput!) {
+  deleteConversations(input: $input) {
+    conversationId
+    type
+    name
+    lastMessageAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteConversationsMutationVariables,
+  APITypes.DeleteConversationsMutation
+>;
+export const createConversationParticipants = /* GraphQL */ `mutation CreateConversationParticipants(
+  $input: CreateConversationParticipantsInput!
+) {
+  createConversationParticipants(input: $input) {
+    conversationId
+    userId
+    lastReadAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateConversationParticipantsMutationVariables,
+  APITypes.CreateConversationParticipantsMutation
+>;
+export const updateConversationParticipants = /* GraphQL */ `mutation UpdateConversationParticipants(
+  $input: UpdateConversationParticipantsInput!
+) {
+  updateConversationParticipants(input: $input) {
+    conversationId
+    userId
+    lastReadAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateConversationParticipantsMutationVariables,
+  APITypes.UpdateConversationParticipantsMutation
+>;
+export const deleteConversationParticipants = /* GraphQL */ `mutation DeleteConversationParticipants(
+  $input: DeleteConversationParticipantsInput!
+) {
+  deleteConversationParticipants(input: $input) {
+    conversationId
+    userId
+    lastReadAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteConversationParticipantsMutationVariables,
+  APITypes.DeleteConversationParticipantsMutation
+>;
+export const createMessages = /* GraphQL */ `mutation CreateMessages($input: CreateMessagesInput!) {
+  createMessages(input: $input) {
+    messageId
+    conversationId
+    senderId
+    content
+    type
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateMessagesMutationVariables,
+  APITypes.CreateMessagesMutation
+>;
+export const updateMessages = /* GraphQL */ `mutation UpdateMessages($input: UpdateMessagesInput!) {
+  updateMessages(input: $input) {
+    messageId
+    conversationId
+    senderId
+    content
+    type
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateMessagesMutationVariables,
+  APITypes.UpdateMessagesMutation
+>;
+export const deleteMessages = /* GraphQL */ `mutation DeleteMessages($input: DeleteMessagesInput!) {
+  deleteMessages(input: $input) {
+    messageId
+    conversationId
+    senderId
+    content
+    type
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteMessagesMutationVariables,
+  APITypes.DeleteMessagesMutation
+>;

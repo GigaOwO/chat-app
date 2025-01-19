@@ -179,6 +179,128 @@ export type DeleteProfilesInput = {
   userId: string,
 };
 
+export type CreateConversationsInput = {
+  conversationId: string,
+  type: ConversationType,
+  name?: string | null,
+  lastMessageAt?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export enum ConversationType {
+  DIRECT = "DIRECT",
+  GROUP = "GROUP",
+}
+
+
+export type Conversations = {
+  __typename: "Conversations",
+  conversationId: string,
+  type: ConversationType,
+  name?: string | null,
+  lastMessageAt?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateConversationsInput = {
+  conversationId: string,
+  type?: ConversationType | null,
+  name?: string | null,
+  lastMessageAt?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type DeleteConversationsInput = {
+  conversationId: string,
+};
+
+export type CreateConversationParticipantsInput = {
+  conversationId: string,
+  userId: string,
+  lastReadAt?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type ConversationParticipants = {
+  __typename: "ConversationParticipants",
+  conversationId: string,
+  userId: string,
+  lastReadAt?: string | null,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateConversationParticipantsInput = {
+  conversationId: string,
+  userId: string,
+  lastReadAt?: string | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type DeleteConversationParticipantsInput = {
+  conversationId: string,
+  userId: string,
+};
+
+export type CreateMessagesInput = {
+  messageId: string,
+  conversationId: string,
+  senderId: string,
+  content: MessageType,
+  type: MessageStatus,
+  status: string,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export enum MessageType {
+  TEXT = "TEXT",
+  IMAGE = "IMAGE",
+  FILE = "FILE",
+  SYSTEM = "SYSTEM",
+}
+
+
+export enum MessageStatus {
+  SENT = "SENT",
+  DELIVERED = "DELIVERED",
+  READ = "READ",
+  FAILED = "FAILED",
+}
+
+
+export type Messages = {
+  __typename: "Messages",
+  messageId: string,
+  conversationId: string,
+  senderId: string,
+  content: string,
+  type: MessageType,
+  status: MessageStatus,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateMessagesInput = {
+  messageId: string,
+  conversationId?: string | null,
+  senderId?: string | null,
+  content?: string | null,
+  type?: MessageType | null,
+  status?: MessageStatus | null,
+  createdAt?: string | null,
+  updatedAt?: string | null,
+};
+
+export type DeleteMessagesInput = {
+  messageId: string,
+};
+
 export type TableFriendsFilterInput = {
   friendId?: TableStringFilterInput | null,
   userId?: TableStringFilterInput | null,
@@ -269,6 +391,67 @@ export type TableIntFilterInput = {
 export type ProfilesConnection = {
   __typename: "ProfilesConnection",
   items?:  Array<Profiles | null > | null,
+  nextToken?: string | null,
+};
+
+export type TableConversationsFilterInput = {
+  conversationId?: TableIDFilterInput | null,
+  type?: TableStringFilterInput | null,
+  name?: TableStringFilterInput | null,
+  lastMessageAt?: TableStringFilterInput | null,
+  createdAt?: TableStringFilterInput | null,
+  updatedAt?: TableStringFilterInput | null,
+};
+
+export type TableIDFilterInput = {
+  ne?: string | null,
+  eq?: string | null,
+  le?: string | null,
+  lt?: string | null,
+  ge?: string | null,
+  gt?: string | null,
+  contains?: string | null,
+  notContains?: string | null,
+  between?: Array< string | null > | null,
+  beginsWith?: string | null,
+  attributeExists?: boolean | null,
+  size?: ModelSizeInput | null,
+};
+
+export type ConversationsConnection = {
+  __typename: "ConversationsConnection",
+  items?:  Array<Conversations | null > | null,
+  nextToken?: string | null,
+};
+
+export type TableConversationParticipantsFilterInput = {
+  conversationId?: TableIDFilterInput | null,
+  userId?: TableIDFilterInput | null,
+  lastReadAt?: TableStringFilterInput | null,
+  createdAt?: TableStringFilterInput | null,
+  updatedAt?: TableStringFilterInput | null,
+};
+
+export type ConversationParticipantsConnection = {
+  __typename: "ConversationParticipantsConnection",
+  items?:  Array<ConversationParticipants | null > | null,
+  nextToken?: string | null,
+};
+
+export type TableMessagesFilterInput = {
+  messageId?: TableIDFilterInput | null,
+  conversationId?: TableIDFilterInput | null,
+  senderId?: TableIDFilterInput | null,
+  content?: TableStringFilterInput | null,
+  type?: TableStringFilterInput | null,
+  status?: TableStringFilterInput | null,
+  createdAt?: TableStringFilterInput | null,
+  updatedAt?: TableStringFilterInput | null,
+};
+
+export type MessagesConnection = {
+  __typename: "MessagesConnection",
+  items?:  Array<Messages | null > | null,
   nextToken?: string | null,
 };
 
@@ -504,6 +687,153 @@ export type DeleteProfilesMutation = {
     status?: ProfileStatus | null,
     order: number,
     customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateConversationsMutationVariables = {
+  input: CreateConversationsInput,
+};
+
+export type CreateConversationsMutation = {
+  createConversations?:  {
+    __typename: "Conversations",
+    conversationId: string,
+    type: ConversationType,
+    name?: string | null,
+    lastMessageAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateConversationsMutationVariables = {
+  input: UpdateConversationsInput,
+};
+
+export type UpdateConversationsMutation = {
+  updateConversations?:  {
+    __typename: "Conversations",
+    conversationId: string,
+    type: ConversationType,
+    name?: string | null,
+    lastMessageAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteConversationsMutationVariables = {
+  input: DeleteConversationsInput,
+};
+
+export type DeleteConversationsMutation = {
+  deleteConversations?:  {
+    __typename: "Conversations",
+    conversationId: string,
+    type: ConversationType,
+    name?: string | null,
+    lastMessageAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateConversationParticipantsMutationVariables = {
+  input: CreateConversationParticipantsInput,
+};
+
+export type CreateConversationParticipantsMutation = {
+  createConversationParticipants?:  {
+    __typename: "ConversationParticipants",
+    conversationId: string,
+    userId: string,
+    lastReadAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateConversationParticipantsMutationVariables = {
+  input: UpdateConversationParticipantsInput,
+};
+
+export type UpdateConversationParticipantsMutation = {
+  updateConversationParticipants?:  {
+    __typename: "ConversationParticipants",
+    conversationId: string,
+    userId: string,
+    lastReadAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteConversationParticipantsMutationVariables = {
+  input: DeleteConversationParticipantsInput,
+};
+
+export type DeleteConversationParticipantsMutation = {
+  deleteConversationParticipants?:  {
+    __typename: "ConversationParticipants",
+    conversationId: string,
+    userId: string,
+    lastReadAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateMessagesMutationVariables = {
+  input: CreateMessagesInput,
+};
+
+export type CreateMessagesMutation = {
+  createMessages?:  {
+    __typename: "Messages",
+    messageId: string,
+    conversationId: string,
+    senderId: string,
+    content: string,
+    type: MessageType,
+    status: MessageStatus,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateMessagesMutationVariables = {
+  input: UpdateMessagesInput,
+};
+
+export type UpdateMessagesMutation = {
+  updateMessages?:  {
+    __typename: "Messages",
+    messageId: string,
+    conversationId: string,
+    senderId: string,
+    content: string,
+    type: MessageType,
+    status: MessageStatus,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteMessagesMutationVariables = {
+  input: DeleteMessagesInput,
+};
+
+export type DeleteMessagesMutation = {
+  deleteMessages?:  {
+    __typename: "Messages",
+    messageId: string,
+    conversationId: string,
+    senderId: string,
+    content: string,
+    type: MessageType,
+    status: MessageStatus,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -821,6 +1151,192 @@ export type QueryProfilesByUserIdIsActiveIndexQuery = {
   } | null,
 };
 
+export type GetConversationsQueryVariables = {
+  conversationId: string,
+};
+
+export type GetConversationsQuery = {
+  getConversations?:  {
+    __typename: "Conversations",
+    conversationId: string,
+    type: ConversationType,
+    name?: string | null,
+    lastMessageAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListConversationsQueryVariables = {
+  filter?: TableConversationsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListConversationsQuery = {
+  listConversations?:  {
+    __typename: "ConversationsConnection",
+    items?:  Array< {
+      __typename: "Conversations",
+      conversationId: string,
+      type: ConversationType,
+      name?: string | null,
+      lastMessageAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetConversationParticipantsQueryVariables = {
+  conversationId: string,
+  userId: string,
+};
+
+export type GetConversationParticipantsQuery = {
+  getConversationParticipants?:  {
+    __typename: "ConversationParticipants",
+    conversationId: string,
+    userId: string,
+    lastReadAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListConversationParticipantsQueryVariables = {
+  filter?: TableConversationParticipantsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListConversationParticipantsQuery = {
+  listConversationParticipants?:  {
+    __typename: "ConversationParticipantsConnection",
+    items?:  Array< {
+      __typename: "ConversationParticipants",
+      conversationId: string,
+      userId: string,
+      lastReadAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type QueryConversationParticipantsByUserIdCreatedAtIndexQueryVariables = {
+  userId: string,
+  first?: number | null,
+  after?: string | null,
+};
+
+export type QueryConversationParticipantsByUserIdCreatedAtIndexQuery = {
+  queryConversationParticipantsByUserIdCreatedAtIndex?:  {
+    __typename: "ConversationParticipantsConnection",
+    items?:  Array< {
+      __typename: "ConversationParticipants",
+      conversationId: string,
+      userId: string,
+      lastReadAt?: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetMessagesQueryVariables = {
+  messageId: string,
+};
+
+export type GetMessagesQuery = {
+  getMessages?:  {
+    __typename: "Messages",
+    messageId: string,
+    conversationId: string,
+    senderId: string,
+    content: string,
+    type: MessageType,
+    status: MessageStatus,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListMessagesQueryVariables = {
+  filter?: TableMessagesFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListMessagesQuery = {
+  listMessages?:  {
+    __typename: "MessagesConnection",
+    items?:  Array< {
+      __typename: "Messages",
+      messageId: string,
+      conversationId: string,
+      senderId: string,
+      content: string,
+      type: MessageType,
+      status: MessageStatus,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type QueryMessagesByConversationIdCreatedAtIndexQueryVariables = {
+  conversationId: string,
+  first?: number | null,
+  after?: string | null,
+};
+
+export type QueryMessagesByConversationIdCreatedAtIndexQuery = {
+  queryMessagesByConversationIdCreatedAtIndex?:  {
+    __typename: "MessagesConnection",
+    items?:  Array< {
+      __typename: "Messages",
+      messageId: string,
+      conversationId: string,
+      senderId: string,
+      content: string,
+      type: MessageType,
+      status: MessageStatus,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type QueryMessagesBySenderIdCreatedAtIndexQueryVariables = {
+  senderId: string,
+  first?: number | null,
+  after?: string | null,
+};
+
+export type QueryMessagesBySenderIdCreatedAtIndexQuery = {
+  queryMessagesBySenderIdCreatedAtIndex?:  {
+    __typename: "MessagesConnection",
+    items?:  Array< {
+      __typename: "Messages",
+      messageId: string,
+      conversationId: string,
+      senderId: string,
+      content: string,
+      type: MessageType,
+      status: MessageStatus,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type OnCreateFriendsSubscriptionVariables = {
   friendId?: string | null,
   userId?: string | null,
@@ -1101,6 +1617,186 @@ export type OnDeleteProfilesSubscription = {
     status?: ProfileStatus | null,
     order: number,
     customData?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateConversationsSubscriptionVariables = {
+  conversationId?: string | null,
+  type?: string | null,
+  name?: string | null,
+  lastMessageAt?: string | null,
+  createdAt?: string | null,
+};
+
+export type OnCreateConversationsSubscription = {
+  onCreateConversations?:  {
+    __typename: "Conversations",
+    conversationId: string,
+    type: ConversationType,
+    name?: string | null,
+    lastMessageAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateConversationsSubscriptionVariables = {
+  conversationId?: string | null,
+  type?: string | null,
+  name?: string | null,
+  lastMessageAt?: string | null,
+  createdAt?: string | null,
+};
+
+export type OnUpdateConversationsSubscription = {
+  onUpdateConversations?:  {
+    __typename: "Conversations",
+    conversationId: string,
+    type: ConversationType,
+    name?: string | null,
+    lastMessageAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteConversationsSubscriptionVariables = {
+  conversationId?: string | null,
+  type?: string | null,
+  name?: string | null,
+  lastMessageAt?: string | null,
+  createdAt?: string | null,
+};
+
+export type OnDeleteConversationsSubscription = {
+  onDeleteConversations?:  {
+    __typename: "Conversations",
+    conversationId: string,
+    type: ConversationType,
+    name?: string | null,
+    lastMessageAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateConversationParticipantsSubscriptionVariables = {
+  conversationId?: string | null,
+  userId?: string | null,
+  lastReadAt?: string | null,
+  createdAt?: string | null,
+};
+
+export type OnCreateConversationParticipantsSubscription = {
+  onCreateConversationParticipants?:  {
+    __typename: "ConversationParticipants",
+    conversationId: string,
+    userId: string,
+    lastReadAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateConversationParticipantsSubscriptionVariables = {
+  conversationId?: string | null,
+  userId?: string | null,
+  lastReadAt?: string | null,
+  createdAt?: string | null,
+};
+
+export type OnUpdateConversationParticipantsSubscription = {
+  onUpdateConversationParticipants?:  {
+    __typename: "ConversationParticipants",
+    conversationId: string,
+    userId: string,
+    lastReadAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteConversationParticipantsSubscriptionVariables = {
+  conversationId?: string | null,
+  userId?: string | null,
+  lastReadAt?: string | null,
+  createdAt?: string | null,
+};
+
+export type OnDeleteConversationParticipantsSubscription = {
+  onDeleteConversationParticipants?:  {
+    __typename: "ConversationParticipants",
+    conversationId: string,
+    userId: string,
+    lastReadAt?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateMessagesSubscriptionVariables = {
+  messageId?: string | null,
+  conversationId?: string | null,
+  senderId?: string | null,
+  content?: string | null,
+  type?: string | null,
+};
+
+export type OnCreateMessagesSubscription = {
+  onCreateMessages?:  {
+    __typename: "Messages",
+    messageId: string,
+    conversationId: string,
+    senderId: string,
+    content: string,
+    type: MessageType,
+    status: MessageStatus,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateMessagesSubscriptionVariables = {
+  messageId?: string | null,
+  conversationId?: string | null,
+  senderId?: string | null,
+  content?: string | null,
+  type?: string | null,
+};
+
+export type OnUpdateMessagesSubscription = {
+  onUpdateMessages?:  {
+    __typename: "Messages",
+    messageId: string,
+    conversationId: string,
+    senderId: string,
+    content: string,
+    type: MessageType,
+    status: MessageStatus,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteMessagesSubscriptionVariables = {
+  messageId?: string | null,
+  conversationId?: string | null,
+  senderId?: string | null,
+  content?: string | null,
+  type?: string | null,
+};
+
+export type OnDeleteMessagesSubscription = {
+  onDeleteMessages?:  {
+    __typename: "Messages",
+    messageId: string,
+    conversationId: string,
+    senderId: string,
+    content: string,
+    type: MessageType,
+    status: MessageStatus,
     createdAt: string,
     updatedAt: string,
   } | null,

@@ -334,3 +334,210 @@ export const queryProfilesByUserIdIsActiveIndex = /* GraphQL */ `query QueryProf
   APITypes.QueryProfilesByUserIdIsActiveIndexQueryVariables,
   APITypes.QueryProfilesByUserIdIsActiveIndexQuery
 >;
+export const getConversations = /* GraphQL */ `query GetConversations($conversationId: ID!) {
+  getConversations(conversationId: $conversationId) {
+    conversationId
+    type
+    name
+    lastMessageAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetConversationsQueryVariables,
+  APITypes.GetConversationsQuery
+>;
+export const listConversations = /* GraphQL */ `query ListConversations(
+  $filter: TableConversationsFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listConversations(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      conversationId
+      type
+      name
+      lastMessageAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListConversationsQueryVariables,
+  APITypes.ListConversationsQuery
+>;
+export const getConversationParticipants = /* GraphQL */ `query GetConversationParticipants($conversationId: ID!, $userId: ID!) {
+  getConversationParticipants(
+    conversationId: $conversationId
+    userId: $userId
+  ) {
+    conversationId
+    userId
+    lastReadAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetConversationParticipantsQueryVariables,
+  APITypes.GetConversationParticipantsQuery
+>;
+export const listConversationParticipants = /* GraphQL */ `query ListConversationParticipants(
+  $filter: TableConversationParticipantsFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listConversationParticipants(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
+    items {
+      conversationId
+      userId
+      lastReadAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListConversationParticipantsQueryVariables,
+  APITypes.ListConversationParticipantsQuery
+>;
+export const queryConversationParticipantsByUserIdCreatedAtIndex = /* GraphQL */ `query QueryConversationParticipantsByUserIdCreatedAtIndex(
+  $userId: ID!
+  $first: Int
+  $after: String
+) {
+  queryConversationParticipantsByUserIdCreatedAtIndex(
+    userId: $userId
+    first: $first
+    after: $after
+  ) {
+    items {
+      conversationId
+      userId
+      lastReadAt
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryConversationParticipantsByUserIdCreatedAtIndexQueryVariables,
+  APITypes.QueryConversationParticipantsByUserIdCreatedAtIndexQuery
+>;
+export const getMessages = /* GraphQL */ `query GetMessages($messageId: ID!) {
+  getMessages(messageId: $messageId) {
+    messageId
+    conversationId
+    senderId
+    content
+    type
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetMessagesQueryVariables,
+  APITypes.GetMessagesQuery
+>;
+export const listMessages = /* GraphQL */ `query ListMessages(
+  $filter: TableMessagesFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listMessages(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      messageId
+      conversationId
+      senderId
+      content
+      type
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListMessagesQueryVariables,
+  APITypes.ListMessagesQuery
+>;
+export const queryMessagesByConversationIdCreatedAtIndex = /* GraphQL */ `query QueryMessagesByConversationIdCreatedAtIndex(
+  $conversationId: ID!
+  $first: Int
+  $after: String
+) {
+  queryMessagesByConversationIdCreatedAtIndex(
+    conversationId: $conversationId
+    first: $first
+    after: $after
+  ) {
+    items {
+      messageId
+      conversationId
+      senderId
+      content
+      type
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryMessagesByConversationIdCreatedAtIndexQueryVariables,
+  APITypes.QueryMessagesByConversationIdCreatedAtIndexQuery
+>;
+export const queryMessagesBySenderIdCreatedAtIndex = /* GraphQL */ `query QueryMessagesBySenderIdCreatedAtIndex(
+  $senderId: ID!
+  $first: Int
+  $after: String
+) {
+  queryMessagesBySenderIdCreatedAtIndex(
+    senderId: $senderId
+    first: $first
+    after: $after
+  ) {
+    items {
+      messageId
+      conversationId
+      senderId
+      content
+      type
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryMessagesBySenderIdCreatedAtIndexQueryVariables,
+  APITypes.QueryMessagesBySenderIdCreatedAtIndexQuery
+>;

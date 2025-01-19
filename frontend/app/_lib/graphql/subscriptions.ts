@@ -377,3 +377,243 @@ export const onDeleteProfiles = /* GraphQL */ `subscription OnDeleteProfiles(
   APITypes.OnDeleteProfilesSubscriptionVariables,
   APITypes.OnDeleteProfilesSubscription
 >;
+export const onCreateConversations = /* GraphQL */ `subscription OnCreateConversations(
+  $conversationId: ID
+  $type: String
+  $name: String
+  $lastMessageAt: AWSDateTime
+  $createdAt: AWSDateTime
+) {
+  onCreateConversations(
+    conversationId: $conversationId
+    type: $type
+    name: $name
+    lastMessageAt: $lastMessageAt
+    createdAt: $createdAt
+  ) {
+    conversationId
+    type
+    name
+    lastMessageAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateConversationsSubscriptionVariables,
+  APITypes.OnCreateConversationsSubscription
+>;
+export const onUpdateConversations = /* GraphQL */ `subscription OnUpdateConversations(
+  $conversationId: ID
+  $type: String
+  $name: String
+  $lastMessageAt: AWSDateTime
+  $createdAt: AWSDateTime
+) {
+  onUpdateConversations(
+    conversationId: $conversationId
+    type: $type
+    name: $name
+    lastMessageAt: $lastMessageAt
+    createdAt: $createdAt
+  ) {
+    conversationId
+    type
+    name
+    lastMessageAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateConversationsSubscriptionVariables,
+  APITypes.OnUpdateConversationsSubscription
+>;
+export const onDeleteConversations = /* GraphQL */ `subscription OnDeleteConversations(
+  $conversationId: ID
+  $type: String
+  $name: String
+  $lastMessageAt: AWSDateTime
+  $createdAt: AWSDateTime
+) {
+  onDeleteConversations(
+    conversationId: $conversationId
+    type: $type
+    name: $name
+    lastMessageAt: $lastMessageAt
+    createdAt: $createdAt
+  ) {
+    conversationId
+    type
+    name
+    lastMessageAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteConversationsSubscriptionVariables,
+  APITypes.OnDeleteConversationsSubscription
+>;
+export const onCreateConversationParticipants = /* GraphQL */ `subscription OnCreateConversationParticipants(
+  $conversationId: ID
+  $userId: ID
+  $lastReadAt: AWSDateTime
+  $createdAt: AWSDateTime
+) {
+  onCreateConversationParticipants(
+    conversationId: $conversationId
+    userId: $userId
+    lastReadAt: $lastReadAt
+    createdAt: $createdAt
+  ) {
+    conversationId
+    userId
+    lastReadAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateConversationParticipantsSubscriptionVariables,
+  APITypes.OnCreateConversationParticipantsSubscription
+>;
+export const onUpdateConversationParticipants = /* GraphQL */ `subscription OnUpdateConversationParticipants(
+  $conversationId: ID
+  $userId: ID
+  $lastReadAt: AWSDateTime
+  $createdAt: AWSDateTime
+) {
+  onUpdateConversationParticipants(
+    conversationId: $conversationId
+    userId: $userId
+    lastReadAt: $lastReadAt
+    createdAt: $createdAt
+  ) {
+    conversationId
+    userId
+    lastReadAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateConversationParticipantsSubscriptionVariables,
+  APITypes.OnUpdateConversationParticipantsSubscription
+>;
+export const onDeleteConversationParticipants = /* GraphQL */ `subscription OnDeleteConversationParticipants(
+  $conversationId: ID
+  $userId: ID
+  $lastReadAt: AWSDateTime
+  $createdAt: AWSDateTime
+) {
+  onDeleteConversationParticipants(
+    conversationId: $conversationId
+    userId: $userId
+    lastReadAt: $lastReadAt
+    createdAt: $createdAt
+  ) {
+    conversationId
+    userId
+    lastReadAt
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteConversationParticipantsSubscriptionVariables,
+  APITypes.OnDeleteConversationParticipantsSubscription
+>;
+export const onCreateMessages = /* GraphQL */ `subscription OnCreateMessages(
+  $messageId: ID
+  $conversationId: ID
+  $senderId: ID
+  $content: String
+  $type: String
+) {
+  onCreateMessages(
+    messageId: $messageId
+    conversationId: $conversationId
+    senderId: $senderId
+    content: $content
+    type: $type
+  ) {
+    messageId
+    conversationId
+    senderId
+    content
+    type
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateMessagesSubscriptionVariables,
+  APITypes.OnCreateMessagesSubscription
+>;
+export const onUpdateMessages = /* GraphQL */ `subscription OnUpdateMessages(
+  $messageId: ID
+  $conversationId: ID
+  $senderId: ID
+  $content: String
+  $type: String
+) {
+  onUpdateMessages(
+    messageId: $messageId
+    conversationId: $conversationId
+    senderId: $senderId
+    content: $content
+    type: $type
+  ) {
+    messageId
+    conversationId
+    senderId
+    content
+    type
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateMessagesSubscriptionVariables,
+  APITypes.OnUpdateMessagesSubscription
+>;
+export const onDeleteMessages = /* GraphQL */ `subscription OnDeleteMessages(
+  $messageId: ID
+  $conversationId: ID
+  $senderId: ID
+  $content: String
+  $type: String
+) {
+  onDeleteMessages(
+    messageId: $messageId
+    conversationId: $conversationId
+    senderId: $senderId
+    content: $content
+    type: $type
+  ) {
+    messageId
+    conversationId
+    senderId
+    content
+    type
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteMessagesSubscriptionVariables,
+  APITypes.OnDeleteMessagesSubscription
+>;
