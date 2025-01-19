@@ -1,60 +1,78 @@
 import { gql } from 'graphql-request';
 
+// 友達リクエストを作成
 export const createFriendRequest = gql`
-  mutation createFriendRequest {
-    createFriendRequests(input: {createdAt: "", receiverId: "", requestId: "", senderId: "", status: PENDING, updatedAt: ""}) {
-      createdAt
+  mutation createFriendRequest($input: CreateFriendRequestsInput!) {
+    createFriendRequests(input: $input) {
       requestId
       receiverId
-      status
-      updatedAt
       senderId
+      status
+      createdAt
+      updatedAt
     }
   }
 `;
 
+// 友達リクエストを承認（リクエストを削除して友達関係を作成）
 export const acceptFriendRequest = gql`
-  mutation acceptFriendRequest {
-    deleteFriendRequests(input: {requestId: ""}) {
-      updatedAt
-      createdAt
+  mutation acceptFriendRequest(
+    $deleteInput: DeleteFriendRequestsInput!
+    $createInput: CreateFriendsInput!
+  ) {
+    deleteFriendRequests(input: $deleteInput) {
+      requestId
       receiverId
       senderId
-      requestId
       status
-    }
-    createFriends(input: {createdAt: "", friendId: "", status: ACTIVE, updatedAt: "", userId: ""}) {
       createdAt
+      updatedAt
+    }
+    createFriends(input: $createInput) {
       friendId
-      status
-      updatedAt
       userId
+      status
+      createdAt
+      updatedAt
     }
   }
 `;
 
+// 友達リクエストを拒否
 export const rejectFriendRequest = gql`
-  mutation rejectFriendRequest {
-    deleteFriendRequests(input: {requestId: ""}) {
-      updatedAt
-      createdAt
+  mutation rejectFriendRequest($input: DeleteFriendRequestsInput!) {
+    deleteFriendRequests(input: $input) {
+      requestId
       receiverId
       senderId
-      requestId
       status
+      createdAt
+      updatedAt
     }
   }
 `;
 
-export const getFriendRequests = gql`
-  query getFriendRequests {
-    getFriendRequests(requestId: "") {
-      createdAt
-      receiverId
-      requestId
-      senderId
-      status
-      updatedAt
+// 受信した友達リクエスト一覧を取得
+export const getReceivedFriendRequests = gql`
+  query getReceivedFriendRequests(
+    $receiverId: String!
+    $first: Int
+    $after: String
+  ) {
+    queryFriendRequestsByReceiverIdIndex(
+      receiverId: $receiverId
+      first: $first
+      after: $after
+    ) {
+      items {
+        requestId
+        receiverId
+        senderId
+        status
+        createdAt
+        updatedAt
+      }
+      nextToken
     }
   }
 `;
