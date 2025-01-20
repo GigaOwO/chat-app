@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
+import { signUp } from './actions'
 import { useRouter } from 'next/navigation'
-import { signUp } from 'aws-amplify/auth'
 
 type Props = {
   csrfToken?: string | null
@@ -26,21 +26,15 @@ export function SignUpForm({ csrfToken }: Props) {
     setIsLoading(true)
     
     try {
-      const { nextStep } = await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes: {
-            email,
-            preferred_username: username,
-          },
-        }
-      })
-      if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+      const result = await signUp({ username, email, password })
+      if (result.signUp.success) {
         const userParams = new URLSearchParams({
-          email
+          email,
+          username,
         })
         router.push(`/signup/confirm?${userParams.toString()}`)
+      } else {
+        setError(result.signUp.message)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -59,13 +53,13 @@ export function SignUpForm({ csrfToken }: Props) {
         {csrfToken && <input type="hidden" name="csrf" value={csrfToken} />}
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">UserID</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
               id="username"
               type="text"
               required
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -75,7 +69,7 @@ export function SignUpForm({ csrfToken }: Props) {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -85,10 +79,7 @@ export function SignUpForm({ csrfToken }: Props) {
               type="password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={8}
-              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-              title="Password must contain at least 8 characters, including uppercase, lowercase, numbers and special characters"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             />
           </div>
           {error && (

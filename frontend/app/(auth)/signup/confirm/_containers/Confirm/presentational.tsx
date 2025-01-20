@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { Alert, AlertDescription } from '@/_components/ui/alert'
 import { Button } from '@/_components/ui/button'
@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth'
+import { confirmSignUp, resendConfirmationCode } from './actions'
 import { SignUpConfirmFormProps } from '@/(auth)/_types'
+import { useRouter } from 'next/navigation'
 
-export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) {
+
+export function SignUpConfirmForm({ csrfToken, email, username }: SignUpConfirmFormProps) {
   const router = useRouter()
   const [confirmationCode, setConfirmationCode] = useState('')
   const [error, setError] = useState<string>()
@@ -22,15 +23,13 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
     setIsLoading(true)
     
     try {
-      const { isSignUpComplete } = await confirmSignUp({
-        username: email,
-        confirmationCode
-      })
-      if (isSignUpComplete) {
+      const result = await confirmSignUp({ email, username, confirmationCode })
+      if (result.success) {
         router.push('/signin')
+      } else {
+        setError(result.message)
       }
     } catch (err) {
-      console.error('Error during confirmation:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setIsLoading(false)
@@ -40,9 +39,10 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
   const handleResendCode = async () => {
     setIsResending(true)
     try {
-      await resendSignUpCode({
-        username: email
-      })
+      const result = await resendConfirmationCode(email)
+      if (!result.success) {
+        setError(result.message)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {

@@ -1,0 +1,6 @@
+type Mutation {
+  signUp(input: SignUpInput!): AuthResponse!
+  confirmSignUp(input: ConfirmSignUpInput!): AuthResponse!
+  resendConfirmationCode(email: String!): AuthResponse!
+  signIn(input: SignInInput!): SignInResponse!
+}
