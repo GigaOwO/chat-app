@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/_components/ui/input'
 import { Label } from '@/_components/ui/label'
 import { useState } from 'react'
-import { signIn } from './actions'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'aws-amplify/auth'
 
 type Props = {
   csrfToken?: string | null
@@ -25,11 +25,18 @@ export function SignInForm({ csrfToken }: Props) {
     setIsLoading(true)
     
     try {
-      const result = await signIn({ email, password })
-      if (result.signIn.success) {
+      const { isSignedIn, nextStep } = await signIn({
+        username: email,
+        password,
+      })
+
+      if (isSignedIn) {
         router.push('/chat')
-      } else {
-        setError(result.signIn.message)
+      } else if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
+        const userParams = new URLSearchParams({
+          email,
+        })
+        router.push(`/signup/confirm?${userParams.toString()}`)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -54,7 +61,7 @@ export function SignInForm({ csrfToken }: Props) {
               type="email"
               required
               value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -64,7 +71,7 @@ export function SignInForm({ csrfToken }: Props) {
               type="password"
               required
               value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           {error && (
@@ -73,9 +80,17 @@ export function SignInForm({ csrfToken }: Props) {
             </Alert>
           )}
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Loading...' : 'Sign In'}
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            className="w-full"
+            onClick={() => router.push('/signup')}
+          >
+            アカウントを持っていませんか? サインアップ
           </Button>
         </CardFooter>
       </form>

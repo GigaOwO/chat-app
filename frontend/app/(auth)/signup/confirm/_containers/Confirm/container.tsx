@@ -12,17 +12,15 @@ export async function SignUpConfirmContainer({ searchParams }: Props) {
 
   const params = await searchParams
   const email = params.email
-  const username = params.username
 
-  if (!email || !username) {
+  if (!email) {
     redirect('/signup')
   }
 
   return (
     <SignUpConfirmForm 
       csrfToken={csrfToken}
-      email={email}
-      username={username}
+      email={email} 
     /> 
   )
 }
