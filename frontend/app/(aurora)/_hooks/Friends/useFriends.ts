@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import  API  from '@aws-amplify/api';
+import { generateClient } from 'aws-amplify/api';
 import {
   getFriend,
   listFriends,
@@ -16,6 +16,8 @@ import {
   TableFriendsFilterInput 
 } from '@/_lib/graphql/API';
 
+const client = generateClient();
+
 interface UseFriendsOptions {
   userId: string;
 }
@@ -29,14 +31,14 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await API.graphql({
+      const response = await client.graphql({
         query: getFriend,
         variables: {
           userId,
           friendId
         }
       });
-      return response.data.getFriends;
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
       throw err;
@@ -54,7 +56,7 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await API.graphql({
+      const response = await client.graphql({
         query: listFriends,
         variables: {
           filter: {
@@ -65,7 +67,7 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
           nextToken
         }
       });
-      return response.data.listFriends;
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
       throw err;
@@ -83,7 +85,7 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await API.graphql({
+      const response = await client.graphql({
         query: queryFriendsByFriendId,
         variables: {
           friendId,
@@ -91,7 +93,7 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
           after
         }
       });
-      return response.data.queryFriendsByFriendIdIndex;
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
       throw err;
@@ -112,11 +114,11 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      const response = await API.graphql({
+      const response = await client.graphql({
         query: createFriend,
         variables: { input }
       });
-      return response.data.createFriends;
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
       throw err;
@@ -139,11 +141,11 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
         status,
         updatedAt: new Date().toISOString()
       };
-      const response = await API.graphql({
+      const response = await client.graphql({
         query: updateFriend,
         variables: { input }
       });
-      return response.data.updateFriends;
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
       throw err;
@@ -161,11 +163,11 @@ export const useFriends = ({ userId }: UseFriendsOptions) => {
         friendId,
         userId
       };
-      const response = await API.graphql({
+      const response = await client.graphql({
         query: deleteFriend,
         variables: { input }
       });
-      return response.data.deleteFriends;
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
       throw err;
