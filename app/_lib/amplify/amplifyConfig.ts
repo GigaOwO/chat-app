@@ -6,6 +6,8 @@ const awsconfig = {
     userPoolClientId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_CLIENT_ID as string,
   },
   GraphQL: {
+    endpoint: process.env.NEXT_PUBLIC_APPSYNC_ENDPOINT as string,
+    region: process.env.NEXT_PUBLIC_APPSYNC_REGION as string,
     apiKey: process.env.NEXT_PUBLIC_APPSYNC_API_KEY as string,
   }
 };
@@ -38,8 +40,8 @@ export const amplifyConfig: ResourcesConfig = {
   },
   API: {
     GraphQL: {
-      endpoint: 'https://cqbcmx233nacjdtj4dgsomzyhm.appsync-api.ap-northeast-1.amazonaws.com/graphql',
-      region: 'ap-northeast-1',
+      endpoint: awsconfig.GraphQL.endpoint,
+      region: awsconfig.GraphQL.region,
       defaultAuthMode: 'apiKey',
       apiKey: awsconfig.GraphQL.apiKey,
     }

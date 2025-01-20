@@ -31,7 +31,7 @@ export function SignInForm({ csrfToken }: Props) {
       })
 
       if (isSignedIn) {
-        router.push('/chat')
+        router.push('/dm')
       } else if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
         const userParams = new URLSearchParams({
           email,
