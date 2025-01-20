@@ -52,6 +52,20 @@ export const rejectFriendRequest = gql`
   }
 `;
 
+// 特定の友達リクエストを取得
+export const getFriendRequest = gql`
+  query getFriendRequest($requestId: String!) {
+    getFriendRequests(requestId: $requestId) {
+      requestId
+      receiverId
+      senderId
+      status
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 // 受信した友達リクエスト一覧を取得
 export const getReceivedFriendRequests = gql`
   query getReceivedFriendRequests(
@@ -63,6 +77,31 @@ export const getReceivedFriendRequests = gql`
       receiverId: $receiverId
       first: $first
       after: $after
+    ) {
+      items {
+        requestId
+        receiverId
+        senderId
+        status
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+// フィルター付きで友達リクエスト一覧を取得
+export const listFriendRequests = gql`
+  query listFriendRequests(
+    $filter: TableFriendRequestsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listFriendRequests(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
     ) {
       items {
         requestId
