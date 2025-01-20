@@ -8,179 +8,14 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getFriends = /* GraphQL */ `query GetFriends($userId: String!, $friendId: String!) {
-  getFriends(userId: $userId, friendId: $friendId) {
-    friendId
-    userId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.GetFriendsQueryVariables,
-  APITypes.GetFriendsQuery
->;
-export const listFriends = /* GraphQL */ `query ListFriends(
-  $filter: TableFriendsFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listFriends(filter: $filter, limit: $limit, nextToken: $nextToken) {
-    items {
-      friendId
-      userId
-      status
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.ListFriendsQueryVariables,
-  APITypes.ListFriendsQuery
->;
-export const queryFriendsByFriendIdIndex = /* GraphQL */ `query QueryFriendsByFriendIdIndex(
-  $friendId: String!
-  $first: Int
-  $after: String
-) {
-  queryFriendsByFriendIdIndex(
-    friendId: $friendId
-    first: $first
-    after: $after
-  ) {
-    items {
-      friendId
-      userId
-      status
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.QueryFriendsByFriendIdIndexQueryVariables,
-  APITypes.QueryFriendsByFriendIdIndexQuery
->;
-export const getFriendRequests = /* GraphQL */ `query GetFriendRequests($requestId: String!) {
-  getFriendRequests(requestId: $requestId) {
-    requestId
-    receiverId
-    senderId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.GetFriendRequestsQueryVariables,
-  APITypes.GetFriendRequestsQuery
->;
-export const listFriendRequests = /* GraphQL */ `query ListFriendRequests(
-  $filter: TableFriendRequestsFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listFriendRequests(filter: $filter, limit: $limit, nextToken: $nextToken) {
-    items {
-      requestId
-      receiverId
-      senderId
-      status
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.ListFriendRequestsQueryVariables,
-  APITypes.ListFriendRequestsQuery
->;
-export const queryFriendRequestsBySenderIdIndex = /* GraphQL */ `query QueryFriendRequestsBySenderIdIndex(
-  $senderId: String!
-  $first: Int
-  $after: String
-) {
-  queryFriendRequestsBySenderIdIndex(
-    senderId: $senderId
-    first: $first
-    after: $after
-  ) {
-    items {
-      requestId
-      receiverId
-      senderId
-      status
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.QueryFriendRequestsBySenderIdIndexQueryVariables,
-  APITypes.QueryFriendRequestsBySenderIdIndexQuery
->;
-export const queryFriendRequestsByReceiverIdIndex = /* GraphQL */ `query QueryFriendRequestsByReceiverIdIndex(
-  $receiverId: String!
-  $first: Int
-  $after: String
-) {
-  queryFriendRequestsByReceiverIdIndex(
-    receiverId: $receiverId
-    first: $first
-    after: $after
-  ) {
-    items {
-      requestId
-      receiverId
-      senderId
-      status
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.QueryFriendRequestsByReceiverIdIndexQueryVariables,
-  APITypes.QueryFriendRequestsByReceiverIdIndexQuery
->;
 export const getUsers = /* GraphQL */ `query GetUsers($username: String!) {
   getUsers(username: $username) {
     username
     email
     sub
+    status
     createdAt
     updatedAt
-    sentRequests {
-      nextToken
-      __typename
-    }
-    receivedRequests {
-      nextToken
-      __typename
-    }
-    friends {
-      nextToken
-      __typename
-    }
     __typename
   }
 }
@@ -195,6 +30,7 @@ export const listUsers = /* GraphQL */ `query ListUsers(
       username
       email
       sub
+      status
       createdAt
       updatedAt
       __typename
@@ -210,6 +46,7 @@ export const queryUsersByEmailIndex = /* GraphQL */ `query QueryUsersByEmailInde
       username
       email
       sub
+      status
       createdAt
       updatedAt
       __typename
@@ -224,13 +61,11 @@ export const queryUsersByEmailIndex = /* GraphQL */ `query QueryUsersByEmailInde
 >;
 export const getProfiles = /* GraphQL */ `query GetProfiles($userId: String!, $profileId: String!) {
   getProfiles(userId: $userId, profileId: $profileId) {
-    profileId
     userId
-    isActive
+    profileId
     name
     avatarKey
     bio
-    status
     order
     customData
     createdAt
@@ -249,13 +84,11 @@ export const listProfiles = /* GraphQL */ `query ListProfiles(
 ) {
   listProfiles(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
-      profileId
       userId
-      isActive
+      profileId
       name
       avatarKey
       bio
-      status
       order
       customData
       createdAt
@@ -270,6 +103,36 @@ export const listProfiles = /* GraphQL */ `query ListProfiles(
   APITypes.ListProfilesQueryVariables,
   APITypes.ListProfilesQuery
 >;
+export const queryProfilesByUserIdOrderIndex = /* GraphQL */ `query QueryProfilesByUserIdOrderIndex(
+  $userId: String!
+  $first: Int
+  $after: String
+) {
+  queryProfilesByUserIdOrderIndex(
+    userId: $userId
+    first: $first
+    after: $after
+  ) {
+    items {
+      userId
+      profileId
+      name
+      avatarKey
+      bio
+      order
+      customData
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryProfilesByUserIdOrderIndexQueryVariables,
+  APITypes.QueryProfilesByUserIdOrderIndexQuery
+>;
 export const queryProfilesByProfileIdIndex = /* GraphQL */ `query QueryProfilesByProfileIdIndex(
   $profileId: String!
   $first: Int
@@ -281,13 +144,11 @@ export const queryProfilesByProfileIdIndex = /* GraphQL */ `query QueryProfilesB
     after: $after
   ) {
     items {
-      profileId
       userId
-      isActive
+      profileId
       name
       avatarKey
       bio
-      status
       order
       customData
       createdAt
@@ -302,39 +163,7 @@ export const queryProfilesByProfileIdIndex = /* GraphQL */ `query QueryProfilesB
   APITypes.QueryProfilesByProfileIdIndexQueryVariables,
   APITypes.QueryProfilesByProfileIdIndexQuery
 >;
-export const queryProfilesByUserIdIsActiveIndex = /* GraphQL */ `query QueryProfilesByUserIdIsActiveIndex(
-  $userId: String!
-  $first: Int
-  $after: String
-) {
-  queryProfilesByUserIdIsActiveIndex(
-    userId: $userId
-    first: $first
-    after: $after
-  ) {
-    items {
-      profileId
-      userId
-      isActive
-      name
-      avatarKey
-      bio
-      status
-      order
-      customData
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.QueryProfilesByUserIdIsActiveIndexQueryVariables,
-  APITypes.QueryProfilesByUserIdIsActiveIndexQuery
->;
-export const getConversations = /* GraphQL */ `query GetConversations($conversationId: ID!) {
+export const getConversations = /* GraphQL */ `query GetConversations($conversationId: String!) {
   getConversations(conversationId: $conversationId) {
     conversationId
     type
@@ -372,7 +201,255 @@ export const listConversations = /* GraphQL */ `query ListConversations(
   APITypes.ListConversationsQueryVariables,
   APITypes.ListConversationsQuery
 >;
-export const getConversationParticipants = /* GraphQL */ `query GetConversationParticipants($conversationId: ID!, $userId: ID!) {
+export const getFriends = /* GraphQL */ `query GetFriends($userId: String!, $friendId: String!) {
+  getFriends(userId: $userId, friendId: $friendId) {
+    userId
+    friendId
+    status
+    userProfileId
+    friendProfileId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetFriendsQueryVariables,
+  APITypes.GetFriendsQuery
+>;
+export const listFriends = /* GraphQL */ `query ListFriends(
+  $filter: TableFriendsFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listFriends(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      userId
+      friendId
+      status
+      userProfileId
+      friendProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListFriendsQueryVariables,
+  APITypes.ListFriendsQuery
+>;
+export const queryFriendsByFriendProfileIdIndex = /* GraphQL */ `query QueryFriendsByFriendProfileIdIndex(
+  $friendProfileId: String!
+  $first: Int
+  $after: String
+) {
+  queryFriendsByFriendProfileIdIndex(
+    friendProfileId: $friendProfileId
+    first: $first
+    after: $after
+  ) {
+    items {
+      userId
+      friendId
+      status
+      userProfileId
+      friendProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryFriendsByFriendProfileIdIndexQueryVariables,
+  APITypes.QueryFriendsByFriendProfileIdIndexQuery
+>;
+export const queryFriendsByFriendIdIndex = /* GraphQL */ `query QueryFriendsByFriendIdIndex(
+  $friendId: String!
+  $first: Int
+  $after: String
+) {
+  queryFriendsByFriendIdIndex(
+    friendId: $friendId
+    first: $first
+    after: $after
+  ) {
+    items {
+      userId
+      friendId
+      status
+      userProfileId
+      friendProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryFriendsByFriendIdIndexQueryVariables,
+  APITypes.QueryFriendsByFriendIdIndexQuery
+>;
+export const queryFriendsByUserProfileIdIndex = /* GraphQL */ `query QueryFriendsByUserProfileIdIndex(
+  $userProfileId: String!
+  $first: Int
+  $after: String
+) {
+  queryFriendsByUserProfileIdIndex(
+    userProfileId: $userProfileId
+    first: $first
+    after: $after
+  ) {
+    items {
+      userId
+      friendId
+      status
+      userProfileId
+      friendProfileId
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryFriendsByUserProfileIdIndexQueryVariables,
+  APITypes.QueryFriendsByUserProfileIdIndexQuery
+>;
+export const getFriendRequests = /* GraphQL */ `query GetFriendRequests($requestId: String!) {
+  getFriendRequests(requestId: $requestId) {
+    requestId
+    receiverId
+    senderId
+    senderProfileId
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetFriendRequestsQueryVariables,
+  APITypes.GetFriendRequestsQuery
+>;
+export const listFriendRequests = /* GraphQL */ `query ListFriendRequests(
+  $filter: TableFriendRequestsFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listFriendRequests(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      requestId
+      receiverId
+      senderId
+      senderProfileId
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListFriendRequestsQueryVariables,
+  APITypes.ListFriendRequestsQuery
+>;
+export const queryFriendRequestsBySenderIdIndex = /* GraphQL */ `query QueryFriendRequestsBySenderIdIndex(
+  $senderId: String!
+  $first: Int
+  $after: String
+) {
+  queryFriendRequestsBySenderIdIndex(
+    senderId: $senderId
+    first: $first
+    after: $after
+  ) {
+    items {
+      requestId
+      receiverId
+      senderId
+      senderProfileId
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryFriendRequestsBySenderIdIndexQueryVariables,
+  APITypes.QueryFriendRequestsBySenderIdIndexQuery
+>;
+export const queryFriendRequestsByReceiverIdIndex = /* GraphQL */ `query QueryFriendRequestsByReceiverIdIndex(
+  $receiverId: String!
+  $first: Int
+  $after: String
+) {
+  queryFriendRequestsByReceiverIdIndex(
+    receiverId: $receiverId
+    first: $first
+    after: $after
+  ) {
+    items {
+      requestId
+      receiverId
+      senderId
+      senderProfileId
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryFriendRequestsByReceiverIdIndexQueryVariables,
+  APITypes.QueryFriendRequestsByReceiverIdIndexQuery
+>;
+export const queryFriendRequestsBySenderProfileIdIndex = /* GraphQL */ `query QueryFriendRequestsBySenderProfileIdIndex(
+  $senderProfileId: String!
+  $first: Int
+  $after: String
+) {
+  queryFriendRequestsBySenderProfileIdIndex(
+    senderProfileId: $senderProfileId
+    first: $first
+    after: $after
+  ) {
+    items {
+      requestId
+      receiverId
+      senderId
+      senderProfileId
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryFriendRequestsBySenderProfileIdIndexQueryVariables,
+  APITypes.QueryFriendRequestsBySenderProfileIdIndexQuery
+>;
+export const getConversationParticipants = /* GraphQL */ `query GetConversationParticipants($conversationId: String!, $userId: String!) {
   getConversationParticipants(
     conversationId: $conversationId
     userId: $userId
@@ -416,7 +493,7 @@ export const listConversationParticipants = /* GraphQL */ `query ListConversatio
   APITypes.ListConversationParticipantsQuery
 >;
 export const queryConversationParticipantsByUserIdCreatedAtIndex = /* GraphQL */ `query QueryConversationParticipantsByUserIdCreatedAtIndex(
-  $userId: ID!
+  $userId: String!
   $first: Int
   $after: String
 ) {
@@ -441,7 +518,7 @@ export const queryConversationParticipantsByUserIdCreatedAtIndex = /* GraphQL */
   APITypes.QueryConversationParticipantsByUserIdCreatedAtIndexQueryVariables,
   APITypes.QueryConversationParticipantsByUserIdCreatedAtIndexQuery
 >;
-export const getMessages = /* GraphQL */ `query GetMessages($messageId: ID!) {
+export const getMessages = /* GraphQL */ `query GetMessages($messageId: String!) {
   getMessages(messageId: $messageId) {
     messageId
     conversationId
@@ -484,7 +561,7 @@ export const listMessages = /* GraphQL */ `query ListMessages(
   APITypes.ListMessagesQuery
 >;
 export const queryMessagesByConversationIdCreatedAtIndex = /* GraphQL */ `query QueryMessagesByConversationIdCreatedAtIndex(
-  $conversationId: ID!
+  $conversationId: String!
   $first: Int
   $after: String
 ) {
@@ -513,7 +590,7 @@ export const queryMessagesByConversationIdCreatedAtIndex = /* GraphQL */ `query 
   APITypes.QueryMessagesByConversationIdCreatedAtIndexQuery
 >;
 export const queryMessagesBySenderIdCreatedAtIndex = /* GraphQL */ `query QueryMessagesBySenderIdCreatedAtIndex(
-  $senderId: ID!
+  $senderId: String!
   $first: Int
   $after: String
 ) {

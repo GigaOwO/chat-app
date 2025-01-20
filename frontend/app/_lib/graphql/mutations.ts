@@ -8,112 +8,14 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
-export const createFriends = /* GraphQL */ `mutation CreateFriends($input: CreateFriendsInput!) {
-  createFriends(input: $input) {
-    friendId
-    userId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.CreateFriendsMutationVariables,
-  APITypes.CreateFriendsMutation
->;
-export const updateFriends = /* GraphQL */ `mutation UpdateFriends($input: UpdateFriendsInput!) {
-  updateFriends(input: $input) {
-    friendId
-    userId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.UpdateFriendsMutationVariables,
-  APITypes.UpdateFriendsMutation
->;
-export const deleteFriends = /* GraphQL */ `mutation DeleteFriends($input: DeleteFriendsInput!) {
-  deleteFriends(input: $input) {
-    friendId
-    userId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.DeleteFriendsMutationVariables,
-  APITypes.DeleteFriendsMutation
->;
-export const createFriendRequests = /* GraphQL */ `mutation CreateFriendRequests($input: CreateFriendRequestsInput!) {
-  createFriendRequests(input: $input) {
-    requestId
-    receiverId
-    senderId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.CreateFriendRequestsMutationVariables,
-  APITypes.CreateFriendRequestsMutation
->;
-export const updateFriendRequests = /* GraphQL */ `mutation UpdateFriendRequests($input: UpdateFriendRequestsInput!) {
-  updateFriendRequests(input: $input) {
-    requestId
-    receiverId
-    senderId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.UpdateFriendRequestsMutationVariables,
-  APITypes.UpdateFriendRequestsMutation
->;
-export const deleteFriendRequests = /* GraphQL */ `mutation DeleteFriendRequests($input: DeleteFriendRequestsInput!) {
-  deleteFriendRequests(input: $input) {
-    requestId
-    receiverId
-    senderId
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.DeleteFriendRequestsMutationVariables,
-  APITypes.DeleteFriendRequestsMutation
->;
 export const createUsers = /* GraphQL */ `mutation CreateUsers($input: CreateUsersInput!) {
   createUsers(input: $input) {
     username
     email
     sub
+    status
     createdAt
     updatedAt
-    sentRequests {
-      nextToken
-      __typename
-    }
-    receivedRequests {
-      nextToken
-      __typename
-    }
-    friends {
-      nextToken
-      __typename
-    }
     __typename
   }
 }
@@ -126,20 +28,9 @@ export const updateUsers = /* GraphQL */ `mutation UpdateUsers($input: UpdateUse
     username
     email
     sub
+    status
     createdAt
     updatedAt
-    sentRequests {
-      nextToken
-      __typename
-    }
-    receivedRequests {
-      nextToken
-      __typename
-    }
-    friends {
-      nextToken
-      __typename
-    }
     __typename
   }
 }
@@ -152,20 +43,9 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers($input: DeleteUse
     username
     email
     sub
+    status
     createdAt
     updatedAt
-    sentRequests {
-      nextToken
-      __typename
-    }
-    receivedRequests {
-      nextToken
-      __typename
-    }
-    friends {
-      nextToken
-      __typename
-    }
     __typename
   }
 }
@@ -175,13 +55,11 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers($input: DeleteUse
 >;
 export const createProfiles = /* GraphQL */ `mutation CreateProfiles($input: CreateProfilesInput!) {
   createProfiles(input: $input) {
-    profileId
     userId
-    isActive
+    profileId
     name
     avatarKey
     bio
-    status
     order
     customData
     createdAt
@@ -195,13 +73,11 @@ export const createProfiles = /* GraphQL */ `mutation CreateProfiles($input: Cre
 >;
 export const updateProfiles = /* GraphQL */ `mutation UpdateProfiles($input: UpdateProfilesInput!) {
   updateProfiles(input: $input) {
-    profileId
     userId
-    isActive
+    profileId
     name
     avatarKey
     bio
-    status
     order
     customData
     createdAt
@@ -215,13 +91,11 @@ export const updateProfiles = /* GraphQL */ `mutation UpdateProfiles($input: Upd
 >;
 export const deleteProfiles = /* GraphQL */ `mutation DeleteProfiles($input: DeleteProfilesInput!) {
   deleteProfiles(input: $input) {
-    profileId
     userId
-    isActive
+    profileId
     name
     avatarKey
     bio
-    status
     order
     customData
     createdAt
@@ -277,6 +151,102 @@ export const deleteConversations = /* GraphQL */ `mutation DeleteConversations($
 ` as GeneratedMutation<
   APITypes.DeleteConversationsMutationVariables,
   APITypes.DeleteConversationsMutation
+>;
+export const createFriends = /* GraphQL */ `mutation CreateFriends($input: CreateFriendsInput!) {
+  createFriends(input: $input) {
+    userId
+    friendId
+    status
+    userProfileId
+    friendProfileId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateFriendsMutationVariables,
+  APITypes.CreateFriendsMutation
+>;
+export const updateFriends = /* GraphQL */ `mutation UpdateFriends($input: UpdateFriendsInput!) {
+  updateFriends(input: $input) {
+    userId
+    friendId
+    status
+    userProfileId
+    friendProfileId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateFriendsMutationVariables,
+  APITypes.UpdateFriendsMutation
+>;
+export const deleteFriends = /* GraphQL */ `mutation DeleteFriends($input: DeleteFriendsInput!) {
+  deleteFriends(input: $input) {
+    userId
+    friendId
+    status
+    userProfileId
+    friendProfileId
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteFriendsMutationVariables,
+  APITypes.DeleteFriendsMutation
+>;
+export const createFriendRequests = /* GraphQL */ `mutation CreateFriendRequests($input: CreateFriendRequestsInput!) {
+  createFriendRequests(input: $input) {
+    requestId
+    receiverId
+    senderId
+    senderProfileId
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateFriendRequestsMutationVariables,
+  APITypes.CreateFriendRequestsMutation
+>;
+export const updateFriendRequests = /* GraphQL */ `mutation UpdateFriendRequests($input: UpdateFriendRequestsInput!) {
+  updateFriendRequests(input: $input) {
+    requestId
+    receiverId
+    senderId
+    senderProfileId
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateFriendRequestsMutationVariables,
+  APITypes.UpdateFriendRequestsMutation
+>;
+export const deleteFriendRequests = /* GraphQL */ `mutation DeleteFriendRequests($input: DeleteFriendRequestsInput!) {
+  deleteFriendRequests(input: $input) {
+    requestId
+    receiverId
+    senderId
+    senderProfileId
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteFriendRequestsMutationVariables,
+  APITypes.DeleteFriendRequestsMutation
 >;
 export const createConversationParticipants = /* GraphQL */ `mutation CreateConversationParticipants(
   $input: CreateConversationParticipantsInput!
