@@ -23,6 +23,16 @@ interface UseProfilesOptions {
   userId: string;
 }
 
+interface CreateNewProfileOptions {
+  name: string;
+  isActive: boolean ;
+  avatarKey?: string;
+  bio?: string;
+  status?: ProfileStatus;
+  order?: number;
+  customData?: string;
+}
+
 export const useProfiles = ({ userId }: UseProfilesOptions) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -129,15 +139,15 @@ export const useProfiles = ({ userId }: UseProfilesOptions) => {
   }, [userId]);
 
   // プロフィールを作成
-  const createNewProfile = useCallback(async (
-    name: string,
-    isActive: boolean = false,
-    avatarKey?: string,
-    bio?: string,
-    status?: ProfileStatus,
-    order: number = 0,
-    customData?: string
-  ) => {
+  const createNewProfile = useCallback(async ({
+    name,
+    isActive=false,
+    avatarKey="avatarKey",
+    bio,
+    status=ProfileStatus.ONLINE,
+    order=0,
+    customData="customData"
+  }:CreateNewProfileOptions) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -154,6 +164,7 @@ export const useProfiles = ({ userId }: UseProfilesOptions) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+      console.log(input);
       const response = await client.graphql({
         query: createProfile,
         variables: { input }
