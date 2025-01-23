@@ -1,0 +1,111 @@
+"use client"
+
+import { useState } from "react"
+import Image from 'next/image'
+import { useProfiles } from "@/(aurora)/_hooks/Profiles/useProfiles";
+import { CreateProfilesInput } from "@/_lib/graphql/API";
+
+export default function CreateProfileForm() {
+  const userId="user-id";
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [name, setName] = useState<string>("");
+  const [order, setOrder] = useState<number>(0);
+  const [bio, setBio] = useState<string|null>(null);
+
+  const { addProfile,loading } = useProfiles();
+
+  const handleSetImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if(reader.result?.slice(0,10) !== "data:image"){
+        return;
+      }
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  const handleAddProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const input:CreateProfilesInput = {
+      profileId: `${userId}-${Date.now()}`,
+      userId,
+      name,
+      order,
+      bio,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await addProfile(input);
+  }
+
+  if(loading){
+    return <p>loading...</p>
+  }
+  return (
+    <form
+      onSubmit={handleAddProfile}
+      className="bg-white text-black w-1/2 py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg"
+    >
+      <div className="flex justify-between">
+        <div className="space-y-5">
+          <div className="flex flex-col">
+            <label htmlFor="name">name</label>
+            <input
+              className="w-80 p-2 rounded-sm outline-none border-[1px] border-neutral-800 opacity-40 focus:opacity-100 transition-opacity"
+              type="text"
+              placeholder="Name"
+              id="name"
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="order">order</label>
+            <input
+              className="w-80 p-2 rounded-sm outline-none border-[1px] border-neutral-800 opacity-40 focus:opacity-100 transition-opacity"
+              type="number"
+              placeholder="order"
+              id="order"
+              onChange={(e) => setOrder(Number(e.target.value))}
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="bio">bio</label>
+            <input
+              className="w-80 p-2 rounded-sm outline-none border-[1px] border-neutral-800 opacity-40 focus:opacity-100 transition-opacity"
+              type="text"
+              placeholder="bio"
+              id="bio"
+              onChange={(e) => setBio(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-5">
+          <input
+            className="w-[300px] p-2 rounded-sm outline-none border-[1px] border-neutral-800"
+            type="file"
+            id="avatar"
+            onChange={handleSetImage}
+            placeholder="avatar"
+          />
+          {imagePreview ? (
+            <Image
+              src={imagePreview!}
+              alt="avatar"
+              width={250}
+              height={250}
+            />
+          ):(
+            <div className="w-[250px] h-[250px] bg-gray-200 flex justify-center items-center">
+              <p>icon preview</p>
+            </div>
+          )}
+        </div>
+
+      </div>
+      <button type="submit" className="mt-5 px-2 py-1 border-[1px] border-neutral-700 rounded-sm">プロフィールを作成</button>
+    </form>
+  )
+}
