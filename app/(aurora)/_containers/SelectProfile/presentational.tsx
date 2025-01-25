@@ -5,7 +5,7 @@ import { useCrypto } from "@/(aurora)/_hooks/Crypto/useCrypto";
 import { Profiles } from "@/_lib/graphql/API"
 import { redirect } from "next/navigation";
 
-export default function SelectProfile({profiles,next}:{profiles:Profiles[],next:string}) {
+export default function SelectProfile({profiles,next,children}:{profiles:Profiles[],next:string,children:React.ReactNode}) {
   const { encrypt } = useCrypto();
   const { setCookie } = useCookie();
   const handleSelectProfile = async (profileId:string) => {
@@ -38,6 +38,7 @@ export default function SelectProfile({profiles,next}:{profiles:Profiles[],next:
             </div>
           </div>
         ))}
+        {children}
       </div>
     </div>
   )

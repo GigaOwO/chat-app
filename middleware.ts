@@ -88,7 +88,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
   const [firstRes,next] = await AuthRedirect(request,user?.userId,path)
   if(next){
-  const secondRes = await ProfileRedirect(request,user?.userId,path)
+    const secondRes = await ProfileRedirect(request,user?.userId,path)
     return secondRes
   }else{
     return firstRes

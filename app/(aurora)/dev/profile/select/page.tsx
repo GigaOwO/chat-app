@@ -8,11 +8,11 @@ import { cookies } from 'next/headers'
 import { Amplify } from 'aws-amplify';
 import { amplifyConfig } from '@/_lib/amplify/amplifyConfig';
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 Amplify.configure(amplifyConfig, { ssr: true });
 export default async function Page({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
   const next = searchParams.next || '/dm';
-  console.log(next);
   const user = await runWithAmplifyServerContext({
     nextServerContext: {
       cookies: () => cookies(),
@@ -35,6 +35,20 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
   const filteredProfiles = profiles.filter(profile => profile !== null);
 
   return (
-    <SelectProfile profiles={filteredProfiles} next={next}/>
+    <>
+      <SelectProfile profiles={filteredProfiles} next={next}>
+        <Link href="/dev/profile/create"
+          className="flex flex-col items-center bg-green-300 p-4 rounded-md hover:bg-green-500 cursor-pointer"
+        >
+          <div className="w-40 h-40 bg-white relative rounded-full flex items-center justify-center">
+            <span className="absolute w-1/3 h-[2px] bg-black"></span>
+            <span className="absolute w-1/3 h-[2px] bg-black rotate-90"></span>
+          </div>
+          <div className="w-full truncate">
+            <h2>新規作成</h2>
+          </div>
+        </Link>
+      </SelectProfile>
+    </>
   )
 }
