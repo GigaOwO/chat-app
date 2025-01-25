@@ -24,13 +24,13 @@ export default function SelectProfile({profiles,next}:{profiles:Profiles[],next:
         {profiles.map((profile) => (
           <div
             key={profile.profileId}
-            className="flex flex-col items-center bg-neutral-200 p-4 rounded-md hover:bg-neutral-400 cursor-pointer"
+            className="flex flex-col items-center bg-neutral-100 p-4 rounded-md hover:bg-neutral-300 cursor-pointer"
             onClick={() => handleSelectProfile(profile.profileId)}
           >
             {profile.avatarKey ? (
-              <div className="w-40 h-40 bg-neutral-400 flex justify-center items-center rounded-full">iconの写真</div>
+              <div className="w-40 h-40 bg-neutral-200 flex justify-center items-center rounded-full">iconの写真</div>
             ):(
-              <div className="w-40 h-40 bg-neutral-400 flex justify-center items-center rounded-full">Preview</div>
+              <div className="w-40 h-40 bg-neutral-200 flex justify-center items-center rounded-full">Preview</div>
             )}
             <div className="w-full truncate">
               <h2>名前: {profile.name}</h2>
