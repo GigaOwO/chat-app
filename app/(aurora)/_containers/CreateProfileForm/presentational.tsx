@@ -1,16 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import Image from 'next/image'
 import { useProfiles } from "@/(aurora)/_hooks/Profiles/useProfiles";
 import { CreateProfilesInput } from "@/_lib/graphql/API";
 
-export default function CreateProfileForm() {
-  const userId="user-id";
+export default function CreateProfileForm({userId}:{userId:string}) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [name, setName] = useState<string>("");
   const [order, setOrder] = useState<number>(0);
   const [bio, setBio] = useState<string|null>(null);
+  const ref = useRef<HTMLInputElement>(null);
 
   const { addProfile,loading } = useProfiles();
 
@@ -41,13 +41,17 @@ export default function CreateProfileForm() {
     await addProfile(input);
   }
 
+  const openFile = () => {
+    ref.current?.click();
+  };
+
   if(loading){
     return <p>loading...</p>
   }
   return (
     <form
       onSubmit={handleAddProfile}
-      className="bg-white text-black w-1/2 py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg"
+      className="bg-white text-black w-[850px] py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg"
     >
       <div className="flex justify-between">
         <div className="space-y-5">
@@ -83,14 +87,7 @@ export default function CreateProfileForm() {
           </div>
         </div>
         <div className="flex flex-col gap-5">
-          <input
-            className="w-[300px] p-2 rounded-sm outline-none border-[1px] border-neutral-800"
-            type="file"
-            id="avatar"
-            onChange={handleSetImage}
-            placeholder="avatar"
-          />
-          {imagePreview ? (
+        {imagePreview ? (
             <Image
               src={imagePreview!}
               alt="avatar"
@@ -102,10 +99,22 @@ export default function CreateProfileForm() {
               <p>icon preview</p>
             </div>
           )}
+          <input
+            className="hidden"
+            type="file"
+            id="avatar"
+            onChange={handleSetImage}
+            ref={ref}
+          />
+          <p
+            onClick={openFile}
+            className="text-center w-36 mx-auto py-1 cursor-pointer border-[1px] border-neutral-700 rounded-sm"
+          >
+            アイコンを変更
+          </p>
         </div>
-
       </div>
-      <button type="submit" className="mt-5 px-2 py-1 border-[1px] border-neutral-700 rounded-sm">プロフィールを作成</button>
+      <button type="submit" className=" px-2 py-1 border-[1px] border-neutral-700 rounded-sm">プロフィールを作成</button>
     </form>
   )
 }
