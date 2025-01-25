@@ -3,16 +3,17 @@
 import { useRef, useState } from "react"
 import Image from 'next/image'
 import { useProfiles } from "@/(aurora)/_hooks/Profiles/useProfiles";
-import { CreateProfilesInput } from "@/_lib/graphql/API";
+import { CreateProfilesInput, UpdateProfilesInput } from "@/_lib/graphql/API";
+import { Profiles } from "@/_lib/graphql/API"
 
-export default function CreateProfileForm({userId}:{userId:string}) {
+export default function UpdateProfileForm({profile}:{profile:Profiles}) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [name, setName] = useState<string>("");
-  const [order, setOrder] = useState<number>(0);
-  const [bio, setBio] = useState<string|null>(null);
+  const [name, setName] = useState<string>(profile.name);
+  const [order, setOrder] = useState<number>(profile.order);
+  const [bio, setBio] = useState<string|null>(profile.bio||null);
   const ref = useRef<HTMLInputElement>(null);
 
-  const { addProfile,loading } = useProfiles();
+  const { modifyProfile ,loading } = useProfiles();
 
   const handleSetImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -27,18 +28,17 @@ export default function CreateProfileForm({userId}:{userId:string}) {
     reader.readAsDataURL(file);
   }
 
-  const handleAddProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const input:CreateProfilesInput = {
-      profileId: `${userId}-${Date.now()}`,
-      userId,
+    const input: UpdateProfilesInput= {
+      profileId: profile.profileId,
+      userId: profile.userId,
       name,
       order,
       bio,
-      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    await addProfile(input);
+    await modifyProfile(input);
   }
 
   const openFile = () => {
@@ -50,7 +50,7 @@ export default function CreateProfileForm({userId}:{userId:string}) {
   }
   return (
     <form
-      onSubmit={handleAddProfile}
+      onSubmit={handleUpdateProfile}
       className="bg-white text-black w-[850px] py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg"
     >
       <div className="flex justify-between">
@@ -63,6 +63,7 @@ export default function CreateProfileForm({userId}:{userId:string}) {
               placeholder="Name"
               id="name"
               onChange={(e) => setName(e.target.value)}
+              value={name}
             />
           </div>
           <div className="flex flex-col">
@@ -73,6 +74,7 @@ export default function CreateProfileForm({userId}:{userId:string}) {
               placeholder="order"
               id="order"
               onChange={(e) => setOrder(Number(e.target.value))}
+              value={order}
             />
           </div>
           <div className="flex flex-col">
@@ -83,6 +85,7 @@ export default function CreateProfileForm({userId}:{userId:string}) {
               placeholder="bio"
               id="bio"
               onChange={(e) => setBio(e.target.value)}
+              value={bio||""}
             />
           </div>
         </div>
@@ -114,7 +117,7 @@ export default function CreateProfileForm({userId}:{userId:string}) {
           </p>
         </div>
       </div>
-      <button type="submit" className=" px-2 py-1 border-[1px] border-neutral-700 rounded-sm">プロフィールを作成</button>
+      <button type="submit" className=" px-2 py-1 border-[1px] border-neutral-700 rounded-sm">プロフィールを変更</button>
     </form>
   )
 }
