@@ -5,14 +5,14 @@ import { useCrypto } from "@/(aurora)/_hooks/Crypto/useCrypto";
 import { Profiles } from "@/_lib/graphql/API"
 import { redirect } from "next/navigation";
 
-export default function SelectProfile({profiles}:{profiles:Profiles[]}) {
+export default function SelectProfile({profiles,next}:{profiles:Profiles[],next:string}) {
   const { encrypt } = useCrypto();
   const { setCookie } = useCookie();
   const handleSelectProfile = async (profileId:string) => {
     const value = await encrypt(profileId);
     if(value){
-      setCookie("profileId", value, 60*60*24*7);
-      redirect("/dm");
+      await setCookie("profileId", value, 60*60*24*7);
+      return redirect(next);
     }
   }
   return (
@@ -24,7 +24,7 @@ export default function SelectProfile({profiles}:{profiles:Profiles[]}) {
         {profiles.map((profile) => (
           <div
             key={profile.profileId}
-            className="flex flex-col items-center bg-neutral-200 p-4 rounded-md"
+            className="flex flex-col items-center bg-neutral-200 p-4 rounded-md hover:bg-neutral-400 cursor-pointer"
             onClick={() => handleSelectProfile(profile.profileId)}
           >
             {profile.avatarKey ? (

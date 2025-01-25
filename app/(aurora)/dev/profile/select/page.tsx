@@ -10,7 +10,9 @@ import { amplifyConfig } from '@/_lib/amplify/amplifyConfig';
 import { redirect } from "next/navigation";
 
 Amplify.configure(amplifyConfig, { ssr: true });
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
+  const next = searchParams.next || '/dm';
+  console.log(next);
   const user = await runWithAmplifyServerContext({
     nextServerContext: {
       cookies: () => cookies(),
@@ -33,6 +35,6 @@ export default async function Page() {
   const filteredProfiles = profiles.filter(profile => profile !== null);
 
   return (
-    <SelectProfile profiles={filteredProfiles}/>
+    <SelectProfile profiles={filteredProfiles} next={next}/>
   )
 }
