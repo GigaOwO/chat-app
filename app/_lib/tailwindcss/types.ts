@@ -9,6 +9,11 @@ export interface InputSize extends DefaultSize {
   full: string;
 }
 
+export interface Width extends InputSize {
+  SS: string;
+  XXL: string;
+}
+
 export interface Opacity {
   focus: string;
   hover: string;

@@ -1,4 +1,4 @@
-import { DefaultSize, Flex, InputSize, Opacity } from "./types";
+import { DefaultSize, Flex, InputSize, Opacity, Width } from "./types";
 
 export const text:DefaultSize = {
   S: "text-xs md:text-sm",
@@ -14,12 +14,22 @@ export const padding:DefaultSize = {
   XL: "px-10 py-6 md:px-12 py-7",
 }
 
+export const width:Width = {
+  SS: "w-10 md:w-20",
+  S: "w-20 md:w-28",
+  M: "w-28 md:w-40",
+  L: "w-40 md:w-60",
+  XL: "w-60 md:w-80",
+  XXL: "w-80 md:w-96",
+  full: "w-full",
+}
+
 export const input:InputSize = {
-  S: "w-30 md:w-40 outline-none",
-  M: "w-40 md:w-60 outline-none",
-  L: "w-60 md:w-80 outline-none",
-  XL: "w-80 md:w-100 outline-none",
-  full: "w-full outline-none",
+  S: `outline-none ${width.M}`,
+  M: `outline-none ${width.L}`,
+  L: `outline-none ${width.XL}`,
+  XL: `outline-none ${width.XXL}`,
+  full: `w-full outline-none`,
 }
 
 export const opacity:Opacity = {
