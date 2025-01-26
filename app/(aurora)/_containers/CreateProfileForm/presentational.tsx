@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import Image from 'next/image'
 import { useProfiles } from "@/(aurora)/_hooks/Profiles/useProfiles";
 import { CreateProfilesInput } from "@/_lib/graphql/API";
+import { flex, input, opacity, padding, text } from "@/_lib/tailwindcss";
 
 export default function CreateProfileForm({userId}:{userId:string}) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -51,34 +52,35 @@ export default function CreateProfileForm({userId}:{userId:string}) {
   return (
     <form
       onSubmit={handleAddProfile}
-      className="bg-white text-black w-[850px] py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg"
+      className={`bg-white text-black w-[360px] md:w-[675px] rounded-md border-[1px] border-neutral-800 shadow-lg ${text.M} ${padding.XL}`}
     >
-      <div className="flex justify-between">
-        <div className="space-y-5">
-          <div className="flex flex-col">
+      <div className="md:flex md:justify-between">
+        <div className={`mb-5 md:mb-0 space-y-3 md:space-y-5`}>
+          <div className={`${flex.col}`}>
             <label htmlFor="name">name</label>
             <input
-              className="w-80 p-2 rounded-sm outline-none border-[1px] border-neutral-800 opacity-40 focus:opacity-100 transition-opacity"
+              className={`rounded-sm border-[1px] border-neutral-800 ${padding.S} ${opacity.focus} ${input.L}`}
               type="text"
               placeholder="Name"
               id="name"
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div className="flex flex-col">
+          <div className={`${flex.col}`}>
             <label htmlFor="order">order</label>
             <input
-              className="w-80 p-2 rounded-sm outline-none border-[1px] border-neutral-800 opacity-40 focus:opacity-100 transition-opacity"
+              className={`rounded-sm border-[1px] border-neutral-800 ${padding.S} ${opacity.focus} ${input.L}`}
               type="number"
               placeholder="order"
               id="order"
               onChange={(e) => setOrder(Number(e.target.value))}
             />
           </div>
-          <div className="flex flex-col">
+          <div className={`${flex.col}`}>
             <label htmlFor="bio">bio</label>
             <input
-              className="w-80 p-2 rounded-sm outline-none border-[1px] border-neutral-800 opacity-40 focus:opacity-100 transition-opacity"
+              className={`rounded-sm border-[1px] border-neutral-800 ${padding.S} ${opacity.focus} ${input.L}`}
+
               type="text"
               placeholder="bio"
               id="bio"
@@ -86,19 +88,21 @@ export default function CreateProfileForm({userId}:{userId:string}) {
             />
           </div>
         </div>
-        <div className="flex flex-col gap-5">
-          {imagePreview ? (
-            <Image
-              src={imagePreview!}
-              alt="avatar"
-              width={250}
-              height={250}
-            />
-          ):(
-            <div className="w-[250px] h-[250px] bg-gray-200 flex justify-center items-center">
-              <p>icon preview</p>
-            </div>
-          )}
+        <div className={`gap-5 ${flex.col}`}>
+          <div className={`md:items-center ${flex.col}`}>
+            {imagePreview ? (
+              <Image
+                src={imagePreview!}
+                alt="avatar"
+                width={175}
+                height={175}
+              />
+            ):(
+              <div className={`w-60 h-60 md:w-[175px] md:h-[175px] bg-gray-200 justify-center items-center ${flex.row}`}>
+                <p>icon preview</p>
+              </div>
+            )}
+          </div>
           <input
             className="hidden"
             type="file"
@@ -108,13 +112,15 @@ export default function CreateProfileForm({userId}:{userId:string}) {
           />
           <p
             onClick={openFile}
-            className="text-center w-36 mx-auto py-1 cursor-pointer border-[1px] border-neutral-700 rounded-sm"
+            className={`text-center w-60 md:w-44 md:mx-auto cursor-pointer border-[1px] border-neutral-700 rounded-sm ${padding.S } ${opacity.hover} ${text.S}`}
           >
             アイコンを変更
           </p>
         </div>
       </div>
-      <button type="submit" className=" px-2 py-1 border-[1px] border-neutral-700 rounded-sm">プロフィールを作成</button>
+      <div className="mt-4 md:mt-6">
+        <button type="submit" className={`border-[1px] border-neutral-700 rounded-sm w-60 md:w-44 ${padding.S} ${opacity.hover} ${text.S}`}>プロフィールを作成</button>
+      </div>
     </form>
   )
 }
