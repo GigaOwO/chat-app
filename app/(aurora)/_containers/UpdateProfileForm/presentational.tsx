@@ -82,7 +82,6 @@ export default function UpdateProfileForm({profile}:{profile:Profiles}) {
             <label htmlFor="bio">bio</label>
             <input
               className={`rounded-sm border-[1px] border-neutral-800 ${padding.S} ${opacity.focus} ${input.L}`}
-
               type="text"
               placeholder="bio"
               id="bio"
