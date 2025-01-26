@@ -9,6 +9,7 @@ import { Amplify } from 'aws-amplify';
 import { amplifyConfig } from '@/_lib/amplify/amplifyConfig';
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { flex, padding, text } from "@/_lib/tailwindcss";
 
 Amplify.configure(amplifyConfig, { ssr: true });
 export default async function Page({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
@@ -38,9 +39,9 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
     <>
       <SelectProfile profiles={filteredProfiles} next={next}>
         <Link href="/dev/profile/create"
-          className="flex flex-col items-center bg-green-300 p-4 rounded-md hover:bg-green-500 cursor-pointer"
+          className={`flex flex-col items-center bg-green-300 rounded-md hover:bg-green-500 cursor-pointer ${padding.S} ${text.M}`}
         >
-          <div className="w-40 h-40 bg-white relative rounded-full flex items-center justify-center">
+          <div className={`w-28 h-28 bg-white relative rounded-full flex items-center justify-center my-3 ${flex.row}`}>
             <span className="absolute w-1/3 h-[2px] bg-black"></span>
             <span className="absolute w-1/3 h-[2px] bg-black rotate-90"></span>
           </div>

@@ -3,6 +3,7 @@
 import { useCookie } from "@/(aurora)/_hooks/cookie/useCookie"
 import { useCrypto } from "@/(aurora)/_hooks/Crypto/useCrypto";
 import { Profiles } from "@/_lib/graphql/API"
+import { flex, padding, text } from "@/_lib/tailwindcss";
 import { redirect } from "next/navigation";
 
 export default function SelectProfile({profiles,next,children}:{profiles:Profiles[],next:string,children:React.ReactNode}) {
@@ -17,20 +18,20 @@ export default function SelectProfile({profiles,next,children}:{profiles:Profile
   }
   return (
     <div
-      className="bg-white text-black py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg"
+      className={`bg-white text-black py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg ${text.M}`}
     >
-      <h1 className="text-2xl font-bold mb-4">プロフィールを選択</h1>
-      <div className="grid grid-cols-4 gap-4">
+      <h1 className={`font-bold mb-4 text-center ${text.XL}`}>プロフィールを選択</h1>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {profiles.map((profile) => (
           <div
             key={profile.profileId}
-            className="flex flex-col items-center bg-neutral-100 p-4 rounded-md hover:bg-neutral-300 cursor-pointer"
+            className={`items-center bg-neutral-100 rounded-md hover:bg-neutral-300 cursor-pointer ${flex.col} ${padding.S}`}
             onClick={() => handleSelectProfile(profile.profileId)}
           >
             {profile.avatarKey ? (
-              <div className="w-40 h-40 bg-neutral-200 flex justify-center items-center rounded-full">iconの写真</div>
+              <div className={`bg-neutral-200 w-28 h-28 justify-center items-center rounded-full my-3 ${flex.row}`}>iconの写真</div>
             ):(
-              <div className="w-40 h-40 bg-neutral-200 flex justify-center items-center rounded-full">Preview</div>
+              <div className={`bg-neutral-200 w-28 h-28 justify-center items-center rounded-full my-3 ${flex.row}`}>Preview</div>
             )}
             <div className="w-full truncate">
               <h2>名前: {profile.name}</h2>
