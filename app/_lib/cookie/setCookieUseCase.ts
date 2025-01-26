@@ -3,7 +3,13 @@
 import { SetCookie } from "@/(aurora)/_types";
 import { cookies } from "next/headers";
 
-export async function setCookieUseCase({ name, value, maxAge }:SetCookie): Promise<void|undefined> {
+/**
+ * クッキーをセットする関数
+ * @param name セットする時の名前
+ * @param value セットする値
+ * @param maxAge クッキーの有効期限
+ */
+export async function setCookieUseCase({ name, value, maxAge }:SetCookie): Promise<boolean> {
   try {
     const cookie = await cookies();
     cookie.set({
@@ -15,7 +21,8 @@ export async function setCookieUseCase({ name, value, maxAge }:SetCookie): Promi
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax"
     })
+    return true;
   } catch {
-    return undefined;
+    return false;
   }
 }
