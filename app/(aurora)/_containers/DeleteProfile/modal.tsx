@@ -1,0 +1,37 @@
+import { redirect } from "next/navigation";
+import { useProfiles } from "@/(aurora)/_hooks/Profiles/useProfiles";
+import { useState } from "react";
+import { input, padding, text, width } from "@/_lib/tailwindcss";
+
+export function DeleteProfileModal({userId, profileId, setIsModalOpen}:{userId:string,profileId:string, setIsModalOpen:React.Dispatch<React.SetStateAction<boolean> >}) {
+  const [inputValue, setInputValue] = useState<string>("");
+  const { removeProfile } = useProfiles();
+  const handleDelete = async () => {
+    await removeProfile({userId, profileId});
+    redirect('/dev/profile/select');
+  }
+  return (
+    <>
+      <section
+        className={`fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 ${text.S}`}
+        onClick={() => setIsModalOpen(false)}
+      />
+      <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-md space-y-4 ${padding.L} ${width.XXL}`}>
+        <p className="text-black">このアカウントを削除するなら<br /><span className={`text-red-700 ${text.XL}`}>「削除」</span>と入力してください</p>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className={`border-[1px] border-gray-300 text-black rounded-sm ${input.full} ${padding.S} ${text.M}`}
+        />
+        <button
+          className={`text-white rounded-sm transition-colors duration-150 ${text.M} ${padding.S} ${width.full} ${inputValue === "削除" ? 'bg-red-600' : 'bg-gray-300'}`}
+          onClick={handleDelete}
+          disabled={inputValue !== "削除"}
+        >
+          削除
+        </button>
+      </div>
+    </>
+  )
+}
