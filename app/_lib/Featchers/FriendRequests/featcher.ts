@@ -95,3 +95,17 @@ export const deleteFriendRequest = gql`
     }
   }
 `;
+
+export const onCreateFriendRequests = gql`
+  subscription onCreateFriendRequests($input: CreateFriendRequestsInput!) {
+    onCreateFriendRequests(input: $input){
+      createdAt
+      receiverId
+      requestId
+      senderId
+      senderProfileId
+      updatedAt
+      status
+    }
+  }
+`;
