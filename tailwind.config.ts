@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import tailwindAnimate from "tailwindcss-animate";
+import tailwindScrollbar from "tailwind-scrollbar";
 
 export default {
     darkMode: ["class"],
@@ -61,5 +63,8 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+		tailwindAnimate,
+		tailwindScrollbar
+	],
 } satisfies Config;
