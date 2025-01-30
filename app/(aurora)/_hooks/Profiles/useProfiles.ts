@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import {
   getProfile,
@@ -16,14 +16,13 @@ import type {
   ProfilesConnection,
 } from '@/_lib/graphql/API';
 
-const client = generateClient();
-
 export function useProfiles() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  
+  const client = useMemo(() => generateClient(), []);
 
-  // プロフィールを取得
-  const fetchProfile = async (userId: string, profileId: string) => {
+  const fetchProfile = useCallback(async (userId: string, profileId: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -38,10 +37,9 @@ export function useProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
 
-  // ユーザーIDでプロフィール一覧を取得
-  const fetchProfilesByUserId = async (userId: string, limit?: number, nextToken?: string) => {
+  const fetchProfilesByUserId = useCallback(async (userId: string, limit?: number, nextToken?: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -56,10 +54,10 @@ export function useProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
 
   // プロフィールIDでプロフィールを検索
-  const fetchProfilesByProfileId = async (profileId: string, limit?: number, nextToken?: string) => {
+  const fetchProfilesByProfileId = useCallback(async (profileId: string, limit?: number, nextToken?: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -74,10 +72,10 @@ export function useProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
 
   // プロフィールを作成
-  const addProfile = async (input: CreateProfilesInput) => {
+  const addProfile = useCallback(async (input: CreateProfilesInput) => {
     setLoading(true);
     setError(null);
     try {
@@ -92,10 +90,10 @@ export function useProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
 
   // プロフィールを更新
-  const modifyProfile = async (input: UpdateProfilesInput) => {
+  const modifyProfile = useCallback(async (input: UpdateProfilesInput) => {
     setLoading(true);
     setError(null);
     try {
@@ -110,10 +108,10 @@ export function useProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
 
   // プロフィールを削除
-  const removeProfile = async (input: DeleteProfilesInput) => {
+  const removeProfile = useCallback(async (input: DeleteProfilesInput) => {
     setLoading(true);
     setError(null);
     try {
@@ -128,9 +126,10 @@ export function useProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [client]);
 
-  return {
+  // 戻り値をメモ化
+  return useMemo(() => ({
     loading,
     error,
     fetchProfile,
@@ -139,5 +138,14 @@ export function useProfiles() {
     addProfile,
     modifyProfile,
     removeProfile
-  };
+  }), [
+    loading,
+    error,
+    fetchProfile,
+    fetchProfilesByUserId,
+    fetchProfilesByProfileId,
+    addProfile,
+    modifyProfile,
+    removeProfile
+  ]);
 }

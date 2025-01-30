@@ -1,6 +1,6 @@
-import decryptUseCase from "@/_lib/Crypto/decryptUseCase";
+import { useCallback, useMemo, useState } from "react";
 import { encryptUseCase } from "@/_lib/Crypto/encryptUseCase";
-import { useState } from "react";
+import decryptUseCase from "@/_lib/Crypto/decryptUseCase";
 
 /**
  * 暗号化のロジックをまとめたカスタムフック
@@ -10,7 +10,7 @@ import { useState } from "react";
  * @returns encrypt 暗号化する関数
  * @returns decrypt 復号化する関数
  */
-export function useCrypto(){
+export function useCrypto() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -19,7 +19,7 @@ export function useCrypto(){
    * @param value 暗号化したい値
    * @returns 暗号化された値もしくはnull
    */
-  const encrypt = async (value:string) => {
+  const encrypt = useCallback(async (value: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -30,14 +30,14 @@ export function useCrypto(){
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   /**
    * 復号化
    * @param value 復号化したい値
    * @returns 復号化された値もしくはnull
    */
-  const decrypt = async (value:string) => {
+  const decrypt = useCallback(async (value: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -48,12 +48,12 @@ export function useCrypto(){
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  return {
+  return useMemo(() => ({
     encrypt,
     decrypt,
     loading,
     error,
-  }
+  }), [encrypt, decrypt, loading, error]);
 }

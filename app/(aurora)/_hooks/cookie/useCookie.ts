@@ -1,6 +1,7 @@
+import { useCallback, useMemo, useState } from "react";
 import getCookieUseCase from "@/_lib/cookie/getCookieUseCase";
 import { setCookieUseCase } from "@/_lib/cookie/setCookieUseCase";
-import { useState } from "react";
+import { SetCookie } from "@/(aurora)/_types";
 
 /**
  * クッキーのロジックをまとめたカスタムフック
@@ -21,7 +22,7 @@ export function useCookie() {
    * @param maxAge クッキーの有効期限
    * @returns セットに成功した場合はtrue、失敗した場合はfalse
    */
-  const setCookie = async (name:string, value:string, maxAge:number):Promise<boolean> => {
+  const setCookie = useCallback(async ({ name, value, maxAge }: SetCookie) => {
     setLoading(true);
     setError(null);
     try {
@@ -32,14 +33,14 @@ export function useCookie() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   /**
    * クッキーを取得する
    * @param name 取得したいクッキーの名前
    * @returns クッキーの値もしくはnull
    */
-  const getCookie = async (name:string):Promise<string|null> => {
+  const getCookie = useCallback(async (name: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -50,11 +51,12 @@ export function useCookie() {
     } finally {
       setLoading(false);
     }
-  }
-  return {
+  }, []);
+
+  return useMemo(() => ({
     setCookie,
     getCookie,
     loading,
     error,
-  }
+  }), [setCookie, getCookie, loading, error]);
 }
