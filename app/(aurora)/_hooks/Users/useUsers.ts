@@ -41,13 +41,13 @@ export function useUsers() {
   };
 
   // ユーザー一覧を取得
-  const fetchUsers = async (nextToken?: string) => {
+  const searchUsers = async ({username,ne,limit}:{username:string,ne:string,limit:number}) => {
     setLoading(true);
     setError(null);
     try {
       const response = await client.graphql({
         query: listUsers,
-        variables: { nextToken }
+        variables: { username, ne, limit }
       }) as { data: { listUsers: UsersConnection } };
       return response.data.listUsers;
     } catch (err) {
@@ -134,7 +134,7 @@ export function useUsers() {
     loading,
     error,
     fetchUser,
-    fetchUsers,
+    searchUsers,
     searchUsersByEmail,
     addUser,
     modifyUser,

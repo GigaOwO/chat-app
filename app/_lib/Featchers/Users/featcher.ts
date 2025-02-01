@@ -16,17 +16,12 @@ export const getUser = gql`
 
 // ユーザー一覧を取得
 export const listUsers = gql`
-  query listUsers($nextToken: String) {
-    listUsers(limit: 50, nextToken: $nextToken) {
+  query listUsers($username: String, $ne: String, $limit: Int) {
+    listUsers(filter: {username: {beginsWith: $username, ne: $ne}}, limit: $limit) {
       items {
-        username
-        email
         sub
-        status
-        createdAt
-        updatedAt
+        username
       }
-      nextToken
     }
   }
 `;
