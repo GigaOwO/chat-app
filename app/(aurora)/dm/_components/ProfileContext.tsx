@@ -29,7 +29,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadProfiles = async () => {
       try {
+        setIsLoading(true)
         const { userId } = await getCurrentUser()
+        
         const profilesResponse = await fetchProfilesByUserId(userId)
         
         if (profilesResponse?.items) {
@@ -38,26 +40,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
             .sort((a, b) => a.order - b.order)
           
           setAllProfiles(profiles)
-        }
-      } catch (error) {
-        console.error('Error loading profiles:', error)
-      }
-    }
-
-    loadProfiles()
-  }, [fetchProfilesByUserId])
-
-  useEffect(() => {
-    const updateCurrentProfile = async () => {
-      try {
-        setIsLoading(true)
-        const encryptedProfileId = await getCookie('profileId')
-        const currentProfileId = encryptedProfileId ? await decrypt(encryptedProfileId) : null
-
-        if (allProfiles.length > 0) {
-          const current = allProfiles.find(p => p.profileId === currentProfileId) || allProfiles[0]
-          const others = allProfiles.filter(p => p.profileId !== current?.profileId)
-
+          
+          const encryptedProfileId = await getCookie('profileId')
+          const currentProfileId = encryptedProfileId ? await decrypt(encryptedProfileId) : null
+          
+          const current = profiles.find(p => p.profileId === currentProfileId) || profiles[0]
+          const others = profiles.filter(p => p.profileId !== current?.profileId)
+          
           setCurrentProfile(current)
           setOtherProfiles(others)
         } else {
@@ -65,7 +54,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           setOtherProfiles([])
         }
       } catch (error) {
-        console.error('Error updating current profile:', error)
+        console.error('Error loading profiles:', error)
         setCurrentProfile(null)
         setOtherProfiles([])
       } finally {
@@ -73,8 +62,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    updateCurrentProfile()
-  }, [allProfiles, decrypt, getCookie])
+    loadProfiles()
+  }, [fetchProfilesByUserId, getCookie, decrypt])
 
   const switchProfile = async (profileId: string) => {
     try {
@@ -89,7 +78,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         await setCookie({ 
           name: 'profileId', 
           value: encryptedProfileId, 
-          maxAge: 60 * 60 * 24 * 7 
+          maxAge: 60 * 60 * 24 * 7
         })
       }
     } catch (error) {
