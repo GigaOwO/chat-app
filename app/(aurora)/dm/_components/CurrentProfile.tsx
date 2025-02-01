@@ -22,6 +22,7 @@ export function CurrentProfile() {
       </div>
     )
   }
+
   return (
     <div className="p-2 flex items-center gap-3 w-full bg-[#1D282E] shadow-lg border-[1px] border-[#2B2B2B] rounded-sm">
       <Avatar>

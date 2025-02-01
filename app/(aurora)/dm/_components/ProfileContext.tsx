@@ -54,26 +54,36 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         const encryptedProfileId = await getCookie('profileId')
         const currentProfileId = encryptedProfileId ? await decrypt(encryptedProfileId) : null
 
-        const current = allProfiles.find(p => p.profileId === currentProfileId) || allProfiles[0] || null
-        const others = allProfiles.filter(p => p.profileId !== current?.profileId)
+        if (allProfiles.length > 0) {
+          const current = allProfiles.find(p => p.profileId === currentProfileId) || allProfiles[0]
+          const others = allProfiles.filter(p => p.profileId !== current?.profileId)
 
-        setCurrentProfile(current)
-        setOtherProfiles(others)
+          setCurrentProfile(current)
+          setOtherProfiles(others)
+        } else {
+          setCurrentProfile(null)
+          setOtherProfiles([])
+        }
       } catch (error) {
         console.error('Error updating current profile:', error)
+        setCurrentProfile(null)
+        setOtherProfiles([])
       } finally {
         setIsLoading(false)
       }
     }
 
-    if (allProfiles.length > 0) {
-      updateCurrentProfile()
-    }
+    updateCurrentProfile()
   }, [allProfiles, decrypt, getCookie])
 
   const switchProfile = async (profileId: string) => {
     try {
-      setIsLoading(true)
+      const newCurrent = allProfiles.find(p => p.profileId === profileId) || null
+      const newOthers = allProfiles.filter(p => p.profileId !== profileId)
+      
+      setCurrentProfile(newCurrent)
+      setOtherProfiles(newOthers)
+
       const encryptedProfileId = await encrypt(profileId)
       if (encryptedProfileId) {
         await setCookie({ 
@@ -81,29 +91,28 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           value: encryptedProfileId, 
           maxAge: 60 * 60 * 24 * 7 
         })
-        
-        const newCurrent = allProfiles.find(p => p.profileId === profileId) || null
-        const newOthers = allProfiles.filter(p => p.profileId !== profileId)
-        
-        setCurrentProfile(newCurrent)
-        setOtherProfiles(newOthers)
       }
     } catch (error) {
       console.error('Error switching profile:', error)
-    } finally {
-      setIsLoading(false)
+      const currentId = currentProfile?.profileId
+      if (currentId) {
+        const revertCurrent = allProfiles.find(p => p.profileId === currentId) || null
+        const revertOthers = allProfiles.filter(p => p.profileId !== currentId)
+        setCurrentProfile(revertCurrent)
+        setOtherProfiles(revertOthers)
+      }
     }
   }
 
+  const contextValue = {
+    currentProfile,
+    otherProfiles,
+    isLoading,
+    switchProfile
+  }
+
   return (
-    <ProfileContext.Provider 
-      value={{ 
-        currentProfile,
-        otherProfiles,
-        isLoading,
-        switchProfile 
-      }}
-    >
+    <ProfileContext.Provider value={contextValue}>
       {children}
     </ProfileContext.Provider>
   )
