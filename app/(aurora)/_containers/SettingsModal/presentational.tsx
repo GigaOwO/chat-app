@@ -5,7 +5,7 @@ import { Button } from '@/_components/ui/button';
 import { Profiles } from '@/_lib/graphql/API';
 import { useProfiles } from '@/(aurora)/_hooks/Profiles/useProfiles';
 import { Input } from '@/_components/ui/input';
-import { ThemeColorPicker } from '@/(aurora)/_containers/CreateProfileForm/ThemeColorPicker';
+import { ThemeColorPicker } from '@/(aurora)/dm/_components/ThemeColorPicker';
 
 interface SettingsModalProps {
   isOpen: boolean;

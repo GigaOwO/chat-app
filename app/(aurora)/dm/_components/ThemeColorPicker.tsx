@@ -1,6 +1,6 @@
 import React from 'react';
 
-const THEME_COLORS = [
+export const THEME_COLORS = [
   { id: '1D282E', name: 'Deep Sea', value: '#1D282E' },
   { id: '222B26', name: 'Forest', value: '#222B26' },
   { id: '3C2D49', name: 'Purple Night', value: '#3C2D49' },
@@ -13,10 +13,10 @@ interface ColorPickerProps {
   onColorSelect: (colorId: string) => void;
 }
 
-const ThemeColorPicker: React.FC<ColorPickerProps> = ({
+export function ThemeColorPicker({
   selectedColor,
   onColorSelect,
-}) => {
+}: ColorPickerProps) {
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">テーマカラー</label>
@@ -24,7 +24,7 @@ const ThemeColorPicker: React.FC<ColorPickerProps> = ({
         {THEME_COLORS.map((color) => (
           <button
             key={color.id}
-            type='button'
+            type="button"
             onClick={() => onColorSelect(color.id)}
             className={`
               w-12 h-12 rounded-lg transition-all duration-200
@@ -37,6 +37,4 @@ const ThemeColorPicker: React.FC<ColorPickerProps> = ({
       </div>
     </div>
   );
-};
-
-export { ThemeColorPicker, THEME_COLORS };
+}
