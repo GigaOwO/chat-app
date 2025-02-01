@@ -6,7 +6,7 @@ import { CurrentProfileSkeleton } from './Skeletons'
 import Image from 'next/image'
 
 export function CurrentProfile() {
-  const { currentProfile, isLoading } = useProfileContext()
+  const { currentProfile, isLoading, getCurrentThemeColor } = useProfileContext()
 
   if (isLoading) {
     return <CurrentProfileSkeleton />
@@ -23,8 +23,13 @@ export function CurrentProfile() {
     )
   }
 
+  const themeColor = getCurrentThemeColor()
+
   return (
-    <div className="p-2 flex items-center gap-3 w-full bg-[#1D282E] shadow-lg border-[1px] border-[#2B2B2B] rounded-sm">
+    <div 
+      className="p-2 flex items-center gap-3 w-full shadow-lg border-[1px] border-[#2B2B2B] rounded-sm"
+      style={{ backgroundColor: themeColor }}
+    >
       <Avatar>
         {currentProfile.avatarKey ? (
           <Image 

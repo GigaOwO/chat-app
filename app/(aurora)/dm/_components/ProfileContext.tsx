@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { useProfiles } from '@/(aurora)/_hooks/Profiles/useProfiles'
@@ -6,15 +6,32 @@ import { useCookie } from '@/(aurora)/_hooks/cookie/useCookie'
 import { useCrypto } from '@/(aurora)/_hooks/Crypto/useCrypto'
 import type { Profiles } from '@/_lib/graphql/API'
 import { getCurrentUser } from 'aws-amplify/auth'
+import { THEME_COLORS } from '@/(aurora)/_containers/CreateProfileForm/ThemeColorPicker'
 
 type ProfileContextType = {
   currentProfile: Profiles | null
   otherProfiles: Profiles[]
   isLoading: boolean
   switchProfile: (profileId: string) => Promise<void>
+  getCurrentThemeColor: () => string
+  getThemeColorById: (profileId: string) => string
 }
 
 const ProfileContext = createContext<ProfileContextType | null>(null)
+
+const DEFAULT_THEME_COLOR = THEME_COLORS[0].value
+
+const getThemeColorFromCustomData = (profile: Profiles | null): string => {
+  if (!profile?.customData) return DEFAULT_THEME_COLOR;
+  try {
+    const customData = JSON.parse(profile.customData);
+    const colorId = customData.themeColor;
+    const color = THEME_COLORS.find(c => c.id === colorId);
+    return color ? color.value : DEFAULT_THEME_COLOR;
+  } catch {
+    return DEFAULT_THEME_COLOR;
+  }
+}
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [currentProfile, setCurrentProfile] = useState<Profiles | null>(null)
@@ -25,6 +42,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const { getCookie, setCookie } = useCookie()
   const { decrypt, encrypt } = useCrypto()
   const { fetchProfilesByUserId } = useProfiles()
+
+  const getCurrentThemeColor = () => getThemeColorFromCustomData(currentProfile)
+  
+  const getThemeColorById = (profileId: string) => {
+    const profile = allProfiles.find(p => p.profileId === profileId)
+    return getThemeColorFromCustomData(profile || null)
+  }
 
   useEffect(() => {
     const loadProfiles = async () => {
@@ -97,7 +121,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     currentProfile,
     otherProfiles,
     isLoading,
-    switchProfile
+    switchProfile,
+    getCurrentThemeColor,
+    getThemeColorById
   }
 
   return (

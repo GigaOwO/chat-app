@@ -6,7 +6,7 @@ import { ProfileSwitcherSkeleton } from './Skeletons'
 import Image from 'next/image'
 
 export function ProfileSwitcher() {
-  const { otherProfiles, isLoading, switchProfile } = useProfileContext()
+  const { otherProfiles, isLoading, switchProfile, getThemeColorById } = useProfileContext()
 
   if (isLoading) {
     return <ProfileSwitcherSkeleton />
@@ -17,13 +17,16 @@ export function ProfileSwitcher() {
   }
 
   return (
-    <div className="max-w-[240px] overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-transparent">
-      <div className="flex gap-2 min-w-fit pb-2">
-        {otherProfiles.map((profile) => (
+    <div className="flex gap-2">
+      {otherProfiles.map((profile) => {
+        const themeColor = getThemeColorById(profile.profileId)
+        
+        return (
           <button
             key={profile.profileId}
             onClick={() => switchProfile(profile.profileId)}
-            className="group relative flex-shrink-0 flex gap-2 items-center justify-center bg-[#222B26] h-12 w-12 rounded-lg"
+            className="group relative flex gap-2 items-center justify-center h-12 w-12 rounded-lg"
+            style={{ backgroundColor: themeColor }}
           >
             <Avatar className="h-6 w-6">
               {profile.avatarKey ? (
@@ -41,8 +44,8 @@ export function ProfileSwitcher() {
               )}
             </Avatar>
           </button>
-        ))}
-      </div>
+        )
+      })}
     </div>
   )
 }
