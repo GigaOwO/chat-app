@@ -12,7 +12,7 @@ import { Profiles } from '@/_lib/graphql/API'
 
 Amplify.configure(amplifyConfig, { ssr: true });
 // 認証が必要なパス
-const AUTH_PATHS = ['/dm']
+const AUTH_PATHS = ['/dm', '/profile']
 // 未認証ユーザーのみがアクセスできるパス
 const PUBLIC_PATHS = ['/signin', '/signup']
 
@@ -52,18 +52,18 @@ async function ProfileRedirect(request: NextRequest, userId: string|undefined, p
   }
 
   // プロフィール選択・作成関連のパスは、ProfileRedirectのチェックをスキップ
-  if (path.startsWith('/dev/profile')) {
+  if (path.startsWith('/profile')) {
     return NextResponse.next();
   }
 
   const cookie = request.cookies.get('profileId');
   if (!cookie) {
-    return NextResponse.redirect(new URL(`/dev/profile/select/?next=${path}`, request.url));
+    return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
   }
 
   const profileId = await decryptUseCase(cookie.value);
   if (!profileId) {
-    return NextResponse.redirect(new URL(`/dev/profile/select/?next=${path}`, request.url));
+    return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
   }
 
   try {
@@ -79,10 +79,10 @@ async function ProfileRedirect(request: NextRequest, userId: string|undefined, p
     }
 
     // プロフィールが見つからない場合は選択画面へ
-    return NextResponse.redirect(new URL(`/dev/profile/select/?next=${path}`, request.url));
+    return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
   } catch (error) {
     console.error('ProfileRedirect error:', error);
-    return NextResponse.redirect(new URL(`/dev/profile/select/?next=${path}`, request.url));
+    return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
   }
 }
 
@@ -118,6 +118,6 @@ export const config = {
     '/signin',
     '/signup',
     '/signup/confirm',
-    '/dev/profile/:path*'
+    '/profile/:path*'
   ]
 };

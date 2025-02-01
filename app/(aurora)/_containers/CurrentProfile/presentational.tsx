@@ -1,25 +1,35 @@
-"use client";
+'use client';
 
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
-import { useProfileContext } from './ProfileContext';
-import { CurrentProfileSkeleton } from './Skeletons';
 import Image from 'next/image';
-import { useState } from 'react';
-import { SettingsContainer } from '@/(aurora)/_containers/Settings';
+import type { Profiles } from '@/_lib/graphql/API';
+import { SettingsContainer } from '../Settings/container';
+import { CurrentProfileSkeleton } from './skeleton';
 
-export function CurrentProfile() {
-  const { currentProfile, isLoading, getCurrentThemeColor } = useProfileContext();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+interface CurrentProfilePresentationProps {
+  profile: Profiles | null;
+  isLoading: boolean;
+  themeColor: string;
+  isSettingsOpen: boolean;
+  onSettingsOpen: () => void;
+  onSettingsClose: () => void;
+}
 
+export function CurrentProfilePresentation({
+  profile,
+  isLoading,
+  themeColor,
+  isSettingsOpen,
+  onSettingsOpen,
+  onSettingsClose
+}: CurrentProfilePresentationProps) {
   if (isLoading) {
     return <CurrentProfileSkeleton />;
   }
 
-  if (!currentProfile) {
+  if (!profile) {
     return null;
   }
-
-  const themeColor = getCurrentThemeColor();
 
   return (
     <>
@@ -29,27 +39,27 @@ export function CurrentProfile() {
       >
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
-            {currentProfile.avatarKey ? (
+            {profile.avatarKey ? (
               <Image
-                src={currentProfile.avatarKey}
-                alt={currentProfile.name}
+                src={profile.avatarKey}
+                alt={profile.name}
                 className="h-full w-full object-cover"
                 width={32}
                 height={32}
               />
             ) : (
               <AvatarFallback>
-                {currentProfile.name.charAt(0).toUpperCase()}
+                {profile.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             )}
           </Avatar>
           <span className="text-sm font-medium text-white">
-            {currentProfile.name}
+            {profile.name}
           </span>
         </div>
         
         <button 
-          onClick={() => setIsSettingsOpen(true)}
+          onClick={onSettingsOpen}
           className="p-1 rounded-full hover:bg-black/20 transition-colors"
         >
           <Image
@@ -64,8 +74,8 @@ export function CurrentProfile() {
 
       <SettingsContainer
         isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        profile={currentProfile}
+        onClose={onSettingsClose}
+        profile={profile}
       />
     </>
   );

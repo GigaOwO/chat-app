@@ -6,9 +6,9 @@ import { useCookie } from '@/_lib/hooks/useCookie';
 import { useCrypto } from '@/_lib/hooks/useCrypto';
 import type { Profiles } from '@/_lib/graphql/API';
 import { getCurrentUser } from 'aws-amplify/auth';
-import { THEME_COLORS } from '@/(aurora)/dm/_components/ThemeColorPicker';
+import { THEME_COLORS } from '../ThemeColors/constants';
 
-type ProfileContextType = {
+export interface ProfileContextValue {
   currentProfile: Profiles | null;
   otherProfiles: Profiles[];
   isLoading: boolean;
@@ -17,7 +17,7 @@ type ProfileContextType = {
   getThemeColorById: (profileId: string) => string;
 }
 
-const ProfileContext = createContext<ProfileContextType | null>(null);
+const ProfileContext = createContext<ProfileContextValue | null>(null);
 
 const DEFAULT_THEME_COLOR = THEME_COLORS[0].value;
 
@@ -107,17 +107,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const contextValue: ProfileContextValue = {
+    currentProfile,
+    otherProfiles,
+    isLoading,
+    switchProfile,
+    getCurrentThemeColor,
+    getThemeColorById
+  };
+
   return (
-    <ProfileContext.Provider 
-      value={{
-        currentProfile,
-        otherProfiles,
-        isLoading,
-        switchProfile,
-        getCurrentThemeColor,
-        getThemeColorById
-      }}
-    >
+    <ProfileContext.Provider value={contextValue}>
       {children}
     </ProfileContext.Provider>
   );

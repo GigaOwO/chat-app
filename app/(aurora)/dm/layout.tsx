@@ -1,6 +1,6 @@
-import { CurrentProfile } from "./_components/CurrentProfile"
-import { ProfileProvider } from "./_components/ProfileContext"
-import { ProfileSwitcher } from "./_components/ProfileSwitcher"
+import { ProfileProvider } from '../_containers/Profile/context';
+import { ProfileSwitcherContainer } from '../_containers/ProfileSwitcher/container';
+import { CurrentProfileContainer } from '../_containers/CurrentProfile/container';
 
 export default function DMLayout({
   children,
@@ -12,8 +12,8 @@ export default function DMLayout({
       <div className="flex h-screen">
         <div className="flex flex-col bg-gray4 p-3 w-60">
           <div className="mt-auto space-y-2">
-            <ProfileSwitcher />
-            <CurrentProfile />
+            <ProfileSwitcherContainer />
+            <CurrentProfileContainer />
           </div>
         </div>
         <main className="flex-1 flex flex-col">
@@ -21,5 +21,5 @@ export default function DMLayout({
         </main>
       </div>
     </ProfileProvider>
-  )
+  );
 }
