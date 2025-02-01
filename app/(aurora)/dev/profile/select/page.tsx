@@ -12,8 +12,15 @@ import Link from "next/link";
 import { flex, padding, text } from "@/_lib/tailwindcss";
 
 Amplify.configure(amplifyConfig, { ssr: true });
-export default async function Page({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
-  const next = searchParams.next || '/dm';
+export default async function Page({ 
+  searchParams 
+}: { 
+  searchParams: { [key: string]: string | undefined } 
+}) {
+  // searchParamsを非同期で取得
+  const params = await searchParams;
+  const next = params.next || '/dm';
+
   const user = await runWithAmplifyServerContext({
     nextServerContext: {
       cookies: () => cookies(),
@@ -26,11 +33,13 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
       }
     },
   })
+
   const client = generateClient();
   const profiles = await (client.graphql({
     query: getProfilesByUserId,
     variables: { userId: user?.username }
-  }) as Promise<{ data: { queryProfilesByUserIdOrderIndex: ProfilesConnection } }>).then(res => res.data.queryProfilesByUserIdOrderIndex.items);
+  }) as Promise<{ data: { queryProfilesByUserIdOrderIndex: ProfilesConnection } }>)
+    .then(res => res.data.queryProfilesByUserIdOrderIndex.items);
 
   if (!profiles) redirect('/dev/profile/create');
   const filteredProfiles = profiles.filter(profile => profile !== null);

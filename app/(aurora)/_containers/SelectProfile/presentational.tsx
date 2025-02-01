@@ -4,21 +4,38 @@ import { useCookie } from "@/(aurora)/_hooks/cookie/useCookie"
 import { useCrypto } from "@/(aurora)/_hooks/Crypto/useCrypto";
 import { Profiles } from "@/_lib/graphql/API"
 import { flex, padding, text } from "@/_lib/tailwindcss";
-import { redirect } from "next/navigation";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-export default function SelectProfile({profiles,next,children}:{profiles:Profiles[],next:string,children:React.ReactNode}) {
+export default function SelectProfile({profiles, next, children}:{profiles:Profiles[], next:string, children:React.ReactNode}) {
+  const router = useRouter();
   const { encrypt } = useCrypto();
   const { setCookie } = useCookie();
-  const handleSelectProfile = async (profileId:string) => {
-    const value = await encrypt(profileId);
-    if(value){
-      await setCookie("profileId", value, 60*60*24*7);
-      return redirect(next);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleSelectProfile = async (profileId: string) => {
+    try {
+      setIsLoading(true);
+      const encryptedProfileId = await encrypt(profileId);
+      if (encryptedProfileId) {
+        await setCookie({ 
+          name: 'profileId', 
+          value: encryptedProfileId, 
+          maxAge: 60 * 60 * 24 * 7 
+        });
+        router.push(next);
+        router.refresh();
+      }
+    } catch (error) {
+      console.error('Error switching profile:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
+
   return (
     <div
-      className={`bg-white text-black py-10 px-12 rounded-md  border-[1px] border-neutral-800 shadow-lg ${text.M}`}
+      className={`bg-white text-black py-10 px-12 rounded-md border-[1px] border-neutral-800 shadow-lg ${text.M}`}
     >
       <h1 className={`font-bold mb-4 text-center ${text.XL}`}>プロフィールを選択</h1>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -26,7 +43,7 @@ export default function SelectProfile({profiles,next,children}:{profiles:Profile
           <div
             key={profile.profileId}
             className={`items-center bg-neutral-100 rounded-md hover:bg-neutral-300 cursor-pointer ${flex.col} ${padding.S}`}
-            onClick={() => handleSelectProfile(profile.profileId)}
+            onClick={() => !isLoading && handleSelectProfile(profile.profileId)}
           >
             {profile.avatarKey ? (
               <div className={`bg-neutral-200 w-28 h-28 justify-center items-center rounded-full my-3 ${flex.row}`}>iconの写真</div>
