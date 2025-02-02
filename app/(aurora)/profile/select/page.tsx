@@ -1,4 +1,4 @@
-import { SelectProfileContainer } from '../_containers/Select';
+import { SelectProfileContainer } from './_containers/Select';
 import { runWithAmplifyServerContext } from '@/_lib/amplify/amplifyServerContext';
 import { getProfilesByUserId } from '@/_lib/Featchers/Profiles/featcher';
 import { getCurrentUser } from 'aws-amplify/auth/server';

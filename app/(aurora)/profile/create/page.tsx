@@ -1,4 +1,4 @@
-import { CreateProfileContainer } from '../_containers/Create';
+import { CreateProfileContainer } from './_containers/Create';
 import { runWithAmplifyServerContext } from '@/_lib/amplify/amplifyServerContext';
 import { getCurrentUser } from 'aws-amplify/auth/server';
 import { cookies } from 'next/headers';
