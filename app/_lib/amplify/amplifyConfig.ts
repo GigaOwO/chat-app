@@ -4,6 +4,7 @@ const awsconfig = {
   Auth: {
     userPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID as string,
     userPoolClientId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_CLIENT_ID as string,
+    identityPoolId: process.env.NEXT_PUBLIC_IDENTITY_POOL_ID as string,
   },
   GraphQL: {
     endpoint: process.env.NEXT_PUBLIC_APPSYNC_ENDPOINT as string,
@@ -21,6 +22,7 @@ export const amplifyConfig: ResourcesConfig = {
     Cognito: {
       userPoolId: awsconfig.Auth.userPoolId,
       userPoolClientId: awsconfig.Auth.userPoolClientId,
+      identityPoolId: awsconfig.Auth.identityPoolId,
       loginWith: {
         email: true,
       },

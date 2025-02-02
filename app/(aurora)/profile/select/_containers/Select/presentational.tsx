@@ -56,6 +56,7 @@ export function SelectProfilePresentation({
                     <Image
                       src={profile.avatarKey}
                       alt={profile.name}
+                      sizes='96px'
                       fill
                       className="rounded-full object-cover"
                     />

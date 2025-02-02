@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { uploadData } from 'aws-amplify/storage';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
 
 export function useStorage() {
@@ -9,18 +9,26 @@ export function useStorage() {
   const [progress, setProgress] = useState<number>(0);
   const [error, setError] = useState<Error | null>(null);
 
+  const generateUniqueFileName = (originalName: string): string => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const extension = originalName.split('.').pop();
+    return `${timestamp}-${random}.${extension}`;
+  };
+
   const uploadProfileImage = async (file: File): Promise<string> => {
     setLoading(true);
     setError(null);
     
     try {
       const { userId } = await getCurrentUser();
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `profiles/${userId}/${Date.now()}.${fileExtension}`;
+      const fileName = generateUniqueFileName(file.name);
+      const path = `private/profiles/${userId}/${fileName}`;
       
       const reader = new FileReader();
       
-      const uploadResult = await new Promise((resolve, reject) => {
+      // アップロード処理
+      await new Promise((resolve, reject) => {
         reader.onload = async (event) => {
           if (!event.target?.result) {
             reject(new Error('Failed to read file'));
@@ -28,9 +36,9 @@ export function useStorage() {
           }
 
           try {
-            const result = await uploadData({
+            await uploadData({
               data: event.target.result,
-              path: fileName,
+              path,
               options: {
                 contentType: file.type,
                 onProgress: ({ transferredBytes, totalBytes }) => {
@@ -43,7 +51,7 @@ export function useStorage() {
                 },
               },
             }).result;
-            resolve(result.path);
+            resolve(path);
           } catch (err) {
             reject(err);
           }
@@ -53,7 +61,15 @@ export function useStorage() {
         reader.readAsArrayBuffer(file);
       });
 
-      return uploadResult as string;
+      // 署名付きURLを取得
+      const { url } = await getUrl({
+        path,
+        options: {
+          expiresIn: 3600 * 24 // 24時間の有効期限
+        }
+      });
+
+      return url.toString();
     } catch (err) {
       setError(err as Error);
       throw err;
