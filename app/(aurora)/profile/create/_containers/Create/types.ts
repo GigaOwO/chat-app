@@ -1,5 +1,5 @@
 export interface ProfileFormData {
-  imagePreview: string | null;
+  avatarKey: string | null;
   name: string;
   order: number;
   bio: string;

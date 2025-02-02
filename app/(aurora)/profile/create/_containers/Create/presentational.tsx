@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import Image from 'next/image';
+import { useState } from 'react';
 import { ThemeColorPicker } from '@/(aurora)/_containers/ThemeColors';
 import { Input } from '@/_components/ui/input';
 import { Button } from '@/_components/ui/button';
 import { Label } from '@/_components/ui/label';
+import { Alert, AlertDescription } from '@/_components/ui/alert';
+import ImageUpload from '@/_components/ImageUpload';
 import type { ProfileFormData } from './types';
 
 interface CreateProfilePresentationProps {
@@ -18,35 +19,24 @@ export function CreateProfilePresentation({
   onSubmit
 }: CreateProfilePresentationProps) {
   const [formData, setFormData] = useState<ProfileFormData>({
-    imagePreview: null,
+    avatarKey: null,
     name: '',
     order: 0,
     bio: '',
     themeColor: '1D282E'
   });
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result?.toString().slice(0, 10) !== 'data:image') {
-        return;
-      }
-      setFormData(prev => ({
-        ...prev,
-        imagePreview: reader.result as string
-      }));
-    };
-    reader.readAsDataURL(file);
-  };
+  
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await onSubmit(formData);
+    setError(null);
+    
+    try {
+      await onSubmit(formData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+    }
   };
 
   const updateFormData = <K extends keyof ProfileFormData>(
@@ -57,6 +47,14 @@ export function CreateProfilePresentation({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleUploadComplete = (imagePath: string) => {
+    updateFormData('avatarKey', imagePath);
+  };
+
+  const handleUploadError = (error: Error) => {
+    setError(`画像のアップロードに失敗しました: ${error.message}`);
   };
 
   return (
@@ -110,40 +108,18 @@ export function CreateProfilePresentation({
         </div>
 
         <div className="flex flex-col gap-5">
-          <div className="md:items-center flex flex-col">
-            {formData.imagePreview ? (
-              <Image
-                src={formData.imagePreview}
-                alt="プロフィール画像プレビュー"
-                width={175}
-                height={175}
-                className="rounded-full"
-              />
-            ) : (
-              <div className="w-60 h-60 md:w-[175px] md:h-[175px] bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-gray-500">画像プレビュー</span>
-              </div>
-            )}
-          </div>
-
-          <input
-            className="hidden"
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            ref={fileInputRef}
+          <ImageUpload
+            onUploadComplete={handleUploadComplete}
+            onUploadError={handleUploadError}
           />
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full md:w-44 md:mx-auto"
-          >
-            画像を選択
-          </Button>
         </div>
       </div>
+
+      {error && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="mt-6">
         <Button 

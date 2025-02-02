@@ -9,6 +9,10 @@ const awsconfig = {
     endpoint: process.env.NEXT_PUBLIC_APPSYNC_ENDPOINT as string,
     region: process.env.NEXT_PUBLIC_APPSYNC_REGION as string,
     apiKey: process.env.NEXT_PUBLIC_APPSYNC_API_KEY as string,
+  },
+  S3: {
+    bucket: process.env.NEXT_PUBLIC_S3_BUCKET as string,
+    region: process.env.NEXT_PUBLIC_S3_REGION as string,
   }
 };
 
@@ -44,6 +48,12 @@ export const amplifyConfig: ResourcesConfig = {
       region: awsconfig.GraphQL.region,
       defaultAuthMode: 'apiKey',
       apiKey: awsconfig.GraphQL.apiKey,
+    }
+  },
+  Storage: {
+    S3: {
+      bucket: awsconfig.S3.bucket,
+      region: awsconfig.S3.region,
     }
   }
 };

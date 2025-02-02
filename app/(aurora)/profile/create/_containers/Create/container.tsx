@@ -22,6 +22,7 @@ export function CreateProfileContainer({ userId }: CreateProfileContainerProps) 
       name: formData.name,
       order: formData.order,
       bio: formData.bio || null,
+      avatarKey: formData.avatarKey,
       customData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
