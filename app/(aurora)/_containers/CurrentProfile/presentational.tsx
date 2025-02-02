@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { Profiles } from '@/_lib/graphql/API';
 import { SettingsContainer } from '../Settings/container';
 import { CurrentProfileSkeleton } from './skeleton';
+import { ProfileImage } from '@/_components/ProfileImage';
 
 interface CurrentProfilePresentationProps {
   profile: Profiles | null;
@@ -40,12 +41,14 @@ export function CurrentProfilePresentation({
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
             {profile.avatarKey ? (
-              <Image
-                src={profile.avatarKey}
+              <ProfileImage
+                path={profile.avatarKey}
                 alt={profile.name}
-                className="h-full w-full object-cover"
+                fallbackText={profile.name.charAt(0).toUpperCase()}
                 width={32}
                 height={32}
+                className="rounded-full"
+                themeColor={themeColor}
               />
             ) : (
               <AvatarFallback className='bg-zinc-700 text-zinc-100 text-xs'>

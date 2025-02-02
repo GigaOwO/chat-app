@@ -9,8 +9,8 @@ import type { Profiles } from '@/_lib/graphql/API';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import { getThemeColorFromCustomData } from '@/_lib/utils/theme';
-import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
+import { ProfileImage } from '@/_components/ProfileImage';
 
 interface ProfileTabPresentationProps {
   profiles: Profiles[];
@@ -152,13 +152,14 @@ export function ProfileTabPresentation({
               {formState.avatarKey && (
                 <div className="mt-4">
                   <Avatar className="h-32 w-32">
-                    <Image
-                      src={formState.avatarKey}
-                      alt="Current avatar"
+                    <ProfileImage
+                      path={formState.avatarKey}
+                      alt={formState.name}
+                      fallbackText={formState.name.charAt(0).toUpperCase()}
                       width={128}
                       height={128}
-                      className="rounded-full object-cover"
-                      priority
+                      className="rounded-full"
+                      themeColor={formState.themeColor}
                     />
                   </Avatar>
                 </div>
@@ -197,13 +198,14 @@ export function ProfileTabPresentation({
           >
             <Avatar className="h-12 w-12">
               {profile.avatarKey ? (
-                <Image
-                  src={profile.avatarKey}
+                <ProfileImage
+                  path={profile.avatarKey}
                   alt={profile.name}
+                  fallbackText={profile.name.charAt(0).toUpperCase()}
                   width={48}
                   height={48}
-                  className="rounded-full object-cover"
-                  priority
+                  className="rounded-full"
+                  themeColor={themeColor}
                 />
               ) : (
                 <AvatarFallback

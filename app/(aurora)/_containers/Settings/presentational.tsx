@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent } from '@/_components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/_components/ui/dialog';
 import { cn } from '@/_lib/utils';
 import type { Profiles } from '@/_lib/graphql/API';
 import { TABS } from './constants';
@@ -42,6 +42,10 @@ export function SettingsModalPresentation({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl h-[80vh] p-0 gap-0">
+        <div className='hidden'>
+          <DialogTitle></DialogTitle>
+          <DialogDescription></DialogDescription>
+        </div>
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-64 border-r border-gray-200 p-4 space-y-6">

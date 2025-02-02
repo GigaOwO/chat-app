@@ -1,9 +1,10 @@
 import { Card } from '@/_components/ui/card';
 import { Profiles } from '@/_lib/graphql/API';
-import Image from 'next/image';
 import Link from 'next/link';
 import { getThemeColorFromCustomData } from '@/_lib/utils/theme';
 import { Alert, AlertDescription } from '@/_components/ui/alert';
+import { ProfileImage } from '@/_components/ProfileImage';
+import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 
 interface SelectProfilePresentationProps {
   profiles: Profiles[];
@@ -50,24 +51,24 @@ export function SelectProfilePresentation({
                   ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
                 style={{ backgroundColor: themeColor }}
-              >
-                <div className="relative w-24 h-24 mb-4">
+              >            
+                <Avatar className="h-24 w-24">
                   {profile.avatarKey ? (
-                    <Image
-                      src={profile.avatarKey}
+                    <ProfileImage
+                      path={profile.avatarKey}
                       alt={profile.name}
-                      sizes='96px'
-                      fill
-                      className="rounded-full object-cover"
+                      fallbackText={profile.name.charAt(0).toUpperCase()}
+                      width={96}
+                      height={96}
+                      className="rounded-full"
+                      themeColor={themeColor}
                     />
                   ) : (
-                    <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-2xl font-semibold text-gray-400">
-                        {profile.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    <AvatarFallback className='bg-zinc-700 text-zinc-100 text-xs'>
+                      {profile.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   )}
-                </div>
+                </Avatar>
                 <h3 className="font-medium text-white">{profile.name}</h3>
                 {profile.bio && (
                   <p className="mt-1 text-sm text-white/80 text-center line-clamp-2">

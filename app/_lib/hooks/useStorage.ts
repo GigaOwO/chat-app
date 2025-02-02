@@ -16,6 +16,7 @@ export function useStorage() {
     return `${timestamp}-${random}.${extension}`;
   };
 
+  // プロフィール画像をアップロードし、S3のパスを返す
   const uploadProfileImage = async (file: File): Promise<string> => {
     setLoading(true);
     setError(null);
@@ -61,7 +62,24 @@ export function useStorage() {
         reader.readAsArrayBuffer(file);
       });
 
-      // 署名付きURLを取得
+      // S3のパスを返す
+      return path;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+      setProgress(0);
+    }
+  };
+
+  // S3のパスから署名付きURLを取得
+  const getPresignedUrl = async (path: string | null | undefined): Promise<string> => {
+    if (!path) {
+      throw new Error('Path is required');
+    }
+
+    try {
       const { url } = await getUrl({
         path,
         options: {
@@ -74,9 +92,6 @@ export function useStorage() {
     } catch (err) {
       setError(err as Error);
       throw err;
-    } finally {
-      setLoading(false);
-      setProgress(0);
     }
   };
 
@@ -84,6 +99,7 @@ export function useStorage() {
     loading,
     progress,
     error,
-    uploadProfileImage
+    uploadProfileImage,
+    getPresignedUrl
   };
 }

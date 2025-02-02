@@ -1,9 +1,9 @@
 'use client';
 
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
-import Image from 'next/image';
 import type { Profiles } from '@/_lib/graphql/API';
 import { ProfileSwitcherSkeleton } from './skeleton';
+import { ProfileImage } from '@/_components/ProfileImage';
 
 interface ProfileSwitcherPresentationProps {
   profiles: Profiles[];
@@ -68,12 +68,14 @@ export function ProfileSwitcherPresentation({
                 ${isSwitching ? 'animate-spin' : ''}
               `}>
                 {profile.avatarKey ? (
-                  <Image 
-                    src={profile.avatarKey} 
+                  <ProfileImage
+                    path={profile.avatarKey}
                     alt={profile.name}
-                    className="h-full w-full object-cover rounded-full"
-                    width={32}
-                    height={32}
+                    fallbackText={profile.name.charAt(0).toUpperCase()}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                    themeColor={themeColor}
                   />
                 ) : (
                   <AvatarFallback className="bg-zinc-700 text-zinc-100 text-xs">
