@@ -48,7 +48,7 @@ export function CurrentProfilePresentation({
                 height={32}
               />
             ) : (
-              <AvatarFallback>
+              <AvatarFallback className='bg-zinc-700 text-zinc-100 text-xs'>
                 {profile.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             )}

@@ -65,7 +65,8 @@ export function useStorage() {
       const { url } = await getUrl({
         path,
         options: {
-          expiresIn: 3600 * 24 // 24時間の有効期限
+          expiresIn: 3600 * 24, // 24時間の有効期限
+          validateObjectExistence: true,
         }
       });
 
