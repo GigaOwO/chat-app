@@ -97,15 +97,15 @@ export const deleteFriendRequest = gql`
 `;
 
 export const onCreateFriendRequests = gql`
-  subscription onCreateFriendRequests($input: CreateFriendRequestsInput!) {
-    onCreateFriendRequests(input: $input){
+  subscription onCreateFriendRequests($receiverId: String!) {
+    onCreateFriendRequests(receiverId: $receiverId) {
       createdAt
       receiverId
-      requestId
       senderId
+      requestId
       senderProfileId
-      updatedAt
       status
+      updatedAt
     }
   }
 `;

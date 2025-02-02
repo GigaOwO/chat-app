@@ -7,7 +7,6 @@ import {
   createFriendRequest,
   updateFriendRequest,
   deleteFriendRequest,
-  onCreateFriendRequests,
 } from '@/_lib/Featchers/FriendRequests/featcher';
 import type {
   CreateFriendRequestsInput,
@@ -130,21 +129,6 @@ export function useFriendRequests() {
     }
   };
 
-  const onCreateFriendRequestsSubscription = async (input: CreateFriendRequestsInput) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await client.graphql({
-        query: onCreateFriendRequests,
-        variables: { input }
-      })
-      return response;
-    } catch (err) {
-      setError(err as Error);
-      return null;
-    }
-  };
-
   return {
     loading,
     error,
@@ -154,6 +138,5 @@ export function useFriendRequests() {
     addFriendRequest,
     modifyFriendRequest,
     removeFriendRequest,
-    onCreateFriendRequestsSubscription,
   };
 }
