@@ -28,10 +28,9 @@ export default async function Create() {
     variables: { receiverId: user!.userId }
   }) as { data: { queryFriendRequestsByReceiverIdIndex: FriendRequestsConnection } };
   const friendRequests = (response.data.queryFriendRequestsByReceiverIdIndex.items || []).filter(request => request !== null);
-
   return (
     <div className="container mx-auto py-8">
-      <FetchFriendRequest receiverId={user!.userId} requests={friendRequests!} />
+      <FetchFriendRequest userId={user!.userId} profileId={"test"} requests={friendRequests!} />
     </div>
   )
 }
