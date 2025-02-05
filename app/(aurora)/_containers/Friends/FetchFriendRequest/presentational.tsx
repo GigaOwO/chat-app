@@ -8,11 +8,12 @@ import {
   CreateFriendsInput,
   FriendRequests,
   FriendStatus,
-  UpdateFriendRequestsInput
+  UpdateFriendRequestsInput,
+  FriendRequestStatus
 } from '@/_lib/graphql/API';
 import { generateClient } from 'aws-amplify/api';
 import { useEffect, useState } from 'react';
-import { onCreateFriendRequests } from '@/_lib/graphql/subscriptions';
+import { onCreateFriendRequests, onDeleteFriendRequests } from '@/_lib/graphql/subscriptions';
 
 const client = generateClient();
 
@@ -33,32 +34,49 @@ export function FetchFriendRequest({
   const { addFriend } = useFriends();
 
   useEffect(() => {
-    const subscription = client.graphql({
-      query: onCreateFriendRequests,
-      variables: { receiverId: userId }
-    })
-    .subscribe({
-      next: (data) => {
-        setFriendRequests([...friendRequests, data.data.onCreateFriendRequests]);
+    // 新規フレンドリクエストのサブスクリプション
+    const createSubscription = client.graphql({
+      query: onCreateFriendRequests
+    }).subscribe({
+      next: ({ data }) => {
+        const newRequest = data.onCreateFriendRequests;
+        // 自分宛てのリクエストかつ保留中のものだけを追加
+        if (newRequest?.receiverId === userId && 
+            newRequest?.status === FriendRequestStatus.PENDING) {
+          setFriendRequests(prev => [...prev, newRequest]);
+        }
       },
       error: (error) => {
-        console.error(error);
+        console.error('Subscription error:', error);
         setError('新しいリクエストの受信中にエラーが発生しました');
       }
     });
 
+    // フレンドリクエスト削除のサブスクリプション
+    const deleteSubscription = client.graphql({
+      query: onDeleteFriendRequests
+    }).subscribe({
+      next: ({ data }) => {
+        const deletedRequest = data.onDeleteFriendRequests;
+        if (deletedRequest?.receiverId === userId) {
+          setFriendRequests(prev => 
+            prev.filter(request => request.requestId !== deletedRequest.requestId)
+          );
+        }
+      },
+      error: (error) => {
+        console.error('Delete subscription error:', error);
+      }
+    });
+
     return () => {
-      subscription.unsubscribe();
+      createSubscription.unsubscribe();
+      deleteSubscription.unsubscribe();
     };
-  }, [userId, friendRequests]);
+  }, [userId]);
 
   const handleAccept = async (requestId: string) => {
     try {
-      const friendRequestInput: UpdateFriendRequestsInput = {
-        requestId,
-      };
-      await removeFriendRequest(friendRequestInput);
-
       const selectedRequest = friendRequests.find(
         (request) => request.requestId === requestId
       );
@@ -84,13 +102,25 @@ export function FetchFriendRequest({
         updatedAt: new Date().toISOString(),
       };
 
-      await addFriend(friendInputForReceiver);
-      await addFriend(friendInputForSender);
+      // まず友達関係を作成
+      await Promise.all([
+        addFriend(friendInputForReceiver),
+        addFriend(friendInputForSender)
+      ]);
 
-      setFriendRequests(friendRequests.filter((request) => request.requestId !== requestId));
+      // その後でリクエストを削除
+      const friendRequestInput: UpdateFriendRequestsInput = {
+        requestId,
+      };
+      await removeFriendRequest(friendRequestInput);
+
+      // UIからリクエストを削除（サブスクリプションのバックアップとして）
+      setFriendRequests(prev => 
+        prev.filter(request => request.requestId !== requestId)
+      );
       setError(null);
     } catch (err) {
-      setError('リクエストの承認中にエラーが発生しました' + err);
+      setError('リクエストの承認中にエラーが発生しました: ' + err);
     }
   };
 
@@ -100,20 +130,15 @@ export function FetchFriendRequest({
         requestId,
       };
       await removeFriendRequest(input);
-      setFriendRequests(friendRequests.filter((request) => request.requestId !== requestId));
+      // UIからリクエストを削除（サブスクリプションのバックアップとして）
+      setFriendRequests(prev => 
+        prev.filter(request => request.requestId !== requestId)
+      );
       setError(null);
     } catch (err) {
-      setError('リクエストの拒否中にエラーが発生しました' + err);
+      setError('リクエストの拒否中にエラーが発生しました: ' + err);
     }
   };
-
-  if (friendRequests.length === 0) {
-    return (
-      <div className="text-center text-gray-500">
-        フレンドリクエストはありません
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -123,31 +148,37 @@ export function FetchFriendRequest({
         </Alert>
       )}
 
-      <ul className="space-y-2">
-        {friendRequests.map((request) => (
-          <li
-            key={request.requestId}
-            className="flex items-center justify-between p-4 rounded-lg bg-gray-100"
-          >
-            <span>{request.senderId}</span>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={() => handleAccept(request.requestId)}
-              >
-                承認
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleReject(request.requestId)}
-              >
-                拒否
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {friendRequests.length === 0 ? (
+        <div className="text-center text-gray-500 py-4">
+          フレンドリクエストはありません
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {friendRequests.map((request) => (
+            <li
+              key={request.requestId}
+              className="flex items-center justify-between p-4 rounded-lg bg-gray-100"
+            >
+              <span>{request.senderId}</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleAccept(request.requestId)}
+                >
+                  承認
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleReject(request.requestId)}
+                >
+                  拒否
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
