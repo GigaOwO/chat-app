@@ -20,18 +20,28 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(undefined)
     
     try {
       const { isSignUpComplete } = await confirmSignUp({
         username: email,
         confirmationCode
       })
+
       if (isSignUpComplete) {
+        // 確認完了後、自動的にサインイン画面へ遷移
         router.push('/signin')
       }
-    } catch (err) {
+    } catch (err: Error | unknown) {
       console.error('Error during confirmation:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      
+      if (err instanceof Error && err.message?.includes('Invalid verification code')) {
+        setError('確認コードが正しくありません')
+      } else if (err instanceof Error && err.message?.includes('Confirmation code has expired')) {
+        setError('確認コードの有効期限が切れています。新しいコードを送信してください')
+      } else {
+        setError(err instanceof Error ? err.message : '確認に失敗しました')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -39,12 +49,17 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
 
   const handleResendCode = async () => {
     setIsResending(true)
+    setError(undefined)
+    
     try {
       await resendSignUpCode({
         username: email
       })
+      // 成功メッセージを表示する代わりに、コードが送信されたことを知らせる
+      setConfirmationCode('')  // 入力フィールドをクリア
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      console.error('Error resending code:', err)
+      setError(err instanceof Error ? err.message : '確認コードの再送信に失敗しました')
     } finally {
       setIsResending(false)
     }
@@ -53,32 +68,44 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Confirm Sign Up</CardTitle>
-        <CardDescription>Enter the confirmation code sent to {email}</CardDescription>
+        <CardTitle>メールアドレスの確認</CardTitle>
+        <CardDescription>
+          {email}宛に送信された確認コードを入力してください
+        </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         {csrfToken && <input type="hidden" name="csrf" value={csrfToken} />}
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="confirmationCode">Confirmation Code</Label>
+            <Label htmlFor="confirmationCode">確認コード</Label>
             <Input
               id="confirmationCode"
               type="text"
               required
               value={confirmationCode}
               onChange={(e) => setConfirmationCode(e.target.value)}
+              placeholder="000000"
+              maxLength={6}
+              className="text-center text-xl tracking-widest"
             />
           </div>
+          
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
+          <div className="text-sm text-gray-500">
+            確認コードが届かない場合や期限切れの場合は、以下のボタンから再送信できます。
+          </div>
         </CardContent>
+
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Confirm Sign Up'}
+            {isLoading ? '確認中...' : '確認する'}
           </Button>
+          
           <Button
             type="button"
             variant="outline"
@@ -86,7 +113,16 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
             disabled={isResending}
             className="w-full"
           >
-            {isResending ? 'Sending...' : 'Resend Code'}
+            {isResending ? '送信中...' : '確認コードを再送信'}
+          </Button>
+
+          <Button
+            type="button"
+            variant="link"
+            className="w-full"
+            onClick={() => router.push('/signup')}
+          >
+            サインアップし直す
           </Button>
         </CardFooter>
       </form>

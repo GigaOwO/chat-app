@@ -3,7 +3,8 @@ import { generateClient } from 'aws-amplify/api';
 import { 
   getUser, 
   listUsers, 
-  getUsersByEmail,
+  getUsersByEmailIndex,
+  getUsersByUsernameIndex,
   createUser,
   updateUser,
   deleteUser 
@@ -23,13 +24,13 @@ export function useUsers() {
   const [error, setError] = useState<Error | null>(null);
 
   // 単一ユーザーを取得
-  const fetchUser = async (username: string) => {
+  const fetchUser = async (sub: string) => {
     setLoading(true);
     setError(null);
     try {
       const response = await client.graphql({
         query: getUser,
-        variables: { username }
+        variables: { sub }
       }) as { data: { getUsers: Users } };
       return response.data.getUsers;
     } catch (err) {
@@ -58,13 +59,31 @@ export function useUsers() {
     }
   };
 
+  // ユーザー名でユーザーを検索
+  const searchUsersByUsername = async (username: string, limit?: number, nextToken?: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await client.graphql({
+        query: getUsersByUsernameIndex,
+        variables: { username, limit, nextToken }
+      }) as { data: { queryUsersByUsernameIndex: UsersConnection } };
+      return response.data.queryUsersByUsernameIndex;
+    } catch (err) {
+      setError(err as Error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // メールアドレスでユーザーを検索
   const searchUsersByEmail = async (email: string, limit?: number, nextToken?: string) => {
     setLoading(true);
     setError(null);
     try {
       const response = await client.graphql({
-        query: getUsersByEmail,
+        query: getUsersByEmailIndex,
         variables: { email, limit, nextToken }
       }) as { data: { queryUsersByEmailIndex: UsersConnection } };
       return response.data.queryUsersByEmailIndex;
@@ -76,11 +95,37 @@ export function useUsers() {
     }
   };
 
-  // ユーザーを作成
+  // ユーザー名の利用可能性をチェック
+  const checkUsernameAvailability = async (username: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await client.graphql({
+        query: getUsersByUsernameIndex,
+        variables: { username, limit: 1 }
+      }) as { data: { queryUsersByUsernameIndex: UsersConnection } };
+      
+      return !response.data.queryUsersByUsernameIndex.items?.length;
+    } catch (err) {
+      setError(err as Error);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ユーザーを作成（ユーザー名の重複チェック付き）
   const addUser = async (input: CreateUsersInput) => {
     setLoading(true);
     setError(null);
     try {
+      // まずユーザー名の利用可能性をチェック
+      const isAvailable = await checkUsernameAvailability(input.username || '');
+      if (!isAvailable) {
+        throw new Error('このユーザーネームは既に使用されています');
+      }
+
+      // ユーザーを作成
       const response = await client.graphql({
         query: createUser,
         variables: { input }
@@ -88,7 +133,7 @@ export function useUsers() {
       return response.data.createUsers;
     } catch (err) {
       setError(err as Error);
-      return null;
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -99,6 +144,14 @@ export function useUsers() {
     setLoading(true);
     setError(null);
     try {
+      // ユーザー名を変更する場合は利用可能性をチェック
+      if (input.username) {
+        const isAvailable = await checkUsernameAvailability(input.username);
+        if (!isAvailable) {
+          throw new Error('このユーザーネームは既に使用されています');
+        }
+      }
+
       const response = await client.graphql({
         query: updateUser,
         variables: { input }
@@ -135,7 +188,9 @@ export function useUsers() {
     error,
     fetchUser,
     fetchUsers,
+    searchUsersByUsername,
     searchUsersByEmail,
+    checkUsernameAvailability,
     addUser,
     modifyUser,
     removeUser

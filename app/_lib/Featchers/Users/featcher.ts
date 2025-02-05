@@ -2,11 +2,11 @@ import { gql } from 'graphql-request';
 
 // ユーザーを取得
 export const getUser = gql`
-  query getUser($username: String!) {
-    getUsers(username: $username) {
+  query getUser($sub: String!) {
+    getUsers(sub: $sub) {
+      sub
       username
       email
-      sub
       status
       createdAt
       updatedAt
@@ -19,9 +19,9 @@ export const listUsers = gql`
   query listUsers($nextToken: String) {
     listUsers(limit: 50, nextToken: $nextToken) {
       items {
+        sub
         username
         email
-        sub
         status
         createdAt
         updatedAt
@@ -32,13 +32,30 @@ export const listUsers = gql`
 `;
 
 // メールアドレスでユーザーを検索
-export const getUsersByEmail = gql`
-  query getUsersByEmail($email: String!, $limit: Int, $nextToken: String) {
+export const getUsersByEmailIndex = gql`
+  query getUsersByEmailIndex($email: String!, $limit: Int, $nextToken: String) {
     queryUsersByEmailIndex(email: $email, first: $limit, after: $nextToken) {
       items {
+        sub
         username
         email
+        status
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+// ユーザー名でユーザーを検索
+export const getUsersByUsernameIndex = gql`
+  query getUsersByUsernameIndex($username: String!, $limit: Int, $nextToken: String) {
+    queryUsersByUsernameIndex(username: $username, first: $limit, after: $nextToken) {
+      items {
         sub
+        username
+        email
         status
         createdAt
         updatedAt
@@ -52,9 +69,9 @@ export const getUsersByEmail = gql`
 export const createUser = gql`
   mutation createUser($input: CreateUsersInput!) {
     createUsers(input: $input) {
+      sub
       username
       email
-      sub
       status
       createdAt
       updatedAt
@@ -66,9 +83,9 @@ export const createUser = gql`
 export const updateUser = gql`
   mutation updateUser($input: UpdateUsersInput!) {
     updateUsers(input: $input) {
+      sub
       username
       email
-      sub
       status
       createdAt
       updatedAt
@@ -80,9 +97,9 @@ export const updateUser = gql`
 export const deleteUser = gql`
   mutation deleteUser($input: DeleteUsersInput!) {
     deleteUsers(input: $input) {
+      sub
       username
       email
-      sub
       status
       createdAt
       updatedAt

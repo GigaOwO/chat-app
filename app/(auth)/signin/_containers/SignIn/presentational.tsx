@@ -82,7 +82,7 @@ export function SignInForm({ csrfToken }: Props) {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Sign In'}
+            {isLoading ? 'ログイン中...' : 'サインイン'}
           </Button>
           <Button
             type="button"
