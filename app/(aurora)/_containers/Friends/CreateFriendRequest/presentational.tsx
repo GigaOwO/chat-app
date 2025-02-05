@@ -5,22 +5,29 @@ import { Button } from '@/_components/ui/button';
 import { useFriendRequests } from '@/_lib/hooks/useFriendRequests';
 import { useUsers } from '@/_lib/hooks/useUsers';
 import { Alert, AlertDescription } from '@/_components/ui/alert';
-import { CreateFriendRequestsInput, UsersConnection, FriendRequestStatus } from '@/_lib/graphql/API';
+import { useProfileContext } from '../../Profile/context';
+import {
+  CreateFriendRequestsInput,
+  UsersConnection,
+  FriendRequestStatus
+} from '@/_lib/graphql/API';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { v4 as uuidv4 } from "uuid";
 
 interface CreateFriendRequestFormProps {
   senderId: string;
-  senderName: string;
 }
 
-export function CreateFriendRequestForm({ senderId }: CreateFriendRequestFormProps) {
+export function CreateFriendRequestForm({
+  senderId
+}: CreateFriendRequestFormProps) {
   const [users, setUsers] = useState<UsersConnection|null|undefined>();
   const [username, setUsername] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const { searchUsersByUsername: searchUsers, loading } = useUsers();
   const { addFriendRequest } = useFriendRequests();
+  const { currentProfile } = useProfileContext(); // プロファイルコンテキストから現在のプロファイルを取得
 
   const search = useDebouncedCallback((username: string) => {
     if (username.trim()) {
@@ -39,6 +46,12 @@ export function CreateFriendRequestForm({ senderId }: CreateFriendRequestFormPro
   };
 
   const handleSubmit = async (selectedUsername: string) => {
+    // 現在のプロファイルがない場合は処理を中止
+    if (!currentProfile) {
+      setError('プロファイルが選択されていません');
+      return;
+    }
+
     const user = users?.items?.find((user) => user?.username === selectedUsername);
     if (!user) return;
 
@@ -48,7 +61,7 @@ export function CreateFriendRequestForm({ senderId }: CreateFriendRequestFormPro
         requestId,
         receiverId: user.sub!,
         senderId,
-        senderProfileId: "profileId",
+        senderProfileId: currentProfile.profileId, // 現在選択中のプロファイルIDを使用
         status: FriendRequestStatus.PENDING,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

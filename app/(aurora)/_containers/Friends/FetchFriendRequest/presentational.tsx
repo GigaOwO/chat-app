@@ -5,17 +5,20 @@ import { Alert, AlertDescription } from '@/_components/ui/alert';
 import { useFriendRequests } from '@/_lib/hooks/useFriendRequests';
 import { useFriends } from '@/_lib/hooks/useFriends';
 import { useUsers } from '@/_lib/hooks/useUsers';
+import { useProfiles } from '@/_lib/hooks/useProfiles';
 import {
   CreateFriendsInput,
   FriendRequests,
   FriendStatus,
   UpdateFriendRequestsInput,
   FriendRequestStatus,
-  Users
+  Users,
+  Profiles
 } from '@/_lib/graphql/API';
 import { generateClient } from 'aws-amplify/api';
 import { useEffect, useState } from 'react';
 import { onCreateFriendRequests, onDeleteFriendRequests } from '@/_lib/graphql/subscriptions';
+import { ProfileSelectorModal } from './ProfileSelectorModal';
 
 const client = generateClient();
 
@@ -27,18 +30,41 @@ interface FetchFriendRequestProps {
 
 export function FetchFriendRequest({
   userId,
-  profileId,
   requests
 }: FetchFriendRequestProps) {
+  // 状態管理
   const [friendRequests, setFriendRequests] = useState<FriendRequests[]>(requests);
   const [requestUsers, setRequestUsers] = useState<Record<string, Users>>({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
+  const [profiles, setProfiles] = useState<Profiles[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<FriendRequests | null>(null);
+  const [isProfileSelectorOpen, setIsProfileSelectorOpen] = useState(false);
+  
+  // カスタムフックの使用
   const { removeFriendRequest } = useFriendRequests();
   const { addFriend } = useFriends();
   const { fetchUser } = useUsers();
+  const { fetchProfilesByUserId } = useProfiles();
 
-  // ユーザー情報を取得する関数
+  // プロファイル一覧の取得
+  useEffect(() => {
+    const loadProfiles = async () => {
+      try {
+        const response = await fetchProfilesByUserId(userId);
+        if (response?.items) {
+          setProfiles(response.items.filter((p): p is Profiles => p !== null));
+        }
+      } catch (err) {
+        console.error('Error loading profiles:', err);
+        setError('プロファイルの読み込みに失敗しました');
+      }
+    };
+
+    loadProfiles();
+  }, [userId, fetchProfilesByUserId]);
+
+  // リクエスト送信者のユーザー情報を取得
   const fetchRequestUsers = async (requests: FriendRequests[]) => {
     try {
       const userPromises = requests.map(async (request) => {
@@ -59,15 +85,16 @@ export function FetchFriendRequest({
     }
   };
 
+  // 初期リクエストのユーザー情報を取得
   useEffect(() => {
-    // 初期リクエストのユーザー情報を取得
     if (requests.length > 0) {
       fetchRequestUsers(requests);
     }
   }, [requests]);
 
+  // リアルタイム更新のサブスクリプション
   useEffect(() => {
-    // 新規フレンドリクエストのサブスクリプション
+    // 新規フレンドリクエストの監視
     const createSubscription = client.graphql({
       query: onCreateFriendRequests
     }).subscribe({
@@ -75,7 +102,7 @@ export function FetchFriendRequest({
         const newRequest = data.onCreateFriendRequests;
         if (newRequest?.receiverId === userId && 
             newRequest?.status === FriendRequestStatus.PENDING) {
-          // 新しいリクエストのユーザー情報も取得
+          // 新規リクエストのユーザー情報を取得
           const user = await fetchUser(newRequest.senderId);
           if (user) {
             setRequestUsers(prev => ({
@@ -92,17 +119,17 @@ export function FetchFriendRequest({
       }
     });
 
-    // フレンドリクエスト削除のサブスクリプション
+    // フレンドリクエストの削除を監視
     const deleteSubscription = client.graphql({
       query: onDeleteFriendRequests
     }).subscribe({
       next: ({ data }) => {
         const deletedRequest = data.onDeleteFriendRequests;
         if (deletedRequest?.receiverId === userId) {
+          // リクエストとユーザー情報を削除
           setFriendRequests(prev => 
             prev.filter(request => request.requestId !== deletedRequest.requestId)
           );
-          // ユーザー情報も削除
           setRequestUsers(prev => {
             const newUsers = { ...prev };
             delete newUsers[deletedRequest.senderId];
@@ -115,52 +142,66 @@ export function FetchFriendRequest({
       }
     });
 
+    // クリーンアップ
     return () => {
       createSubscription.unsubscribe();
       deleteSubscription.unsubscribe();
     };
   }, [userId, fetchUser]);
 
+  // リクエスト承認処理の開始（プロファイル選択モーダルを表示）
   const handleAccept = async (requestId: string) => {
+    const request = friendRequests.find(r => r.requestId === requestId);
+    if (!request) return;
+
+    setSelectedRequest(request);
+    setIsProfileSelectorOpen(true);
+  };
+
+  // プロファイル選択後のフレンド承認処理
+  const handleProfileSelect = async (selectedProfileId: string) => {
+    if (!selectedRequest) return;
+
     try {
-      setIsLoading(prev => ({ ...prev, [requestId]: true }));
-      const selectedRequest = friendRequests.find(
-        (request) => request.requestId === requestId
-      );
-      if (!selectedRequest) return;
+      setIsLoading(prev => ({ ...prev, [selectedRequest.requestId]: true }));
 
+      // 受信者のフレンド関係 (自分)
       const friendInputForReceiver: CreateFriendsInput = {
-        userId: userId,
-        friendId: selectedRequest.senderId,
+        userId: userId, // 自分のユーザーID
+        friendId: selectedRequest.senderId, // 送信者のユーザーID
         status: FriendStatus.ACTIVE,
-        userProfileId: profileId,
-        friendProfileId: selectedRequest.senderProfileId,
+        userProfileId: selectedProfileId, // 自分が選択したプロファイルID
+        friendProfileId: selectedRequest.senderProfileId, // 送信者のプロファイルID
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
+      // 送信者のフレンド関係
       const friendInputForSender: CreateFriendsInput = {
-        userId: selectedRequest.senderId,
-        friendId: userId,
+        userId: selectedRequest.senderId, // 送信者のユーザーID
+        friendId: userId, // 自分のユーザーID
         status: FriendStatus.ACTIVE,
-        userProfileId: selectedRequest.senderProfileId,
-        friendProfileId: profileId,
+        userProfileId: selectedRequest.senderProfileId, // 送信者のプロファイルID
+        friendProfileId: selectedProfileId, // 自分が選択したプロファイルID
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
+      // フレンド関係を同時に作成
       await Promise.all([
         addFriend(friendInputForReceiver),
         addFriend(friendInputForSender)
       ]);
 
+      // フレンドリクエストを削除
       const friendRequestInput: UpdateFriendRequestsInput = {
-        requestId,
+        requestId: selectedRequest.requestId,
       };
       await removeFriendRequest(friendRequestInput);
 
+      // UI状態を更新
       setFriendRequests(prev => 
-        prev.filter(request => request.requestId !== requestId)
+        prev.filter(request => request.requestId !== selectedRequest.requestId)
       );
       setRequestUsers(prev => {
         const newUsers = { ...prev };
@@ -171,10 +212,13 @@ export function FetchFriendRequest({
     } catch (err) {
       setError('リクエストの承認中にエラーが発生しました: ' + err);
     } finally {
-      setIsLoading(prev => ({ ...prev, [requestId]: false }));
+      setIsLoading(prev => ({ ...prev, [selectedRequest.requestId]: false }));
+      setIsProfileSelectorOpen(false);
+      setSelectedRequest(null);
     }
   };
 
+  // リクエスト拒否処理
   const handleReject = async (requestId: string) => {
     try {
       setIsLoading(prev => ({ ...prev, [requestId]: true }));
@@ -183,11 +227,13 @@ export function FetchFriendRequest({
       );
       if (!selectedRequest) return;
 
+      // フレンドリクエストを削除
       const input: UpdateFriendRequestsInput = {
         requestId,
       };
       await removeFriendRequest(input);
 
+      // UI状態を更新
       setFriendRequests(prev => 
         prev.filter(request => request.requestId !== requestId)
       );
@@ -204,14 +250,17 @@ export function FetchFriendRequest({
     }
   };
 
+  // UI描画
   return (
     <div className="space-y-4">
+      {/* エラーメッセージ */}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
+      {/* フレンドリクエスト一覧 */}
       {friendRequests.length === 0 ? (
         <div className="text-center text-gray-500 py-4">
           フレンドリクエストはありません
@@ -247,6 +296,19 @@ export function FetchFriendRequest({
           ))}
         </ul>
       )}
+
+      {/* プロファイル選択モーダル */}
+      <ProfileSelectorModal
+        isOpen={isProfileSelectorOpen}
+        onClose={() => {
+          setIsProfileSelectorOpen(false);
+          setSelectedRequest(null);
+        }}
+        profiles={profiles}
+        onSelect={handleProfileSelect}
+        loading={selectedRequest ? isLoading[selectedRequest.requestId] : false}
+        error={error}
+      />
     </div>
   );
 }
