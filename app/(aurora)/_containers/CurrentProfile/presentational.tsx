@@ -2,18 +2,26 @@
 
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import Image from 'next/image';
-import type { Profiles } from '@/_lib/graphql/API';
+import type { Profiles, FriendRequests, FriendRequestsConnection } from '@/_lib/graphql/API';
 import { SettingsContainer } from '../Settings/container';
+import { FriendsContainer } from '../Friends/container';
 import { CurrentProfileSkeleton } from './skeleton';
 import { ProfileImage } from '@/_components/ProfileImage';
+import { useEffect, useState } from 'react';
+import { getCurrentUser } from 'aws-amplify/auth';
+import { generateClient } from 'aws-amplify/api';
+import { getFriendRequestsByReceiverId } from '@/_lib/Featchers/FriendRequests/featcher';
 
 interface CurrentProfilePresentationProps {
   profile: Profiles | null;
   isLoading: boolean;
   themeColor: string;
   isSettingsOpen: boolean;
+  isFriendsOpen: boolean;
   onSettingsOpen: () => void;
   onSettingsClose: () => void;
+  onFriendsOpen: () => void;
+  onFriendsClose: () => void;
 }
 
 export function CurrentProfilePresentation({
@@ -21,14 +29,51 @@ export function CurrentProfilePresentation({
   isLoading,
   themeColor,
   isSettingsOpen,
+  isFriendsOpen,
   onSettingsOpen,
-  onSettingsClose
+  onSettingsClose,
+  onFriendsOpen,
+  onFriendsClose
 }: CurrentProfilePresentationProps) {
-  if (isLoading) {
+  const [currentUser, setCurrentUser] = useState<{userId: string, username: string} | null>(null);
+  const [friendRequests, setFriendRequests] = useState<FriendRequests[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Get current user
+        const user = await getCurrentUser();
+        setCurrentUser({
+          userId: user.userId,
+          username: user.username
+        });
+
+        // Get friend requests
+        const client = generateClient();
+        const response = await client.graphql({
+          query: getFriendRequestsByReceiverId,
+          variables: { receiverId: user.userId }
+        }) as { data: { queryFriendRequestsByReceiverIdIndex: FriendRequestsConnection } };
+
+        const requests = (response.data.queryFriendRequestsByReceiverIdIndex.items || [])
+          .filter(request => request !== null) as FriendRequests[];
+        setFriendRequests(requests);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading || loading) {
     return <CurrentProfileSkeleton />;
   }
 
-  if (!profile) {
+  if (!profile || !currentUser) {
     return null;
   }
 
@@ -61,24 +106,52 @@ export function CurrentProfilePresentation({
           </span>
         </div>
         
-        <button 
-          onClick={onSettingsOpen}
-          className="p-1 rounded-full hover:bg-black/20 transition-colors"
-        >
-          <Image
-            src="/settings.svg"
-            alt="Settings"
-            width={20}
-            height={20}
-            className="opacity-80"
-          />
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={onFriendsOpen}
+            className="p-1 rounded-full hover:bg-black/20 transition-colors relative"
+          >
+            <Image
+              src="/friends.svg"
+              alt="Friends"
+              width={20}
+              height={20}
+              className="opacity-80"
+            />
+            {friendRequests.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                {friendRequests.length}
+              </span>
+            )}
+          </button>
+          <button 
+            onClick={onSettingsOpen}
+            className="p-1 rounded-full hover:bg-black/20 transition-colors"
+          >
+            <Image
+              src="/settings.svg"
+              alt="Settings"
+              width={20}
+              height={20}
+              className="opacity-80"
+            />
+          </button>
+        </div>
       </div>
 
       <SettingsContainer
         isOpen={isSettingsOpen}
         onClose={onSettingsClose}
         profile={profile}
+      />
+
+      <FriendsContainer
+        isOpen={isFriendsOpen}
+        onClose={onFriendsClose}
+        userId={currentUser.userId}
+        username={currentUser.username}
+        profileId={profile.profileId}
+        initialRequests={friendRequests}
       />
     </>
   );

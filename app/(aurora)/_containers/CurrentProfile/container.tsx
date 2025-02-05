@@ -7,6 +7,7 @@ import { CurrentProfilePresentation } from './presentational';
 export function CurrentProfileContainer() {
   const { currentProfile, isLoading, getCurrentThemeColor } = useProfileContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFriendsOpen, setIsFriendsOpen] = useState(false);
 
   return (
     <CurrentProfilePresentation
@@ -14,8 +15,11 @@ export function CurrentProfileContainer() {
       isLoading={isLoading}
       themeColor={getCurrentThemeColor()}
       isSettingsOpen={isSettingsOpen}
+      isFriendsOpen={isFriendsOpen}
       onSettingsOpen={() => setIsSettingsOpen(true)}
       onSettingsClose={() => setIsSettingsOpen(false)}
+      onFriendsOpen={() => setIsFriendsOpen(true)}
+      onFriendsClose={() => setIsFriendsOpen(false)}
     />
   );
 }
