@@ -23,7 +23,7 @@ export default function AuroraLayout({
       </div>
 
 
-      <main className="">
+      <main className="w-full">
         {children}
       </main>
     </div>

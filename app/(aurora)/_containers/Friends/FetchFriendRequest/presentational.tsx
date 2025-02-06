@@ -13,11 +13,12 @@ import {
   UpdateFriendRequestsInput,
   FriendRequestStatus,
   Users,
-  Profiles
+  Profiles,
+  DeleteFriendRequestsInput
 } from '@/_lib/graphql/API';
 import { generateClient } from 'aws-amplify/api';
 import { useEffect, useState } from 'react';
-import { onCreateFriendRequests, onDeleteFriendRequests } from '@/_lib/graphql/subscriptions';
+import { onCreateFriendRequests, onDeleteFriendRequests, onUpdateFriendRequests } from '@/_lib/graphql/subscriptions';
 import { ProfileSelectorModal } from './ProfileSelectorModal';
 
 const client = generateClient();
@@ -32,7 +33,6 @@ export function FetchFriendRequest({
   userId,
   requests
 }: FetchFriendRequestProps) {
-  // 状態管理
   const [friendRequests, setFriendRequests] = useState<FriendRequests[]>(requests);
   const [requestUsers, setRequestUsers] = useState<Record<string, Users>>({});
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +41,7 @@ export function FetchFriendRequest({
   const [selectedRequest, setSelectedRequest] = useState<FriendRequests | null>(null);
   const [isProfileSelectorOpen, setIsProfileSelectorOpen] = useState(false);
   
-  // カスタムフックの使用
-  const { removeFriendRequest } = useFriendRequests();
+  const { removeFriendRequest, modifyFriendRequest } = useFriendRequests();
   const { addFriend } = useFriends();
   const { fetchUser } = useUsers();
   const { fetchProfilesByUserId } = useProfiles();
@@ -94,69 +93,90 @@ export function FetchFriendRequest({
 
   // リアルタイム更新のサブスクリプション
   useEffect(() => {
-    // 新規フレンドリクエストの監視
-    const createSubscription = client.graphql({
-      query: onCreateFriendRequests
-    }).subscribe({
-      next: async ({ data }) => {
-        const newRequest = data.onCreateFriendRequests;
-        if (newRequest?.receiverId === userId && 
-            newRequest?.status === FriendRequestStatus.PENDING) {
-          // 新規リクエストのユーザー情報を取得
-          const user = await fetchUser(newRequest.senderId);
-          if (user) {
-            setRequestUsers(prev => ({
-              ...prev,
-              [newRequest.senderId]: user
-            }));
+    const subscriptions: { unsubscribe: () => void }[] = [];
+
+    try {
+      // 新規フレンドリクエストの監視
+      const createSub = client.graphql({
+        query: onCreateFriendRequests,
+      }).subscribe({
+        next: async ({ data }) => {
+          const newRequest = data.onCreateFriendRequests;
+          if (newRequest && 
+              newRequest.receiverId === userId &&
+              newRequest.status === FriendRequestStatus.PENDING) {
+            console.log('New friend request received:', newRequest);
+            const user = await fetchUser(newRequest.senderId);
+            if (user) {
+              setRequestUsers(prev => ({
+                ...prev,
+                [newRequest.senderId]: user
+              }));
+            }
+            setFriendRequests(prev => [...prev, newRequest]);
           }
-          setFriendRequests(prev => [...prev, newRequest]);
+        },
+        error: (error) => {
+          console.error('Create subscription error:', error);
         }
-      },
-      error: (error) => {
-        console.error('Subscription error:', error);
-        setError('新しいリクエストの受信中にエラーが発生しました');
-      }
-    });
+      });
+      subscriptions.push(createSub);
 
-    // フレンドリクエストの削除を監視
-    const deleteSubscription = client.graphql({
-      query: onDeleteFriendRequests
-    }).subscribe({
-      next: ({ data }) => {
-        const deletedRequest = data.onDeleteFriendRequests;
-        if (deletedRequest?.receiverId === userId) {
-          // リクエストとユーザー情報を削除
-          setFriendRequests(prev => 
-            prev.filter(request => request.requestId !== deletedRequest.requestId)
-          );
-          setRequestUsers(prev => {
-            const newUsers = { ...prev };
-            delete newUsers[deletedRequest.senderId];
-            return newUsers;
-          });
+      // フレンドリクエストの更新を監視
+      const updateSub = client.graphql({
+        query: onUpdateFriendRequests,
+      }).subscribe({
+        next: ({ data }) => {
+          const updatedRequest = data.onUpdateFriendRequests;
+          if (updatedRequest?.receiverId === userId) {
+            console.log('Friend request updated:', updatedRequest);
+            setFriendRequests(prev => 
+              prev.map(request => 
+                request.requestId === updatedRequest.requestId ? updatedRequest : request
+              )
+            );
+          }
+        },
+        error: (error) => {
+          console.error('Update subscription error:', error);
         }
-      },
-      error: (error) => {
-        console.error('Delete subscription error:', error);
-      }
-    });
+      });
+      subscriptions.push(updateSub);
 
-    // クリーンアップ
+      // フレンドリクエストの削除を監視
+      const deleteSub = client.graphql({
+        query: onDeleteFriendRequests,
+      }).subscribe({
+        next: ({ data }) => {
+          const deletedRequest = data.onDeleteFriendRequests;
+          if (deletedRequest?.receiverId === userId) {
+            console.log('Friend request deleted:', deletedRequest);
+            setFriendRequests(prev => 
+              prev.filter(request => request.requestId !== deletedRequest.requestId)
+            );
+            setRequestUsers(prev => {
+              const newUsers = { ...prev };
+              delete newUsers[deletedRequest.senderId];
+              return newUsers;
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Delete subscription error:', error);
+        }
+      });
+      subscriptions.push(deleteSub);
+
+    } catch (error) {
+      console.error('Error setting up subscriptions:', error);
+      setError('リアルタイム更新の設定中にエラーが発生しました');
+    }
+
+    // クリーンアップ関数
     return () => {
-      createSubscription.unsubscribe();
-      deleteSubscription.unsubscribe();
+      subscriptions.forEach(sub => sub.unsubscribe());
     };
   }, [userId, fetchUser]);
-
-  // リクエスト承認処理の開始（プロファイル選択モーダルを表示）
-  const handleAccept = async (requestId: string) => {
-    const request = friendRequests.find(r => r.requestId === requestId);
-    if (!request) return;
-
-    setSelectedRequest(request);
-    setIsProfileSelectorOpen(true);
-  };
 
   // プロファイル選択後のフレンド承認処理
   const handleProfileSelect = async (selectedProfileId: string) => {
@@ -165,24 +185,33 @@ export function FetchFriendRequest({
     try {
       setIsLoading(prev => ({ ...prev, [selectedRequest.requestId]: true }));
 
+      // フレンドリクエストのステータスを ACCEPTED に更新
+      const updateRequestInput: UpdateFriendRequestsInput = {
+        requestId: selectedRequest.requestId,
+        status: FriendRequestStatus.ACCEPTED,
+        updatedAt: new Date().toISOString()
+      };
+
+      await modifyFriendRequest(updateRequestInput);
+
       // 受信者のフレンド関係 (自分)
       const friendInputForReceiver: CreateFriendsInput = {
-        userId: userId, // 自分のユーザーID
-        friendId: selectedRequest.senderId, // 送信者のユーザーID
+        userId: userId,
+        friendId: selectedRequest.senderId,
         status: FriendStatus.ACTIVE,
-        userProfileId: selectedProfileId, // 自分が選択したプロファイルID
-        friendProfileId: selectedRequest.senderProfileId, // 送信者のプロファイルID
+        userProfileId: selectedProfileId,
+        friendProfileId: selectedRequest.senderProfileId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
       // 送信者のフレンド関係
       const friendInputForSender: CreateFriendsInput = {
-        userId: selectedRequest.senderId, // 送信者のユーザーID
-        friendId: userId, // 自分のユーザーID
+        userId: selectedRequest.senderId,
+        friendId: userId,
         status: FriendStatus.ACTIVE,
-        userProfileId: selectedRequest.senderProfileId, // 送信者のプロファイルID
-        friendProfileId: selectedProfileId, // 自分が選択したプロファイルID
+        userProfileId: selectedRequest.senderProfileId,
+        friendProfileId: selectedProfileId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -194,23 +223,15 @@ export function FetchFriendRequest({
       ]);
 
       // フレンドリクエストを削除
-      const friendRequestInput: UpdateFriendRequestsInput = {
-        requestId: selectedRequest.requestId,
+      const deleteRequestInput: DeleteFriendRequestsInput = {
+        requestId: selectedRequest.requestId
       };
-      await removeFriendRequest(friendRequestInput);
+      await removeFriendRequest(deleteRequestInput);
 
-      // UI状態を更新
-      setFriendRequests(prev => 
-        prev.filter(request => request.requestId !== selectedRequest.requestId)
-      );
-      setRequestUsers(prev => {
-        const newUsers = { ...prev };
-        delete newUsers[selectedRequest.senderId];
-        return newUsers;
-      });
       setError(null);
     } catch (err) {
-      setError('リクエストの承認中にエラーが発生しました: ' + err);
+      console.error('Error accepting friend request:', err);
+      setError('リクエストの承認中にエラーが発生しました');
     } finally {
       setIsLoading(prev => ({ ...prev, [selectedRequest.requestId]: false }));
       setIsProfileSelectorOpen(false);
@@ -222,45 +243,29 @@ export function FetchFriendRequest({
   const handleReject = async (requestId: string) => {
     try {
       setIsLoading(prev => ({ ...prev, [requestId]: true }));
-      const selectedRequest = friendRequests.find(
-        (request) => request.requestId === requestId
-      );
-      if (!selectedRequest) return;
-
+      
       // フレンドリクエストを削除
-      const input: UpdateFriendRequestsInput = {
+      const input: DeleteFriendRequestsInput = {
         requestId,
       };
       await removeFriendRequest(input);
 
-      // UI状態を更新
-      setFriendRequests(prev => 
-        prev.filter(request => request.requestId !== requestId)
-      );
-      setRequestUsers(prev => {
-        const newUsers = { ...prev };
-        delete newUsers[selectedRequest.senderId];
-        return newUsers;
-      });
       setError(null);
     } catch (err) {
-      setError('リクエストの拒否中にエラーが発生しました: ' + err);
+      setError('リクエストの拒否中にエラーが発生しました' + err);
     } finally {
       setIsLoading(prev => ({ ...prev, [requestId]: false }));
     }
   };
 
-  // UI描画
   return (
     <div className="space-y-4">
-      {/* エラーメッセージ */}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* フレンドリクエスト一覧 */}
       {friendRequests.length === 0 ? (
         <div className="text-center text-gray-500 py-4">
           フレンドリクエストはありません
@@ -278,7 +283,10 @@ export function FetchFriendRequest({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  onClick={() => handleAccept(request.requestId)}
+                  onClick={() => {
+                    setSelectedRequest(request);
+                    setIsProfileSelectorOpen(true);
+                  }}
                   disabled={isLoading[request.requestId]}
                 >
                   {isLoading[request.requestId] ? '処理中...' : '承認'}
@@ -297,7 +305,6 @@ export function FetchFriendRequest({
         </ul>
       )}
 
-      {/* プロファイル選択モーダル */}
       <ProfileSelectorModal
         isOpen={isProfileSelectorOpen}
         onClose={() => {
