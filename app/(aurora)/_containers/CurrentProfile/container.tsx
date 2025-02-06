@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useProfileContext } from '../Profile/context';
 import { CurrentProfilePresentation } from './presentational';
+import { useUserContext } from '../User/context';
 
 export function CurrentProfileContainer() {
   const { currentProfile, isLoading, getCurrentThemeColor } = useProfileContext();
+  const { user } = useUserContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
 
@@ -18,6 +20,7 @@ export function CurrentProfileContainer() {
       isFriendsOpen={isFriendsOpen}
       onSettingsOpen={() => setIsSettingsOpen(true)}
       onSettingsClose={() => setIsSettingsOpen(false)}
+      user={user!}
       onFriendsOpen={() => setIsFriendsOpen(true)}
       onFriendsClose={() => setIsFriendsOpen(false)}
     />

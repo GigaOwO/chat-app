@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/api';
 import { getFriendRequestsByReceiverId } from '@/_lib/Featchers/FriendRequests/featcher';
+import { UserContext } from '../User/context';
 
 interface CurrentProfilePresentationProps {
   profile: Profiles | null;
@@ -22,6 +23,7 @@ interface CurrentProfilePresentationProps {
   onSettingsClose: () => void;
   onFriendsOpen: () => void;
   onFriendsClose: () => void;
+  user:UserContext|null;
 }
 
 export function CurrentProfilePresentation({
@@ -33,7 +35,8 @@ export function CurrentProfilePresentation({
   onSettingsOpen,
   onSettingsClose,
   onFriendsOpen,
-  onFriendsClose
+  onFriendsClose,
+  user
 }: CurrentProfilePresentationProps) {
   const [currentUser, setCurrentUser] = useState<{userId: string, username: string} | null>(null);
   const [friendRequests, setFriendRequests] = useState<FriendRequests[]>([]);
@@ -143,6 +146,7 @@ export function CurrentProfilePresentation({
         isOpen={isSettingsOpen}
         onClose={onSettingsClose}
         profile={profile}
+        user={user}
       />
 
       <FriendsContainer
