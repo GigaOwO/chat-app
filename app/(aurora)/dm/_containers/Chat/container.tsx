@@ -42,6 +42,7 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initComplete, setInitComplete] = useState(false);
 
   // フレンドのプロフィール取得
   useEffect(() => {
@@ -75,6 +76,7 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
       if (!currentProfile?.userId) return;
 
       try {
+        setLoading(true);
         setError(null);
         // まず既存の会話を探す
         const participations = await fetchConversationParticipantsByUserId(currentProfile.userId);
@@ -138,10 +140,18 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
         if (isMounted) {
           setError('会話の初期化に失敗しました');
         }
+      } finally {
+        if (isMounted) {
+          setInitComplete(true);
+          setLoading(false);
+        }
       }
     };
 
-    initializeConversation();
+    if (currentProfile) {
+      initializeConversation();
+    }
+    
     return () => { isMounted = false; };
   }, [currentProfile?.userId, friendId]);
 
@@ -261,6 +271,15 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
       setError('メッセージの送信に失敗しました');
     }
   };
+
+  // 初期化が完了していない、かつプロフィールが存在しない場合はローディング表示
+  if (!initComplete && !currentProfile) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-gray1">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <ChatPresentation

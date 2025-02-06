@@ -34,10 +34,49 @@ export function ChatPresentation({
     }
   }, [messages]);
 
+  // ローディング中の表示
+  if (loading && !messages.length) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b border-gray2 flex items-center gap-3 bg-gray3">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-6 w-32" />
+        </div>
+        <div className="flex-1 p-4">
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-16 w-64" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // エラーの表示
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  // プロフィールが存在しない場合のエラー表示
   if (!currentProfile || !friendProfile) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-gray1">Loading profiles...</p>
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>プロフィールの読み込みに失敗しました</AlertDescription>
+        </Alert>
       </div>
     );
   }
@@ -79,23 +118,7 @@ export function ChatPresentation({
         ref={scrollRef}
         className="flex-1 p-4"
       >
-        {loading ? (
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-16 w-64" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : messages.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="text-center text-gray1 py-4">
             メッセージはありません
           </div>
