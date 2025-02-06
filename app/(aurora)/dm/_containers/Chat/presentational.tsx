@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import { ScrollArea } from '@/_components/ui/scroll-area';

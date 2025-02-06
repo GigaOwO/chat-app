@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FriendsListPresentation } from './presentational';
 import { useProfileContext } from '../../../_containers/Profile/context';
@@ -16,74 +16,70 @@ export interface FriendWithProfile {
 export function FriendsListContainer() {
   const router = useRouter();
   const { currentProfile, isLoading: profileLoading } = useProfileContext();
-  const { fetchFriendsByUserProfileId } = useFriends();
+  const { fetchFriendsByUserProfileId, loading: friendsLoading } = useFriends();
   const { fetchProfile } = useProfiles();
   
   const [friends, setFriends] = useState<FriendWithProfile[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadFriends = async () => {
-      if (!currentProfile?.profileId) return;
-      
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetchFriendsByUserProfileId(currentProfile.profileId);
-        
-        if (!response?.items) {
-          throw new Error('フレンド情報の取得に失敗しました');
-        }
-
-        const friendsPromises = response.items
-          .filter((friend): friend is Friends => friend !== null)
-          .map(async (friend) => {
-            const profile = await fetchProfile(friend.friendId, friend.friendProfileId);
-            if (!profile) {
-              throw new Error(`Failed to load profile for friend ${friend.friendId}`);
-            }
-            return {
-              friend,
-              profile
-            };
-          });
-
-        const friendsWithProfiles = await Promise.all(friendsPromises);
-        setFriends(friendsWithProfiles);
-      } catch (err) {
-        console.error('Error loading friends:', err);
-        setError('フレンド一覧の読み込みに失敗しました');
-        setFriends([]);
-      } finally {
-        setLoading(false);
+  // プロフィール取得処理をメモ化
+  const loadFriendProfile = useCallback(async (friend: Friends) => {
+    try {
+      const profile = await fetchProfile(friend.friendId, friend.friendProfileId);
+      if (!profile) {
+        throw new Error(`Failed to load profile for friend ${friend.friendId}`);
       }
-    };
+      return profile;
+    } catch (err) {
+      console.error(`Error loading profile for friend ${friend.friendId}:`, err);
+      throw err;
+    }
+  }, [fetchProfile]);
 
+  // フレンド一覧取得処理をメモ化
+  const loadFriends = useCallback(async () => {
+    if (!currentProfile?.profileId) return;
+    
+    try {
+      setError(null);
+      const response = await fetchFriendsByUserProfileId(currentProfile.profileId);
+      
+      if (!response?.items) {
+        throw new Error('フレンド情報の取得に失敗しました');
+      }
+
+      const friendItems = response.items.filter((friend): friend is Friends => friend !== null);
+      
+      const friendsWithProfiles = await Promise.all(
+        friendItems.map(async (friend) => ({
+          friend,
+          profile: await loadFriendProfile(friend)
+        }))
+      );
+
+      setFriends(friendsWithProfiles);
+    } catch (err) {
+      console.error('Error loading friends:', err);
+      setError('フレンド一覧の読み込みに失敗しました');
+      setFriends([]);
+    }
+  }, [currentProfile?.profileId, fetchFriendsByUserProfileId, loadFriendProfile]);
+
+  // プロフィールが変更された時のみ実行
+  useEffect(() => {
     if (currentProfile) {
       loadFriends();
     }
-  }, [currentProfile, fetchFriendsByUserProfileId, fetchProfile]);
+  }, [currentProfile, loadFriends]);
 
   const handleSelectFriend = (friendId: string) => {
     router.push(`/dm/${friendId}`);
   };
 
-  // プロファイルのローディング中
-  if (profileLoading) {
-    return <FriendsListPresentation loading={true} friends={[]} error={null} onSelectFriend={() => {}} />;
-  }
-
-  // プロファイルが存在しない
-  if (!currentProfile) {
-    return <FriendsListPresentation loading={false} friends={[]} error="プロファイルが見つかりません" onSelectFriend={() => {}} />;
-  }
-
   return (
     <FriendsListPresentation
       friends={friends}
-      loading={loading}
+      loading={profileLoading || friendsLoading}
       error={error}
       onSelectFriend={handleSelectFriend}
     />
