@@ -24,7 +24,6 @@ const client = generateClient();
 
 interface FetchFriendRequestProps {
   userId: string;
-  profileId: string;
   requests: FriendRequests[];
 }
 
