@@ -1,11 +1,11 @@
 import { ChatContainer } from '../_containers/Chat/container';
 
 interface DMPageProps {
-  params: {
-    friendId: string;
-  };
+  params: Promise<{ friendId: string }>;
 }
 
-export default function DMPage({ params }: DMPageProps) {
-  return <ChatContainer friendId={params.friendId} />;
+export default async function DMPage({ params }: DMPageProps) {
+  const { friendId } = await params;
+  
+  return <ChatContainer friendId={friendId} />;
 }
