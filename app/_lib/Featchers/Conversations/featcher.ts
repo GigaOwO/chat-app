@@ -101,3 +101,15 @@ export const getConversationParticipantsByUserId = gql`
     }
   }
 `;
+
+export const createConversationParticipant = gql`
+  mutation createConversationParticipant($input: CreateConversationParticipantsInput!) {
+    createConversationParticipants(input: $input) {
+      conversationId
+      userId
+      lastReadAt
+      createdAt
+      updatedAt
+    }
+  }
+`;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import {
   getConversation,
@@ -8,11 +8,13 @@ import {
   createConversation,
   updateConversation,
   deleteConversation,
+  createConversationParticipant
 } from '@/_lib/Featchers/Conversations/featcher';
 import type {
   CreateConversationsInput,
   UpdateConversationsInput,
   DeleteConversationsInput,
+  CreateConversationParticipantsInput,
   Conversations,
   ConversationsConnection,
   ConversationParticipants,
@@ -21,14 +23,20 @@ import type {
 
 const client = generateClient();
 
+interface ConversationsState {
+  loading: boolean;
+  error: Error | null;
+}
+
 export function useConversations() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [state, setState] = useState<ConversationsState>({
+    loading: false,
+    error: null
+  });
 
   // 会話を取得
-  const fetchConversation = async (conversationId: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchConversation = useCallback(async (conversationId: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: getConversation,
@@ -36,17 +44,16 @@ export function useConversations() {
       }) as { data: { getConversations: Conversations } };
       return response.data.getConversations;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // 会話一覧を取得
-  const fetchConversations = async (nextToken?: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchConversations = useCallback(async (nextToken?: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: listConversations,
@@ -54,17 +61,16 @@ export function useConversations() {
       }) as { data: { listConversations: ConversationsConnection } };
       return response.data.listConversations;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // 会話参加者を取得
-  const fetchConversationParticipant = async (conversationId: string, userId: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchConversationParticipant = useCallback(async (conversationId: string, userId: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: getConversationParticipant,
@@ -72,17 +78,16 @@ export function useConversations() {
       }) as { data: { getConversationParticipants: ConversationParticipants } };
       return response.data.getConversationParticipants;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // ユーザーIDで会話参加一覧を取得
-  const fetchConversationParticipantsByUserId = async (userId: string, limit?: number, nextToken?: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchConversationParticipantsByUserId = useCallback(async (userId: string, limit?: number, nextToken?: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: getConversationParticipantsByUserId,
@@ -90,17 +95,16 @@ export function useConversations() {
       }) as { data: { queryConversationParticipantsByUserIdCreatedAtIndex: ConversationParticipantsConnection } };
       return response.data.queryConversationParticipantsByUserIdCreatedAtIndex;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // 会話を作成
-  const addConversation = async (input: CreateConversationsInput) => {
-    setLoading(true);
-    setError(null);
+  const addConversation = useCallback(async (input: CreateConversationsInput) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: createConversation,
@@ -108,17 +112,33 @@ export function useConversations() {
       }) as { data: { createConversations: Conversations } };
       return response.data.createConversations;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
+
+  // 会話参加者を追加
+  const addConversationParticipant = useCallback(async (input: CreateConversationParticipantsInput) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      const response = await client.graphql({
+        query: createConversationParticipant, // 変更なし
+        variables: { input }
+      }) as { data: { createConversationParticipants: ConversationParticipants } };
+      return response.data.createConversationParticipants;
+    } catch (err) {
+      setState(prev => ({ ...prev, error: err as Error }));
+      return null;
+    } finally {
+      setState(prev => ({ ...prev, loading: false }));
+    }
+  }, []);
 
   // 会話を更新
-  const modifyConversation = async (input: UpdateConversationsInput) => {
-    setLoading(true);
-    setError(null);
+  const modifyConversation = useCallback(async (input: UpdateConversationsInput) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: updateConversation,
@@ -126,17 +146,16 @@ export function useConversations() {
       }) as { data: { updateConversations: Conversations } };
       return response.data.updateConversations;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // 会話を削除
-  const removeConversation = async (input: DeleteConversationsInput) => {
-    setLoading(true);
-    setError(null);
+  const removeConversation = useCallback(async (input: DeleteConversationsInput) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: deleteConversation,
@@ -144,21 +163,22 @@ export function useConversations() {
       }) as { data: { deleteConversations: Conversations } };
       return response.data.deleteConversations;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   return {
-    loading,
-    error,
+    loading: state.loading,
+    error: state.error,
     fetchConversation,
     fetchConversations,
     fetchConversationParticipant,
     fetchConversationParticipantsByUserId,
     addConversation,
+    addConversationParticipant,
     modifyConversation,
     removeConversation
   };

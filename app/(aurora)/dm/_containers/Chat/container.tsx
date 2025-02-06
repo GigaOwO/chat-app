@@ -12,7 +12,7 @@ import {
   ConversationType,
   MessageType,
   MessageStatus,
-  Profiles
+  Profiles,
 } from '@/_lib/graphql/API';
 import { v4 as uuidv4 } from 'uuid';
 import { onCreateMessages, onUpdateMessages } from '@/_lib/graphql/subscriptions';
@@ -32,6 +32,7 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
   } = useMessages();
   const { 
     fetchConversationParticipantsByUserId,
+    addConversationParticipant,
     addConversation,
     fetchConversation
   } = useConversations();
@@ -42,15 +43,44 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 会話IDの取得または作成
+  // フレンドのプロフィール取得
   useEffect(() => {
-    const initializeConversation = async () => {
-      if (!currentProfile) return;
+    let isMounted = true;
+
+    const loadFriendProfile = async () => {
+      if (!friendId) return;
 
       try {
+        const profile = await fetchProfile(friendId, friendId);
+        if (profile && isMounted) {
+          setFriendProfile(profile);
+        }
+      } catch (err) {
+        console.error('Error loading friend profile:', err);
+        if (isMounted) {
+          setError('プロフィールの読み込みに失敗しました');
+        }
+      }
+    };
+
+    loadFriendProfile();
+    return () => { isMounted = false; };
+  }, [friendId, fetchProfile]);
+
+  // 会話IDの取得または作成
+  useEffect(() => {
+    let isMounted = true;
+
+    const initializeConversation = async () => {
+      if (!currentProfile?.userId) return;
+
+      try {
+        setError(null);
         // まず既存の会話を探す
         const participations = await fetchConversationParticipantsByUserId(currentProfile.userId);
         
+        if (!isMounted) return;
+
         if (participations?.items) {
           for (const participation of participations.items) {
             if (!participation) continue;
@@ -66,12 +96,14 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
               p => p?.conversationId === participation.conversationId
             );
 
-            if (isMatch) {
+            if (isMatch && isMounted) {
               setConversationId(conversation.conversationId);
               return;
             }
           }
         }
+
+        if (!isMounted) return;
 
         // 既存の会話が見つからない場合は新しく作成
         const newConversationId = uuidv4();
@@ -82,26 +114,50 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
           updatedAt: new Date().toISOString()
         });
 
-        if (result) {
+        if (result && isMounted) {
+          // 参加者を追加
+          await Promise.all([
+            addConversationParticipant({
+              conversationId: newConversationId,
+              userId: currentProfile.userId,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }),
+            addConversationParticipant({
+              conversationId: newConversationId,
+              userId: friendId,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            })
+          ]);
+
           setConversationId(newConversationId);
         }
       } catch (err) {
         console.error('Error initializing conversation:', err);
-        setError('会話の初期化に失敗しました');
+        if (isMounted) {
+          setError('会話の初期化に失敗しました');
+        }
       }
     };
 
     initializeConversation();
-  }, [currentProfile, friendId, fetchConversationParticipantsByUserId, fetchConversation, addConversation]);
+    return () => { isMounted = false; };
+  }, [currentProfile?.userId, friendId]);
 
   // メッセージの取得
   useEffect(() => {
+    let isMounted = true;
+
     const loadMessages = async () => {
       if (!conversationId) return;
 
       try {
         setLoading(true);
         const response = await fetchMessagesByConversationId(conversationId);
+        
+        if (!isMounted) return;
+
         if (response?.items) {
           setMessages(response.items
             .filter((m): m is Messages => m !== null)
@@ -112,72 +168,72 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
         }
       } catch (err) {
         console.error('Error loading messages:', err);
-        setError('メッセージの読み込みに失敗しました');
+        if (isMounted) {
+          setError('メッセージの読み込みに失敗しました');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     loadMessages();
+    return () => { isMounted = false; };
   }, [conversationId, fetchMessagesByConversationId]);
 
-  // フレンドのプロフィール取得
-  useEffect(() => {
-    const loadFriendProfile = async () => {
-      try {
-        const profile = await fetchProfile(friendId, friendId);
-        if (profile) {
-          setFriendProfile(profile);
-        }
-      } catch (err) {
-        console.error('Error loading friend profile:', err);
-      }
-    };
-
-    loadFriendProfile();
-  }, [friendId, fetchProfile]);
-
-  // リアルタイム更新の購読
+  // リアルタイム更新のサブスクリプション
   useEffect(() => {
     if (!conversationId) return;
 
-    // 新規メッセージの監視
-    const createSubscription = client.graphql({
-      query: onCreateMessages
-    }).subscribe({
-      next: ({ data }) => {
-        const newMessage = data.onCreateMessages;
-        if (newMessage?.conversationId === conversationId) {
-          setMessages(prev => [...prev, newMessage]);
-        }
-      },
-      error: (error) => {
-        console.error('Subscription error:', error);
-      }
-    });
+    let createSubscription: { unsubscribe: () => void } | null = null;
+    let updateSubscription: { unsubscribe: () => void } | null = null;
 
-    // メッセージ更新の監視
-    const updateSubscription = client.graphql({
-      query: onUpdateMessages
-    }).subscribe({
-      next: ({ data }) => {
-        const updatedMessage = data.onUpdateMessages;
-        if (updatedMessage?.conversationId === conversationId) {
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.messageId === updatedMessage.messageId ? updatedMessage : msg
-            )
-          );
+    const setupSubscriptions = () => {
+      // 新規メッセージの監視
+      createSubscription = client.graphql({
+        query: onCreateMessages
+      }).subscribe({
+        next: ({ data }) => {
+          const newMessage = data.onCreateMessages;
+          if (newMessage?.conversationId === conversationId) {
+            setMessages(prev => [...prev, newMessage]);
+          }
+        },
+        error: (error) => {
+          console.error('Subscription error:', error);
         }
-      },
-      error: (error) => {
-        console.error('Update subscription error:', error);
-      }
-    });
+      });
+
+      // メッセージ更新の監視
+      updateSubscription = client.graphql({
+        query: onUpdateMessages
+      }).subscribe({
+        next: ({ data }) => {
+          const updatedMessage = data.onUpdateMessages;
+          if (updatedMessage?.conversationId === conversationId) {
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.messageId === updatedMessage.messageId ? updatedMessage : msg
+              )
+            );
+          }
+        },
+        error: (error) => {
+          console.error('Update subscription error:', error);
+        }
+      });
+    };
+
+    setupSubscriptions();
 
     return () => {
-      createSubscription.unsubscribe();
-      updateSubscription.unsubscribe();
+      if (createSubscription) {
+        createSubscription.unsubscribe();
+      }
+      if (updateSubscription) {
+        updateSubscription.unsubscribe();
+      }
     };
   }, [conversationId]);
 
