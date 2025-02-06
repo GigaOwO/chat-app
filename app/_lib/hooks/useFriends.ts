@@ -67,10 +67,8 @@ export function useFriends() {
         query: getFriendsByUserProfileId,
         variables: { userProfileId, limit, nextToken }
       }) as { data: { queryFriendsByUserProfileIdIndex: FriendsConnection } };
-      console.log('Friends response:', response); // デバッグ用
       return response.data.queryFriendsByUserProfileIdIndex;
     } catch (err) {
-      console.error('Error fetching friends:', err); // デバッグ用
       setError(err as Error);
       return null;
     } finally {

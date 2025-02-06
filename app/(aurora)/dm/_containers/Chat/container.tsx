@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { ChatPresentation } from './presentational';
 import { useProfileContext } from '../../../_containers/Profile/context';
@@ -14,7 +14,6 @@ import {
   MessageType,
   MessageStatus,
   Profiles,
-  Friends,
 } from '@/_lib/graphql/API';
 import { v4 as uuidv4 } from 'uuid';
 import { onCreateMessages, onUpdateMessages } from '@/_lib/graphql/subscriptions';
@@ -29,10 +28,7 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
   const { currentProfile } = useProfileContext();
   const { fetchProfile } = useProfiles();
   const { fetchFriend } = useFriends();
-  const { 
-    fetchMessagesByConversationId,
-    addMessage 
-  } = useMessages();
+  const { fetchMessagesByConversationId, addMessage } = useMessages();
   const { 
     fetchConversationParticipantsByUserId,
     addConversationParticipant,
@@ -42,193 +38,154 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
 
   const [messages, setMessages] = useState<Messages[]>([]);
   const [friendProfile, setFriendProfile] = useState<Profiles | null>(null);
-  const [friendRelation, setFriendRelation] = useState<Friends | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // フレンド関係とプロフィールの取得をメモ化
-  const loadFriendData = useCallback(async () => {
-    if (!currentProfile?.userId || !friendId) return;
+  // すべての初期化処理を一つのuseEffectにまとめる
+  useEffect(() => {
+    let mounted = true;
 
-    try {
-      setLoading(true);
-      
-      // フレンド関係を取得
-      const relation = await fetchFriend(currentProfile.userId, friendId);
-      if (!relation) {
-        setError('フレンド関係が見つかりません');
-        return;
-      }
-      
-      setFriendRelation(relation);
+    const initialize = async () => {
+      if (!currentProfile?.userId || !friendId) return;
 
-      // フレンドのプロフィールを取得
-      const profile = await fetchProfile(friendId, relation.friendProfileId);
-      if (!profile) {
-        setError('プロフィールが見つかりません');
-        return;
-      }
+      try {
+        // 1. フレンド関係とプロフィールの取得
+        const relation = await fetchFriend(currentProfile.userId, friendId);
+        if (!relation || !mounted) return;
+        
+        const profile = await fetchProfile(friendId, relation.friendProfileId);
+        if (!profile || !mounted) return;
 
-      setFriendProfile(profile);
-      setError(null);
-    } catch (err) {
-      console.error('Error loading friend data:', err);
-      setError('フレンド情報の読み込みに失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentProfile?.userId, friendId, fetchFriend, fetchProfile]);
+        setFriendProfile(profile);
 
-  // 会話の初期化をメモ化
-  const initializeConversation = useCallback(async () => {
-    if (!currentProfile?.userId || !friendRelation) return;
+        // 2. 会話の初期化
+        const participations = await fetchConversationParticipantsByUserId(currentProfile.userId);
+        if (!mounted) return;
 
-    try {
-      setLoading(true);
-      // 既存の会話を探す
-      const participations = await fetchConversationParticipantsByUserId(currentProfile.userId);
-      
-      if (participations?.items) {
-        for (const participation of participations.items) {
-          if (!participation) continue;
-          
-          const conversation = await fetchConversation(participation.conversationId);
-          if (!conversation) continue;
+        let chatId = null;
 
-          // 1対1のDMで、相手が参加している会話を探す
-          const otherParticipation = await fetchConversationParticipantsByUserId(friendId);
-          if (!otherParticipation?.items) continue;
+        if (participations?.items) {
+          for (const participation of participations.items) {
+            if (!participation) continue;
+            
+            const conversation = await fetchConversation(participation.conversationId);
+            if (!conversation) continue;
 
-          const isMatch = otherParticipation.items.some(
-            p => p?.conversationId === participation.conversationId
-          );
+            const otherParticipation = await fetchConversationParticipantsByUserId(friendId);
+            if (!otherParticipation?.items) continue;
 
-          if (isMatch) {
-            setConversationId(conversation.conversationId);
-            return;
+            const isMatch = otherParticipation.items.some(
+              p => p?.conversationId === participation.conversationId
+            );
+
+            if (isMatch) {
+              chatId = conversation.conversationId;
+              break;
+            }
           }
         }
-      }
 
-      // 既存の会話が見つからない場合は新しく作成
-      const newConversationId = uuidv4();
-      const result = await addConversation({
-        conversationId: newConversationId,
-        type: ConversationType.DIRECT,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
-
-      if (result) {
-        // 参加者を追加
-        await Promise.all([
-          addConversationParticipant({
+        if (!chatId) {
+          // 新しい会話を作成
+          const newConversationId = uuidv4();
+          const result = await addConversation({
             conversationId: newConversationId,
-            userId: currentProfile.userId,
+            type: ConversationType.DIRECT,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
-          }),
-          addConversationParticipant({
-            conversationId: newConversationId,
-            userId: friendId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          })
-        ]);
+          });
 
-        setConversationId(newConversationId);
+          if (result) {
+            await Promise.all([
+              addConversationParticipant({
+                conversationId: newConversationId,
+                userId: currentProfile.userId,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              }),
+              addConversationParticipant({
+                conversationId: newConversationId,
+                userId: friendId,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              })
+            ]);
+
+            chatId = newConversationId;
+          }
+        }
+
+        if (!mounted) return;
+        setConversationId(chatId);
+
+        // 3. メッセージの取得
+        if (chatId) {
+          const response = await fetchMessagesByConversationId(chatId);
+          if (!mounted) return;
+          
+          if (response?.items) {
+            setMessages(response.items
+              .filter((m): m is Messages => m !== null)
+              .sort((a, b) => 
+                new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+              )
+            );
+          }
+        }
+
+        setError(null);
+      } catch (err) {
+        console.error('Error initializing chat:', err);
+        if (mounted) {
+          setError('チャットの初期化に失敗しました');
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-    } catch (err) {
-      console.error('Error initializing conversation:', err);
-      setError('会話の初期化に失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentProfile?.userId, friendId, friendRelation, fetchConversationParticipantsByUserId, fetchConversation, addConversation, addConversationParticipant]);
+    };
 
-  // メッセージの取得をメモ化
-  const loadMessages = useCallback(async () => {
-    if (!conversationId) return;
+    initialize();
 
-    try {
-      setLoading(true);
-      const response = await fetchMessagesByConversationId(conversationId);
-      
-      if (response?.items) {
-        setMessages(response.items
-          .filter((m): m is Messages => m !== null)
-          .sort((a, b) => 
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          )
-        );
-      }
-    } catch (err) {
-      console.error('Error loading messages:', err);
-      setError('メッセージの読み込みに失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  }, [conversationId, fetchMessagesByConversationId]);
-
-  // フレンドデータの読み込み
-  useEffect(() => {
-    loadFriendData();
-  }, [loadFriendData]);
-
-  // 会話の初期化
-  useEffect(() => {
-    if (friendRelation) {
-      initializeConversation();
-    }
-  }, [friendRelation, initializeConversation]);
-
-  // メッセージの読み込み
-  useEffect(() => {
-    if (conversationId) {
-      loadMessages();
-    }
-  }, [conversationId, loadMessages]);
+    return () => {
+      mounted = false;
+    };
+  }, [currentProfile?.userId, friendId]);
 
   // リアルタイム更新のサブスクリプション
   useEffect(() => {
     if (!conversationId) return;
 
-    const createSubscription = client.graphql({
-      query: onCreateMessages
-    }).subscribe({
-      next: ({ data }) => {
-        const newMessage = data.onCreateMessages;
-        if (newMessage?.conversationId === conversationId) {
-          setMessages(prev => [...prev, newMessage]);
-        }
-      },
-      error: (error) => {
-        console.error('Subscription error:', error);
-      }
-    });
+    const subscriptions = [
+      client.graphql({ query: onCreateMessages }).subscribe({
+        next: ({ data }) => {
+          const newMessage = data.onCreateMessages;
+          if (newMessage?.conversationId === conversationId) {
+            setMessages(prev => [...prev, newMessage]);
+          }
+        },
+        error: (error) => console.error('Subscription error:', error)
+      }),
 
-    const updateSubscription = client.graphql({
-      query: onUpdateMessages
-    }).subscribe({
-      next: ({ data }) => {
-        const updatedMessage = data.onUpdateMessages;
-        if (updatedMessage?.conversationId === conversationId) {
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.messageId === updatedMessage.messageId ? updatedMessage : msg
-            )
-          );
-        }
-      },
-      error: (error) => {
-        console.error('Update subscription error:', error);
-      }
-    });
+      client.graphql({ query: onUpdateMessages }).subscribe({
+        next: ({ data }) => {
+          const updatedMessage = data.onUpdateMessages;
+          if (updatedMessage?.conversationId === conversationId) {
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.messageId === updatedMessage.messageId ? updatedMessage : msg
+              )
+            );
+          }
+        },
+        error: (error) => console.error('Update subscription error:', error)
+      })
+    ];
 
     return () => {
-      createSubscription.unsubscribe();
-      updateSubscription.unsubscribe();
+      subscriptions.forEach(sub => sub.unsubscribe());
     };
   }, [conversationId]);
 
