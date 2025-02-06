@@ -8,57 +8,6 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getUsers = /* GraphQL */ `query GetUsers($username: String!) {
-  getUsers(username: $username) {
-    username
-    email
-    sub
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedQuery<APITypes.GetUsersQueryVariables, APITypes.GetUsersQuery>;
-export const listUsers = /* GraphQL */ `query ListUsers(
-  $filter: TableUsersFilterInput
-  $limit: Int
-  $nextToken: String
-) {
-  listUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
-    items {
-      username
-      email
-      sub
-      status
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<APITypes.ListUsersQueryVariables, APITypes.ListUsersQuery>;
-export const queryUsersByEmailIndex = /* GraphQL */ `query QueryUsersByEmailIndex($email: String!, $first: Int, $after: String) {
-  queryUsersByEmailIndex(email: $email, first: $first, after: $after) {
-    items {
-      username
-      email
-      sub
-      status
-      createdAt
-      updatedAt
-      __typename
-    }
-    nextToken
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.QueryUsersByEmailIndexQueryVariables,
-  APITypes.QueryUsersByEmailIndexQuery
->;
 export const getProfiles = /* GraphQL */ `query GetProfiles($userId: String!, $profileId: String!) {
   getProfiles(userId: $userId, profileId: $profileId) {
     userId
@@ -617,4 +566,78 @@ export const queryMessagesBySenderIdCreatedAtIndex = /* GraphQL */ `query QueryM
 ` as GeneratedQuery<
   APITypes.QueryMessagesBySenderIdCreatedAtIndexQueryVariables,
   APITypes.QueryMessagesBySenderIdCreatedAtIndexQuery
+>;
+export const getUsers = /* GraphQL */ `query GetUsers($sub: String!) {
+  getUsers(sub: $sub) {
+    sub
+    email
+    username
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<APITypes.GetUsersQueryVariables, APITypes.GetUsersQuery>;
+export const listUsers = /* GraphQL */ `query ListUsers(
+  $filter: TableUsersFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      sub
+      email
+      username
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<APITypes.ListUsersQueryVariables, APITypes.ListUsersQuery>;
+export const queryUsersByUsernameIndex = /* GraphQL */ `query QueryUsersByUsernameIndex(
+  $username: String!
+  $first: Int
+  $after: String
+) {
+  queryUsersByUsernameIndex(username: $username, first: $first, after: $after) {
+    items {
+      sub
+      email
+      username
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryUsersByUsernameIndexQueryVariables,
+  APITypes.QueryUsersByUsernameIndexQuery
+>;
+export const queryUsersByEmailIndex = /* GraphQL */ `query QueryUsersByEmailIndex($email: String!, $first: Int, $after: String) {
+  queryUsersByEmailIndex(email: $email, first: $first, after: $after) {
+    items {
+      sub
+      email
+      username
+      status
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.QueryUsersByEmailIndexQueryVariables,
+  APITypes.QueryUsersByEmailIndexQuery
 >;

@@ -8,87 +8,6 @@ type GeneratedSubscription<InputType, OutputType> = string & {
   __generatedSubscriptionOutput: OutputType;
 };
 
-export const onCreateUsers = /* GraphQL */ `subscription OnCreateUsers(
-  $username: String
-  $email: String
-  $sub: String
-  $status: UserStatus
-  $createdAt: AWSDateTime
-) {
-  onCreateUsers(
-    username: $username
-    email: $email
-    sub: $sub
-    status: $status
-    createdAt: $createdAt
-  ) {
-    username
-    email
-    sub
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnCreateUsersSubscriptionVariables,
-  APITypes.OnCreateUsersSubscription
->;
-export const onUpdateUsers = /* GraphQL */ `subscription OnUpdateUsers(
-  $username: String
-  $email: String
-  $sub: String
-  $status: UserStatus
-  $createdAt: AWSDateTime
-) {
-  onUpdateUsers(
-    username: $username
-    email: $email
-    sub: $sub
-    status: $status
-    createdAt: $createdAt
-  ) {
-    username
-    email
-    sub
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnUpdateUsersSubscriptionVariables,
-  APITypes.OnUpdateUsersSubscription
->;
-export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
-  $username: String
-  $email: String
-  $sub: String
-  $status: UserStatus
-  $createdAt: AWSDateTime
-) {
-  onDeleteUsers(
-    username: $username
-    email: $email
-    sub: $sub
-    status: $status
-    createdAt: $createdAt
-  ) {
-    username
-    email
-    sub
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedSubscription<
-  APITypes.OnDeleteUsersSubscriptionVariables,
-  APITypes.OnDeleteUsersSubscription
->;
 export const onCreateProfiles = /* GraphQL */ `subscription OnCreateProfiles(
   $userId: String
   $profileId: String
@@ -592,4 +511,85 @@ export const onDeleteMessages = /* GraphQL */ `subscription OnDeleteMessages(
 ` as GeneratedSubscription<
   APITypes.OnDeleteMessagesSubscriptionVariables,
   APITypes.OnDeleteMessagesSubscription
+>;
+export const onCreateUsers = /* GraphQL */ `subscription OnCreateUsers(
+  $sub: String
+  $email: String
+  $username: String
+  $status: UserStatus
+  $createdAt: AWSDateTime
+) {
+  onCreateUsers(
+    sub: $sub
+    email: $email
+    username: $username
+    status: $status
+    createdAt: $createdAt
+  ) {
+    sub
+    email
+    username
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateUsersSubscriptionVariables,
+  APITypes.OnCreateUsersSubscription
+>;
+export const onUpdateUsers = /* GraphQL */ `subscription OnUpdateUsers(
+  $sub: String
+  $email: String
+  $username: String
+  $status: UserStatus
+  $createdAt: AWSDateTime
+) {
+  onUpdateUsers(
+    sub: $sub
+    email: $email
+    username: $username
+    status: $status
+    createdAt: $createdAt
+  ) {
+    sub
+    email
+    username
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateUsersSubscriptionVariables,
+  APITypes.OnUpdateUsersSubscription
+>;
+export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
+  $sub: String
+  $email: String
+  $username: String
+  $status: UserStatus
+  $createdAt: AWSDateTime
+) {
+  onDeleteUsers(
+    sub: $sub
+    email: $email
+    username: $username
+    status: $status
+    createdAt: $createdAt
+  ) {
+    sub
+    email
+    username
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteUsersSubscriptionVariables,
+  APITypes.OnDeleteUsersSubscription
 >;

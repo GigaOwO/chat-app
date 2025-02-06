@@ -24,6 +24,7 @@ export function SignUpForm({ csrfToken }: Props) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(undefined)
     
     try {
       const { nextStep } = await signUp({
@@ -32,18 +33,25 @@ export function SignUpForm({ csrfToken }: Props) {
         options: {
           userAttributes: {
             email,
-            preferred_username: username,
+            preferred_username: username,  // これがLambdaトリガーでusernameとして使用される
           },
         }
       })
+
       if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+        // 確認コード入力画面へ遷移
         const userParams = new URLSearchParams({
           email
         })
         router.push(`/signup/confirm?${userParams.toString()}`)
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+    } catch (err: unknown) {
+      console.error('Error during sign up:', err)
+      if (err instanceof Error && err.message.includes('Username already exists')) {
+        setError('このメールアドレスは既に登録されています')
+      } else {
+        setError(err instanceof Error ? err.message : 'サインアップに失敗しました')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -88,7 +96,7 @@ export function SignUpForm({ csrfToken }: Props) {
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-              title="Password must contain at least 8 characters, including uppercase, lowercase, numbers and special characters"
+              title="パスワードは8文字以上で、大文字・小文字・数字・特殊文字を含む必要があります"
             />
           </div>
           {error && (
@@ -97,9 +105,17 @@ export function SignUpForm({ csrfToken }: Props) {
             </Alert>
           )}
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Sign Up'}
+            {isLoading ? '処理中...' : 'サインアップ'}
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            className="w-full"
+            onClick={() => router.push('/signin')}
+          >
+            すでにアカウントをお持ちですか？ サインイン
           </Button>
         </CardFooter>
       </form>

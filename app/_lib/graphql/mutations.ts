@@ -8,51 +8,6 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
-export const createUsers = /* GraphQL */ `mutation CreateUsers($input: CreateUsersInput!) {
-  createUsers(input: $input) {
-    username
-    email
-    sub
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.CreateUsersMutationVariables,
-  APITypes.CreateUsersMutation
->;
-export const updateUsers = /* GraphQL */ `mutation UpdateUsers($input: UpdateUsersInput!) {
-  updateUsers(input: $input) {
-    username
-    email
-    sub
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.UpdateUsersMutationVariables,
-  APITypes.UpdateUsersMutation
->;
-export const deleteUsers = /* GraphQL */ `mutation DeleteUsers($input: DeleteUsersInput!) {
-  deleteUsers(input: $input) {
-    username
-    email
-    sub
-    status
-    createdAt
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedMutation<
-  APITypes.DeleteUsersMutationVariables,
-  APITypes.DeleteUsersMutation
->;
 export const createProfiles = /* GraphQL */ `mutation CreateProfiles($input: CreateProfilesInput!) {
   createProfiles(input: $input) {
     userId
@@ -346,4 +301,49 @@ export const deleteMessages = /* GraphQL */ `mutation DeleteMessages($input: Del
 ` as GeneratedMutation<
   APITypes.DeleteMessagesMutationVariables,
   APITypes.DeleteMessagesMutation
+>;
+export const createUsers = /* GraphQL */ `mutation CreateUsers($input: CreateUsersInput!) {
+  createUsers(input: $input) {
+    sub
+    email
+    username
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateUsersMutationVariables,
+  APITypes.CreateUsersMutation
+>;
+export const updateUsers = /* GraphQL */ `mutation UpdateUsers($input: UpdateUsersInput!) {
+  updateUsers(input: $input) {
+    sub
+    email
+    username
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateUsersMutationVariables,
+  APITypes.UpdateUsersMutation
+>;
+export const deleteUsers = /* GraphQL */ `mutation DeleteUsers($input: DeleteUsersInput!) {
+  deleteUsers(input: $input) {
+    sub
+    email
+    username
+    status
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteUsersMutationVariables,
+  APITypes.DeleteUsersMutation
 >;
