@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { ChatPresentation } from './presentational';

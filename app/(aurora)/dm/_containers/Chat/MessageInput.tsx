@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/_components/ui/button';
 import { Textarea } from '@/_components/ui/textarea';

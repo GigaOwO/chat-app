@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FriendsListPresentation } from './presentational';
 import { useProfileContext } from '../../../_containers/Profile/context';
@@ -22,55 +22,51 @@ export function FriendsListContainer() {
   const [friends, setFriends] = useState<FriendWithProfile[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // プロフィール取得処理をメモ化
-  const loadFriendProfile = useCallback(async (friend: Friends) => {
-    try {
-      const profile = await fetchProfile(friend.friendId, friend.friendProfileId);
-      if (!profile) {
-        throw new Error(`Failed to load profile for friend ${friend.friendId}`);
-      }
-      return profile;
-    } catch (err) {
-      console.error(`Error loading profile for friend ${friend.friendId}:`, err);
-      throw err;
-    }
-  }, [fetchProfile]);
-
-  // フレンド一覧取得処理をメモ化
-  const loadFriends = useCallback(async () => {
-    if (!currentProfile?.profileId) return;
-    
-    try {
-      setError(null);
-      const response = await fetchFriendsByUserProfileId(currentProfile.profileId);
-      
-      if (!response?.items) {
-        throw new Error('フレンド情報の取得に失敗しました');
-      }
-
-      const friendItems = response.items.filter((friend): friend is Friends => friend !== null);
-      
-      const friendsWithProfiles = await Promise.all(
-        friendItems.map(async (friend) => ({
-          friend,
-          profile: await loadFriendProfile(friend)
-        }))
-      );
-
-      setFriends(friendsWithProfiles);
-    } catch (err) {
-      console.error('Error loading friends:', err);
-      setError('フレンド一覧の読み込みに失敗しました');
-      setFriends([]);
-    }
-  }, [currentProfile?.profileId, fetchFriendsByUserProfileId, loadFriendProfile]);
-
-  // プロフィールが変更された時のみ実行
+  // プロフィール変更時のみ実行されるようにする
   useEffect(() => {
-    if (currentProfile) {
-      loadFriends();
+    // 非同期処理を内部関数として定義
+    async function loadFriendsData() {
+      if (!currentProfile?.profileId) return;
+      
+      try {
+        setError(null);
+        const response = await fetchFriendsByUserProfileId(currentProfile.profileId);
+        
+        if (!response?.items) {
+          throw new Error('フレンド情報の取得に失敗しました');
+        }
+
+        const friendItems = response.items.filter((friend): friend is Friends => friend !== null);
+        
+        const friendsWithProfiles = await Promise.all(
+          friendItems.map(async (friend) => {
+            try {
+              const profile = await fetchProfile(friend.friendId, friend.friendProfileId);
+              if (!profile) {
+                throw new Error(`Failed to load profile for friend ${friend.friendId}`);
+              }
+              return {
+                friend,
+                profile
+              };
+            } catch (err) {
+              console.error(`Error loading profile for friend ${friend.friendId}:`, err);
+              return null;
+            }
+          })
+        );
+
+        // nullを除外して設定
+        setFriends(friendsWithProfiles.filter((item): item is FriendWithProfile => item !== null));
+      } catch (err) {
+        console.error('Error loading friends:', err);
+        setError('フレンド一覧の読み込みに失敗しました');
+        setFriends([]);
+      }
     }
-  }, [currentProfile, loadFriends]);
+
+    loadFriendsData();
+  }, [currentProfile?.profileId]); // currentProfile.profileIdのみを依存配列に含める
 
   const handleSelectFriend = (friendId: string) => {
     router.push(`/dm/${friendId}`);
