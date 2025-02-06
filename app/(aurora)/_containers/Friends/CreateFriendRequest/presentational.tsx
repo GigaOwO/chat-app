@@ -26,8 +26,8 @@ export function CreateFriendRequestForm({
   const [username, setUsername] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Profiles[]>([]);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>("none");
-  const { searchUsersByUsername: searchUsers, loading } = useUsers();
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+  const { searchUsersByUsername: searchUsers } = useUsers();
   const { addFriendRequest } = useFriendRequests();
   const { fetchProfilesByUserId } = useProfiles();
   useEffect(() => {
@@ -125,7 +125,7 @@ export function CreateFriendRequestForm({
         >
           <option
             disabled
-            value="none"
+            value=""
           >
             割り当てるプロフィールを選択してください
           </option>
@@ -140,7 +140,7 @@ export function CreateFriendRequestForm({
         </select>
       </div>
       <div className="">
-        {(users && !loading) ? (
+        {users && (
           <ul className="space-y-2">
             {users.items!.map((user) => (
               <li
@@ -157,12 +157,6 @@ export function CreateFriendRequestForm({
               </li>
             ))}
           </ul>
-        ):(
-          <li
-            className="flex items-center justify-between p-3 rounded-lg bg-gray5 hover:bg-gray3 transition-colors"
-          >
-            <span>ユーザーが見つかりません</span>
-          </li>
         )}
       </div>
     </div>

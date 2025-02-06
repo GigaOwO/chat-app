@@ -270,7 +270,7 @@ export function FetchFriendRequest({
           {friendRequests.map((request) => (
             <li
               key={request.requestId}
-              className="flex items-center justify-between p-4 rounded-lg bg-gray-100"
+              className="flex items-center justify-between p-4 rounded-lg bg-gray5"
             >
               <span>
                 {requestUsers[request.senderId]?.username || 'ユーザーを読み込み中...'}
@@ -280,6 +280,7 @@ export function FetchFriendRequest({
                   size="sm"
                   onClick={() => handleAccept(request.requestId)}
                   disabled={isLoading[request.requestId]}
+                  className='text-gray1 bg-gray4 hover:bg-gray6'
                 >
                   {isLoading[request.requestId] ? '処理中...' : '承認'}
                 </Button>
@@ -288,6 +289,7 @@ export function FetchFriendRequest({
                   variant="outline"
                   onClick={() => handleReject(request.requestId)}
                   disabled={isLoading[request.requestId]}
+                  className='text-gray3 bg-white hover:bg-white1'
                 >
                   {isLoading[request.requestId] ? '処理中...' : '拒否'}
                 </Button>
