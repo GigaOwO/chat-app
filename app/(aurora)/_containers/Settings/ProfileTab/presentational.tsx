@@ -98,8 +98,8 @@ export function ProfileTabPresentation({
 
   if (selectedProfile) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-2">
+      <div className="space-y-6 text-white1">
+        <div className="flex items-center gap-2 bg-black1">
           <Button
             variant="ghost"
             size="icon"
@@ -173,7 +173,7 @@ export function ProfileTabPresentation({
             </Alert>
           )}
 
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} className='bg-gray2 hover:bg-gray3'>
             {isLoading ? '保存中...' : '保存'}
           </Button>
         </form>
@@ -182,10 +182,10 @@ export function ProfileTabPresentation({
   }
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-medium">編集するプロフィールを選択</h3>
+    <div className="space-y-6 text-white">
+      <h3 className="text-xl font-medium w-full border-b border-gray1 pb-2">プロフィール</h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-3">
       {profiles.map((profile) => {
         const themeColor = getThemeColorFromCustomData(profile);
         
@@ -193,10 +193,10 @@ export function ProfileTabPresentation({
           <button
             key={profile.profileId}
             onClick={() => onProfileSelect(profile)}
-            className="flex items-center gap-4 p-4 rounded-lg transition-all hover:bg-gray-50"
-            style={{ backgroundColor: themeColor + '20' }}
+            className="flex items-center gap-4 p-3 rounded-lg transition-all hover:bg-gray-50"
+            style={{ backgroundColor: themeColor}}
           >
-            <Avatar className="h-12 w-12">
+            <Avatar className="h-6 w-6">
               {profile.avatarKey ? (
                 <ProfileImage
                   path={profile.avatarKey}
@@ -208,21 +208,13 @@ export function ProfileTabPresentation({
                   themeColor={themeColor}
                 />
               ) : (
-                <AvatarFallback
-                  className="text-lg"
-                  style={{ backgroundColor: themeColor }}
-                >
+                <AvatarFallback className="bg-zinc-700 text-zinc-100 text-xs">
                   {profile.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               )}
             </Avatar>
             <div className="text-left">
               <h4 className="font-medium">{profile.name}</h4>
-              {profile.bio && (
-                <p className="text-sm text-gray-500 truncate">
-                  {profile.bio}
-                </p>
-              )}
             </div>
           </button>
         );

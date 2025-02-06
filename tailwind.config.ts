@@ -16,6 +16,10 @@ export default {
 				gray2: '#2b2b2b',
 				gray3: '#252525',
 				gray4: '#202020',
+				gray5: '#2C2C2C',
+				gray6: '#3C3C3C',
+				black1: '#191919',
+				white1: '#D4D4D4',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

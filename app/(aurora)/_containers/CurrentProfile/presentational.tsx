@@ -6,6 +6,7 @@ import type { Profiles } from '@/_lib/graphql/API';
 import { SettingsContainer } from '../Settings/container';
 import { CurrentProfileSkeleton } from './skeleton';
 import { ProfileImage } from '@/_components/ProfileImage';
+import { UserContext } from '../User/context';
 
 interface CurrentProfilePresentationProps {
   profile: Profiles | null;
@@ -14,6 +15,7 @@ interface CurrentProfilePresentationProps {
   isSettingsOpen: boolean;
   onSettingsOpen: () => void;
   onSettingsClose: () => void;
+  user:UserContext|null;
 }
 
 export function CurrentProfilePresentation({
@@ -22,7 +24,8 @@ export function CurrentProfilePresentation({
   themeColor,
   isSettingsOpen,
   onSettingsOpen,
-  onSettingsClose
+  onSettingsClose,
+  user
 }: CurrentProfilePresentationProps) {
   if (isLoading) {
     return <CurrentProfileSkeleton />;
@@ -79,6 +82,7 @@ export function CurrentProfilePresentation({
         isOpen={isSettingsOpen}
         onClose={onSettingsClose}
         profile={profile}
+        user={user}
       />
     </>
   );

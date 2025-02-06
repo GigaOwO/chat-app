@@ -1,6 +1,7 @@
 import { ProfileProvider } from '../_containers/Profile/context';
 import { ProfileSwitcherContainer } from '../_containers/ProfileSwitcher/container';
 import { CurrentProfileContainer } from '../_containers/CurrentProfile/container';
+import { UserProvider } from '../_containers/User/context';
 
 export default function DMLayout({
   children,
@@ -8,18 +9,20 @@ export default function DMLayout({
   children: React.ReactNode
 }) {
   return (
-    <ProfileProvider>
-      <div className="flex h-screen">
-        <div className="flex flex-col bg-gray4 p-3 w-60">
-          <div className="mt-auto space-y-2">
-            <ProfileSwitcherContainer />
-            <CurrentProfileContainer />
+    <UserProvider>
+      <ProfileProvider>
+        <div className="flex h-screen">
+          <div className="flex flex-col bg-gray4 p-3 w-60">
+            <div className="mt-auto space-y-2">
+              <ProfileSwitcherContainer />
+              <CurrentProfileContainer />
+            </div>
           </div>
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
         </div>
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
-      </div>
-    </ProfileProvider>
+      </ProfileProvider>
+    </UserProvider>
   );
 }
