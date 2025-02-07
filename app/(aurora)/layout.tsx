@@ -24,7 +24,7 @@ export default function AuroraLayout({
           <div className="w-[50px] h-[1px] bg-gray1 my-2" />
         </div>
 
-        <main className="">
+        <main className="w-full">
           {children}
         </main>
       </div>
