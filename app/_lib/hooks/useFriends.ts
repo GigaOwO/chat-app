@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import {
   getFriend,
@@ -59,7 +59,7 @@ export function useFriends() {
   };
 
   // ユーザープロフィールIDでフレンド関係を検索
-  const fetchFriendsByUserProfileId = async (userProfileId: string, limit?: number, nextToken?: string) => {
+  const fetchFriendsByUserProfileId = useCallback(async (userProfileId: string, limit?: number, nextToken?: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -74,7 +74,7 @@ export function useFriends() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // フレンド関係を作成
   const addFriend = async (input: CreateFriendsInput) => {

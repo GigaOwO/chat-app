@@ -34,7 +34,7 @@ export function ProfileSelectorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl text-white bg-gray3 border-[2px] border-gray3 rounded-lg">
         <DialogHeader>
           <DialogTitle>フレンドになるプロファイルを選択</DialogTitle>
         </DialogHeader>
@@ -58,10 +58,10 @@ export function ProfileSelectorModal({
                 key={profile.profileId}
                 onClick={() => setSelectedProfileId(profile.profileId)}
                 className={`
-                  flex items-center gap-4 p-4 rounded-lg transition-all
-                  ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : ''}
+                  flex items-center gap-4 p-4 rounded-lg transition-all ring-2
+                  ${isSelected ? 'ring-white1' : 'ring-gray5'}
                 `}
-                style={{ backgroundColor: themeColor + '20' }}
+                style={{ backgroundColor: themeColor }}
               >
                 <Avatar className="h-12 w-12">
                   {profile.avatarKey ? (
@@ -101,12 +101,14 @@ export function ProfileSelectorModal({
             variant="outline"
             onClick={onClose}
             disabled={loading}
+            className='text-gray3 bg-white hover:bg-white1'
           >
             キャンセル
           </Button>
           <Button
             onClick={handleSelect}
             disabled={!selectedProfileId || loading}
+            className='text-white1 bg-gray4 hover:bg-gray6'
           >
             {loading ? '処理中...' : '選択して承認'}
           </Button>

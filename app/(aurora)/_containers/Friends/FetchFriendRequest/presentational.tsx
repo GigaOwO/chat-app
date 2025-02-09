@@ -59,7 +59,6 @@ export function FetchFriendRequest({
         setError('プロファイルの読み込みに失敗しました');
       }
     };
-
     loadProfiles();
   }, [userId, fetchProfilesByUserId]);
 
@@ -95,12 +94,11 @@ export function FetchFriendRequest({
   useEffect(() => {
     // 新規フレンドリクエストの監視
     const createSubscription = client.graphql({
-      query: onCreateFriendRequests
+      query: onCreateFriendRequests,
     }).subscribe({
       next: async ({ data }) => {
         const newRequest = data.onCreateFriendRequests;
-        if (newRequest?.receiverId === userId && 
-            newRequest?.status === FriendRequestStatus.PENDING) {
+        if (newRequest?.receiverId === userId && newRequest?.status === FriendRequestStatus.PENDING) {
           // 新規リクエストのユーザー情報を取得
           const user = await fetchUser(newRequest.senderId);
           if (user) {

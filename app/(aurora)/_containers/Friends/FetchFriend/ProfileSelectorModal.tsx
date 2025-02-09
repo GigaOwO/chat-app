@@ -1,119 +1,153 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/_components/ui/dialog';
-import { Button } from '@/_components/ui/button';
-import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
-import { useState } from 'react';
-import { ProfileImage } from '@/_components/ProfileImage';
-import { Alert, AlertDescription } from '@/_components/ui/alert';
-import type { Profiles } from '@/_lib/graphql/API';
-import { getThemeColorFromCustomData } from '@/_lib/utils/theme';
+import { Button } from "@/_components/ui/button";
+import { DeleteFriendsInput, FriendStatus, Profiles, UpdateFriendsInput, Users } from "@/_lib/graphql/API";
+import { useUsers } from "@/_lib/hooks/useUsers";
+import { ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useProfileContext } from "../../Profile/context";
+import { useFriends } from "@/_lib/hooks/useFriends";
+import { useUserContext } from "../../User/context";
 
-interface ProfileSelectorModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  profiles: Profiles[];
-  onSelect: (profileId: string) => void;
-  loading?: boolean;
-  error?: string | null;
-}
+export function FriendDetailsModal({
+  profile,
+  status,
+  setIsFriendDetailsModalOpen,
+  setSelectedFriendProfile,
+  setFriendProfiles,
+}:{
+  profile: Profiles,
+  status:FriendStatus,
+  setIsFriendDetailsModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  setSelectedFriendProfile: React.Dispatch<React.SetStateAction<Profiles | null>>
+  setFriendProfiles: React.Dispatch<React.SetStateAction<Profiles[]>>
+}) {
+  const {currentProfile, otherProfiles} = useProfileContext();
+  const { user } = useUserContext();
+  const [friendData,setFriendData] = useState<Users>();
+  const [friendStatus,setFriendStatus] = useState<string>(status);
+  const [usingProfileId,setUsingProfileId] = useState<string | null>(currentProfile?.profileId ?? null);
+  const { loading, fetchUser } = useUsers();
+  const { modifyFriend, removeFriend } = useFriends();
 
-export function ProfileSelectorModal({
-  isOpen,
-  onClose,
-  profiles,
-  onSelect,
-  loading = false,
-  error = null
-}: ProfileSelectorModalProps) {
-  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
-
-  const handleSelect = () => {
-    if (selectedProfileId) {
-      onSelect(selectedProfileId);
+  useEffect(() => {
+    const fetchFriendData = async () => {
+      if (profile.userId) {
+        await fetchUser(profile.userId)
+        .then((response) => {
+          if (response) {
+            setFriendData(response);
+          }
+        })
+      }
     }
-  };
+    fetchFriendData();
+  }, [profile.userId]);
+
+  const handleCloseModal = () => {
+    setIsFriendDetailsModalOpen(false);
+    setSelectedFriendProfile(null);
+  }
+
+  const handleSave = async () => {
+    if (!currentProfile || !usingProfileId || !user) {
+      return;
+    }
+    if(friendStatus === FriendStatus.REMOVED){
+      const deleteInputFromMine:DeleteFriendsInput = {
+        userId: user.userId,
+        friendId: profile.userId,
+      }
+      const deleteInputFromFriend:DeleteFriendsInput = {
+        userId: profile.userId,
+        friendId: user.userId,
+      }
+      await Promise.all([
+        removeFriend(deleteInputFromMine),
+        removeFriend(deleteInputFromFriend),
+      ]);
+      setFriendProfiles((prev) => prev.filter((p) => p.profileId !== profile.profileId));
+      setIsFriendDetailsModalOpen(false);
+      setSelectedFriendProfile(null);
+      return;
+    }
+    
+    const input:UpdateFriendsInput = {
+      userId: user.userId,
+      friendId: profile.userId,
+      status: friendStatus as FriendStatus,
+      userProfileId: usingProfileId,
+      friendProfileId: profile.profileId,
+      updatedAt: new Date().toISOString(),
+    }
+    await modifyFriend(input);
+    if(usingProfileId !== currentProfile.profileId){
+      setFriendProfiles((prev) => prev.filter((p) => p.profileId !== profile.profileId));
+      setSelectedFriendProfile(null);
+      setIsFriendDetailsModalOpen(false);
+    }
+  }
+
+  if (loading||!friendData) {
+    return <p>loading...</p>
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl">
-        <DialogHeader>
-          <DialogTitle>フレンドになるプロファイルを選択</DialogTitle>
-        </DialogHeader>
-        <div className='hidden'>
-          <DialogDescription></DialogDescription>
-        </div>
-
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="grid grid-cols-2 gap-4 my-4">
-          {profiles.map((profile) => {
-            const themeColor = getThemeColorFromCustomData(profile);
-            const isSelected = selectedProfileId === profile.profileId;
-            
-            return (
-              <button
+  <div className="text-white flex flex-col space-y-6">
+    <div className="flex items-center space-x-2 w-full border-b border-neutral-700 pb-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleCloseModal}
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
+      {friendData?.username && (
+        <h3 className="text-xl font-bold">{profile.name}<span className="text-sm">({friendData?.username})</span></h3>
+      )}
+    </div>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-sm">現在の割り当てているプロフィール</p>
+        {usingProfileId ? (
+          <select
+            className="w-full bg-gray5 px-3 py-2 outline-none rounded-md truncate transition-colors duration-300 hover:bg-gray3"
+            value={usingProfileId}
+            onChange={(e) => setUsingProfileId(e.target.value)}
+          >
+            <option value={currentProfile?.profileId}>{currentProfile?.name}</option>
+            {otherProfiles.map((profile) => (
+              <option
                 key={profile.profileId}
-                onClick={() => setSelectedProfileId(profile.profileId)}
-                className={`
-                  flex items-center gap-4 p-4 rounded-lg transition-all
-                  ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : ''}
-                `}
-                style={{ backgroundColor: themeColor + '20' }}
+                value={profile.profileId}
               >
-                <Avatar className="h-12 w-12">
-                  {profile.avatarKey ? (
-                    <ProfileImage
-                      path={profile.avatarKey}
-                      alt={profile.name}
-                      fallbackText={profile.name.charAt(0).toUpperCase()}
-                      width={48}
-                      height={48}
-                      className="rounded-full"
-                      themeColor={themeColor}
-                    />
-                  ) : (
-                    <AvatarFallback
-                      className="text-lg"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      {profile.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="text-left">
-                  <h4 className="font-medium">{profile.name}</h4>
-                  {profile.bio && (
-                    <p className="text-sm text-gray-500 truncate">
-                      {profile.bio}
-                    </p>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex justify-end gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={loading}
-          >
-            キャンセル
-          </Button>
-          <Button
-            onClick={handleSelect}
-            disabled={!selectedProfileId || loading}
-          >
-            {loading ? '処理中...' : '選択して承認'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+                {profile.name}
+              </option>
+            ))}
+          </select>
+        ):(
+          <p className="w-full bg-gray5 px-3 py-2 rounded-md">プロフィールがありません</p>
+        )}
+      </div>
+      <div className="space-y-2">
+        <p>status:</p>
+        <select
+          className="w-full bg-gray5 px-3 py-2 outline-none rounded-md truncate transition-colors duration-300 hover:bg-gray3"
+          value={friendStatus}
+          onChange={(e) => setFriendStatus(e.target.value)}
+        >
+          {Object.values(FriendStatus).map((status) => (
+            <option key={status} value={status}>{status}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+    <div className="flex justify-end py-2">
+      <button
+        className="bg-gray5 px-3 py-2 rounded-md hover:bg-gray1 hover:bg-opacity-30 transition-colors duration-300"
+        onClick={handleSave}
+      >
+        保存
+      </button>
+    </div>
+  </div>
+  )
 }
-
-export default ProfileSelectorModal;
