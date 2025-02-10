@@ -91,7 +91,7 @@ export function FriendDetailsModal({
   }
 
   return (
-  <div className="text-white flex flex-col space-y-6">
+  <div className="text-white flex flex-col space-y-6 max-w-full break-words overflow-hidden">
     <div className="flex items-center space-x-2 w-full border-b border-neutral-700 pb-2">
       <Button
         variant="ghost"
@@ -103,6 +103,9 @@ export function FriendDetailsModal({
       {friendData?.username && (
         <h3 className="text-xl font-bold">{profile.name}<span className="text-sm">({friendData?.username})</span></h3>
       )}
+    </div>
+    <div>
+      <p className="bg-gray5 px-3 py-2 rounded-md break-words  w-[525px]"><span className="text-white1">自己紹介:</span>{profile.bio}</p>
     </div>
     <div className="space-y-4">
       <div className="space-y-2">
