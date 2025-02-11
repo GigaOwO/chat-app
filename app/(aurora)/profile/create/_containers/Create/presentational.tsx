@@ -21,7 +21,6 @@ export function CreateProfilePresentation({
   const [formData, setFormData] = useState<ProfileFormData>({
     avatarKey: null,
     name: '',
-    order: 0,
     bio: '',
     themeColor: '1D282E'
   });
@@ -73,18 +72,6 @@ export function CreateProfilePresentation({
               placeholder="名前を入力"
               value={formData.name}
               onChange={(e) => updateFormData('name', e.target.value)}
-              className="mt-1 w-96"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <Label htmlFor="order">表示順</Label>
-            <Input
-              id="order"
-              type="number"
-              placeholder="表示順を入力"
-              value={formData.order}
-              onChange={(e) => updateFormData('order', Number(e.target.value))}
               className="mt-1 w-96"
             />
           </div>
