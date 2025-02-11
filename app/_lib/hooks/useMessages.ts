@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import {
   getMessage,
@@ -18,14 +18,20 @@ import type {
 
 const client = generateClient();
 
+interface MessagesState {
+  loading: boolean;
+  error: Error | null;
+}
+
 export function useMessages() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [state, setState] = useState<MessagesState>({
+    loading: false,
+    error: null
+  });
 
   // メッセージを取得
-  const fetchMessage = async (messageId: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchMessage = useCallback(async (messageId: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: getMessage,
@@ -33,17 +39,16 @@ export function useMessages() {
       }) as { data: { getMessages: Messages } };
       return response.data.getMessages;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // 会話IDでメッセージを検索
-  const fetchMessagesByConversationId = async (conversationId: string, limit?: number, nextToken?: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchMessagesByConversationId = useCallback(async (conversationId: string, limit?: number, nextToken?: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: getMessagesByConversationId,
@@ -51,17 +56,16 @@ export function useMessages() {
       }) as { data: { queryMessagesByConversationIdCreatedAtIndex: MessagesConnection } };
       return response.data.queryMessagesByConversationIdCreatedAtIndex;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // 送信者IDでメッセージを検索
-  const fetchMessagesBySenderId = async (senderId: string, limit?: number, nextToken?: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchMessagesBySenderId = useCallback(async (senderId: string, limit?: number, nextToken?: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: getMessagesBySenderId,
@@ -69,17 +73,16 @@ export function useMessages() {
       }) as { data: { queryMessagesBySenderIdCreatedAtIndex: MessagesConnection } };
       return response.data.queryMessagesBySenderIdCreatedAtIndex;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // メッセージを作成
-  const addMessage = async (input: CreateMessagesInput) => {
-    setLoading(true);
-    setError(null);
+  const addMessage = useCallback(async (input: CreateMessagesInput) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: createMessage,
@@ -87,17 +90,16 @@ export function useMessages() {
       }) as { data: { createMessages: Messages } };
       return response.data.createMessages;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // メッセージを更新
-  const modifyMessage = async (input: UpdateMessagesInput) => {
-    setLoading(true);
-    setError(null);
+  const modifyMessage = useCallback(async (input: UpdateMessagesInput) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: updateMessage,
@@ -105,17 +107,16 @@ export function useMessages() {
       }) as { data: { updateMessages: Messages } };
       return response.data.updateMessages;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   // メッセージを削除
-  const removeMessage = async (input: DeleteMessagesInput) => {
-    setLoading(true);
-    setError(null);
+  const removeMessage = useCallback(async (input: DeleteMessagesInput) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await client.graphql({
         query: deleteMessage,
@@ -123,16 +124,16 @@ export function useMessages() {
       }) as { data: { deleteMessages: Messages } };
       return response.data.deleteMessages;
     } catch (err) {
-      setError(err as Error);
+      setState(prev => ({ ...prev, error: err as Error }));
       return null;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   return {
-    loading,
-    error,
+    loading: state.loading,
+    error: state.error,
     fetchMessage,
     fetchMessagesByConversationId,
     fetchMessagesBySenderId,

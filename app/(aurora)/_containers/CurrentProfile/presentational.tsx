@@ -2,15 +2,12 @@
 
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import Image from 'next/image';
-import type { Profiles, FriendRequests, FriendRequestsConnection } from '@/_lib/graphql/API';
+import type { Profiles } from '@/_lib/graphql/API';
 import { SettingsContainer } from '../Settings/container';
 import { FriendsContainer } from '../Friends/container';
 import { CurrentProfileSkeleton } from './skeleton';
 import { ProfileImage } from '@/_components/ProfileImage';
-import { useEffect, useState } from 'react';
-import { getCurrentUser } from 'aws-amplify/auth';
-import { generateClient } from 'aws-amplify/api';
-import { getFriendRequestsByReceiverId } from '@/_lib/Featchers/FriendRequests/featcher';
+import { useFriendRequestsContext } from '../Friends/FriendRequestsContext';
 import { UserContext } from '../User/context';
 
 interface CurrentProfilePresentationProps {
@@ -23,7 +20,7 @@ interface CurrentProfilePresentationProps {
   onSettingsClose: () => void;
   onFriendsOpen: () => void;
   onFriendsClose: () => void;
-  user:UserContext|null;
+  user: UserContext | null;
 }
 
 export function CurrentProfilePresentation({
@@ -38,45 +35,13 @@ export function CurrentProfilePresentation({
   onFriendsClose,
   user
 }: CurrentProfilePresentationProps) {
-  const [currentUser, setCurrentUser] = useState<{userId: string, username: string} | null>(null);
-  const [friendRequests, setFriendRequests] = useState<FriendRequests[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { pendingRequests } = useFriendRequestsContext();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Get current user
-        const user = await getCurrentUser();
-        setCurrentUser({
-          userId: user.userId,
-          username: user.username
-        });
-
-        // Get friend requests
-        const client = generateClient();
-        const response = await client.graphql({
-          query: getFriendRequestsByReceiverId,
-          variables: { receiverId: user.userId }
-        }) as { data: { queryFriendRequestsByReceiverIdIndex: FriendRequestsConnection } };
-
-        const requests = (response.data.queryFriendRequestsByReceiverIdIndex.items || [])
-          .filter(request => request !== null) as FriendRequests[];
-        setFriendRequests(requests);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (isLoading || loading) {
+  if (isLoading) {
     return <CurrentProfileSkeleton />;
   }
 
-  if (!profile || !currentUser) {
+  if (!profile) {
     return null;
   }
 
@@ -121,9 +86,9 @@ export function CurrentProfilePresentation({
               height={20}
               className="opacity-80"
             />
-            {friendRequests.length > 0 && (
+            {pendingRequests.length > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                {friendRequests.length}
+                {pendingRequests.length}
               </span>
             )}
           </button>
@@ -152,9 +117,8 @@ export function CurrentProfilePresentation({
       <FriendsContainer
         isOpen={isFriendsOpen}
         onClose={onFriendsClose}
-        userId={currentUser.userId}
-        profileId={profile.profileId}
-        initialRequests={friendRequests}
+        userId={user?.userId || ''}
+        initialRequests={pendingRequests}
       />
     </>
   );

@@ -6,14 +6,14 @@ import { CreateFriendRequestForm } from './CreateFriendRequest/presentational';
 import { FetchFriendRequest } from './FetchFriendRequest/presentational';
 import type { FriendRequests } from '@/_lib/graphql/API';
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
+import { FetchFriend } from './FetchFriend/presentational';
 
 interface FriendsModalPresentationProps {
   isOpen: boolean;
   onClose: () => void;
-  activeTab: 'friend'|'requests' | 'search';
-  onTabChange: (tab: 'friend' |'requests' | 'search') => void;
+  activeTab: 'friend' | 'requests' | 'search';
+  onTabChange: (tab: 'friend' | 'requests' | 'search') => void;
   userId: string;
-  profileId: string;
   initialRequests: FriendRequests[];
 }
 
@@ -23,7 +23,6 @@ export function FriendsModalPresentation({
   activeTab,
   onTabChange,
   userId,
-  profileId,
   initialRequests
 }: FriendsModalPresentationProps) {
   return (
@@ -35,8 +34,8 @@ export function FriendsModalPresentation({
         </div>
         <Tabs
           value={activeTab}
-          onValueChange={(value) => onTabChange(value as 'friend' |'requests' | 'search')}
-          className="w-full h-full bg-black1 rounded-lg"
+          onValueChange={(value) => onTabChange(value as 'friend' | 'requests' | 'search')}
+          className="w-full h-full bg-black1 rouneded-lg"
         >
           <TabsList className="w-full justify-start rounded-none border-b border-gray1 text-white">
             <TabsTrigger value="friend">フレンド一覧</TabsTrigger>
@@ -45,14 +44,15 @@ export function FriendsModalPresentation({
           </TabsList>
 
           <div className="p-6 h-[calc(80vh-48px)] overflow-y-auto">
+            <TabsContent value="friend" className="m-0">
+              <FetchFriend />
+            </TabsContent>
             <TabsContent value="requests" className="m-0">
               <FetchFriendRequest
                 userId={userId}
-                profileId={profileId}
                 requests={initialRequests}
               />
             </TabsContent>
-
             <TabsContent value="search" className="m-0">
               <CreateFriendRequestForm
                 senderId={userId}

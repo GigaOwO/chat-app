@@ -8,7 +8,6 @@ interface FriendsContainerProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
-  profileId: string;
   initialRequests: FriendRequests[];
 }
 
@@ -16,7 +15,6 @@ export function FriendsContainer({
   isOpen,
   onClose,
   userId,
-  profileId,
   initialRequests
 }: FriendsContainerProps) {
   const [activeTab, setActiveTab] = useState<'friend' | 'requests' | 'search'>('friend');
@@ -28,7 +26,6 @@ export function FriendsContainer({
       activeTab={activeTab}
       onTabChange={setActiveTab}
       userId={userId}
-      profileId={profileId}
       initialRequests={initialRequests}
     />
   );
