@@ -69,7 +69,7 @@ export default function ImageUpload({
           variant="outline"
           onClick={() => fileInputRef.current?.click()}
           disabled={loading}
-          className="w-full"
+          className="w-full text-gray5"
         >
           {loading ? 'アップロード中...' : '画像を選択'}
         </Button>
