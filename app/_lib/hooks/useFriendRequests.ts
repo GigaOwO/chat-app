@@ -81,6 +81,10 @@ export function useFriendRequests() {
     setLoading(true);
     setError(null);
     try {
+      if (input.senderId === input.receiverId) {
+        throw new Error('自分自身にフレンドリクエストを送ることはできません');
+      }
+  
       const response = await client.graphql({
         query: createFriendRequest,
         variables: { input }
@@ -88,7 +92,7 @@ export function useFriendRequests() {
       return response.data.createFriendRequests;
     } catch (err) {
       setError(err as Error);
-      return null;
+      throw err;
     } finally {
       setLoading(false);
     }
