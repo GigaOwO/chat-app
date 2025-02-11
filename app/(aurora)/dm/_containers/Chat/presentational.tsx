@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import { ScrollArea } from '@/_components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/_components/ui/alert';
@@ -17,6 +17,20 @@ interface ChatPresentationProps {
   onSendMessage: (content: string) => Promise<void>;
 }
 
+// メッセージ内容の表示用コンポーネント
+function MessageContent({ content }: { content: string }) {
+  return (
+    <>
+      {content.split('\n').map((line, index, array) => (
+        <React.Fragment key={index}>
+          {line}
+          {index < array.length - 1 && <br />}
+        </React.Fragment>
+      ))}
+    </>
+  );
+}
+
 export function ChatPresentation({
   messages,
   currentProfile,
@@ -30,7 +44,10 @@ export function ChatPresentation({
   // 新しいメッセージが来たら自動スクロール
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [messages]);
 
@@ -116,7 +133,7 @@ export function ChatPresentation({
       {/* メッセージエリア */}
       <ScrollArea 
         ref={scrollRef}
-        className="flex-1 p-4"
+        className="flex-1 p-4 overflow-y-auto"
       >
         {messages.length === 0 ? (
           <div className="text-center text-gray1 py-4">
@@ -161,16 +178,22 @@ export function ChatPresentation({
                     isCurrentUser ? 'items-end' : ''
                   }`}>
                     <span className="text-xs text-gray1">
-                      {new Date(message.createdAt).toLocaleString()}
+                      {new Date(message.createdAt).toLocaleString('ja-JP', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </span>
                     <div
-                      className={`rounded-lg p-3 ${
+                      className={`rounded-lg p-3 whitespace-pre-wrap break-words ${
                         isCurrentUser
                           ? 'bg-blue-600 text-white ml-auto'
                           : 'bg-gray2 text-white1'
                       }`}
                     >
-                      {message.content}
+                      <MessageContent content={message.content} />
                     </div>
                   </div>
                 </div>

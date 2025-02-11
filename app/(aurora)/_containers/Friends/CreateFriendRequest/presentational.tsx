@@ -48,7 +48,17 @@ export function CreateFriendRequestForm({
   const search = useDebouncedCallback((username: string) => {
     if (username.trim()) {
       searchUsers(username, 10)
-        .then(setUsers)
+        .then((results) => {
+          if (results?.items) {
+            const filteredResults = {
+              ...results,
+              items: results.items.filter(user => user?.sub !== senderId)
+            };
+            setUsers(filteredResults);
+          } else {
+            setUsers(results);
+          }
+        })
         .catch(() => setError('ユーザーの検索に失敗しました'));
     } else {
       setUsers(null);

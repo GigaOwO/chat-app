@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { UserContext } from "../../User/context";
+import { LogoutButton } from "@/_components/LogoutButton";
 export function UserTabPresentation ({user}:{user:UserContext|null;}){
   const [username, setUsername] = useState<string>(user?.username||"");
   const [mode, setMode] = useState<"username"|"mail"|"password">("username");
@@ -43,6 +44,7 @@ export function UserTabPresentation ({user}:{user:UserContext|null;}){
               >パスワードを変更</button>
             </div>
           </section>
+          <LogoutButton />
         </div>
       )
     case "mail":
