@@ -11,7 +11,7 @@ import { FriendDetailsModal } from "./ProfileSelectorModal";
 import { Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export function FetchFriend() {
+export function FetchFriend({ onclose }: { onclose: () => void }) {
   const router = useRouter();
   const [friendProfiles, setFriendProfiles] = useState<Profiles[]>([]);
   const [friendDetails, setFriendDetails] = useState<Friends[]>([]);
@@ -55,6 +55,7 @@ export function FetchFriend() {
 
   const handleChatStart = (userId: string) => {
     router.push(`/dm/${userId}`);
+    onclose();
   };
 
   if (isFriendDetailsModalOpen && selectedFriendProfile) {
