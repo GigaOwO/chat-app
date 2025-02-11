@@ -30,7 +30,6 @@ export function CreateFriendRequestForm({
   const { searchUsersByUsername: searchUsers } = useUsers();
   const { addFriendRequest } = useFriendRequests();
   const { fetchProfilesByUserId } = useProfiles();
-
   useEffect(() => {
     const loadProfiles = async () => {
       try {
@@ -45,7 +44,7 @@ export function CreateFriendRequestForm({
     };
     loadProfiles();
   }, [senderId, fetchProfilesByUserId]);
-
+  
   const search = useDebouncedCallback((username: string) => {
     if (username.trim()) {
       searchUsers(username, 10)
