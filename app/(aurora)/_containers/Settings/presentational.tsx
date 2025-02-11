@@ -16,6 +16,7 @@ interface SettingsModalPresentationProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
   user:UserContext|null;
+  setUser: (user: UserContext) => void;
 }
 
 export function SettingsModalPresentation({
@@ -24,15 +25,16 @@ export function SettingsModalPresentation({
   profile,
   activeTab,
   onTabChange,
-  user
+  user,
+  setUser,
 }: SettingsModalPresentationProps) {
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'account':
+        return <UserTabContainer user={user} setUser={setUser} />;
+
       case 'profile':
         return <ProfileTabContainer currentProfile={profile} />;
-
-      case 'account':
-        return <UserTabContainer user={user} />;
 
       default:
         return null;

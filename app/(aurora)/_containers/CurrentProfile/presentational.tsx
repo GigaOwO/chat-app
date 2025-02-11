@@ -21,6 +21,7 @@ interface CurrentProfilePresentationProps {
   onFriendsOpen: () => void;
   onFriendsClose: () => void;
   user: UserContext | null;
+  setUser: (user: UserContext) => void;
 }
 
 export function CurrentProfilePresentation({
@@ -33,7 +34,8 @@ export function CurrentProfilePresentation({
   onSettingsClose,
   onFriendsOpen,
   onFriendsClose,
-  user
+  user,
+  setUser,
 }: CurrentProfilePresentationProps) {
   const { pendingRequests } = useFriendRequestsContext();
 
@@ -112,6 +114,7 @@ export function CurrentProfilePresentation({
         onClose={onSettingsClose}
         profile={profile}
         user={user}
+        setUser={setUser}
       />
 
       <FriendsContainer

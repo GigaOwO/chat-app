@@ -11,9 +11,10 @@ interface SettingsContainerProps {
   onClose: () => void;
   profile: Profiles;
   user:UserContext|null;
+  setUser: (user: UserContext) => void;
 }
 
-export function SettingsContainer({ isOpen, onClose, profile, user }: SettingsContainerProps) {
+export function SettingsContainer({ isOpen, onClose, profile, user,setUser }: SettingsContainerProps) {
   const [activeTab, setActiveTab] = useState<TabId>('profile');
 
   return (
@@ -24,6 +25,7 @@ export function SettingsContainer({ isOpen, onClose, profile, user }: SettingsCo
       activeTab={activeTab}
       onTabChange={setActiveTab}
       user={user}
+      setUser={setUser}
     />
   );
 }

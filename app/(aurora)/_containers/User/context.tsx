@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 export interface UserContextValue {
   user: UserContext | null
   isLoading: boolean
+  setUser: (user: UserContext) => void
 }
 export interface UserContext {
   userId: string
@@ -37,7 +38,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [])
   const contextValue: UserContextValue = {
     user,
-    isLoading
+    isLoading,
+    setUser,
   };
   return(
     <UserContext.Provider value={contextValue}>
