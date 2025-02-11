@@ -7,7 +7,7 @@ import { useUserContext } from '../User/context';
 
 export function CurrentProfileContainer() {
   const { currentProfile, isLoading, getCurrentThemeColor } = useProfileContext();
-  const { user } = useUserContext();
+  const { user,setUser } = useUserContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
 
@@ -21,6 +21,7 @@ export function CurrentProfileContainer() {
       onSettingsOpen={() => setIsSettingsOpen(true)}
       onSettingsClose={() => setIsSettingsOpen(false)}
       user={user!}
+      setUser={setUser}
       onFriendsOpen={() => setIsFriendsOpen(true)}
       onFriendsClose={() => setIsFriendsOpen(false)}
     />
