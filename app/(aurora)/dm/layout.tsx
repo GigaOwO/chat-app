@@ -2,7 +2,7 @@ import { ProfileProvider } from '../_containers/Profile/context';
 import { UserProvider } from '../_containers/User/context';
 import { ProfileSwitcherContainer } from '../_containers/ProfileSwitcher/container';
 import { CurrentProfileContainer } from '../_containers/CurrentProfile/container';
-import { FriendsListContainer } from './_containers/FriendsList/container';
+import { ChatListContainer } from './_containers/ChatList/container';
 
 export default function DMLayout({
   children,
@@ -15,7 +15,7 @@ export default function DMLayout({
         <div className="flex h-screen">
           <div className="flex flex-col bg-gray4 p-3 w-60">
             <div className="flex-1 overflow-y-auto">
-              <FriendsListContainer />
+              <ChatListContainer />
             </div>
             <div className="mt-auto space-y-2">
               <ProfileSwitcherContainer />

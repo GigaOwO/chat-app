@@ -1,33 +1,50 @@
 'use client';
 
-import { Input } from '@/_components/ui/input';
 import { Button } from '@/_components/ui/button';
 import { useFriendRequests } from '@/_lib/hooks/useFriendRequests';
 import { useUsers } from '@/_lib/hooks/useUsers';
 import { Alert, AlertDescription } from '@/_components/ui/alert';
-import { useProfileContext } from '../../Profile/context';
 import {
   CreateFriendRequestsInput,
   UsersConnection,
-  FriendRequestStatus
+  FriendRequestStatus,
+  Profiles,
 } from '@/_lib/graphql/API';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { v4 as uuidv4 } from "uuid";
+import { useProfiles } from '@/_lib/hooks/useProfiles';
 
 interface CreateFriendRequestFormProps {
   senderId: string;
 }
 
 export function CreateFriendRequestForm({
-  senderId
+  senderId,
 }: CreateFriendRequestFormProps) {
   const [users, setUsers] = useState<UsersConnection|null|undefined>();
   const [username, setUsername] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const { searchUsersByUsername: searchUsers, loading } = useUsers();
+  const [profiles, setProfiles] = useState<Profiles[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+  const { searchUsersByUsername: searchUsers } = useUsers();
   const { addFriendRequest } = useFriendRequests();
-  const { currentProfile } = useProfileContext(); // プロファイルコンテキストから現在のプロファイルを取得
+  const { fetchProfilesByUserId } = useProfiles();
+
+  useEffect(() => {
+    const loadProfiles = async () => {
+      try {
+        const response = await fetchProfilesByUserId(senderId);
+        if (response?.items) {
+          setProfiles(response.items.filter((p): p is Profiles => p !== null));
+        }
+      } catch (err) {
+        console.error('Error loading profiles:', err);
+        setError('プロファイルの読み込みに失敗しました');
+      }
+    };
+    loadProfiles();
+  }, [senderId, fetchProfilesByUserId]);
 
   const search = useDebouncedCallback((username: string) => {
     if (username.trim()) {
@@ -46,8 +63,7 @@ export function CreateFriendRequestForm({
   };
 
   const handleSubmit = async (selectedUsername: string) => {
-    // 現在のプロファイルがない場合は処理を中止
-    if (!currentProfile) {
+    if (!selectedProfileId) {
       setError('プロファイルが選択されていません');
       return;
     }
@@ -61,7 +77,7 @@ export function CreateFriendRequestForm({
         requestId,
         receiverId: user.sub!,
         senderId,
-        senderProfileId: currentProfile.profileId, // 現在選択中のプロファイルIDを使用
+        senderProfileId: selectedProfileId,
         status: FriendRequestStatus.PENDING,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -81,13 +97,16 @@ export function CreateFriendRequestForm({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="space-y-2">
-        <Input
+        <label htmlFor='searchUser'>ユーザーID</label>
+        <input
           type="text"
           placeholder="ユーザー名で検索"
           onChange={(e) => handleSearch(e.target.value)}
           value={username}
+          className='bg-gray5 border-gray6 flex h-9 w-full rounded-md border px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus:bg-gray3'
+          id='searchUser'
         />
 
         {error && (
@@ -96,25 +115,50 @@ export function CreateFriendRequestForm({
           </Alert>
         )}
       </div>
-
-      {users && !loading && (
-        <ul className="space-y-2">
-          {users.items!.map((user) => (
-            <li
-              key={user!.sub}
-              className="flex items-center justify-between p-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+      <div className="space-y-2">
+        <h3>自分のプロフィール</h3>
+        <select
+          className='bg-gray5 border-gray6 outline-none px-3 py-2 rounded-lg w-full border focus:bg-gray3'
+          required
+          value={selectedProfileId}
+          onChange={(e) => setSelectedProfileId(e.target.value)}
+        >
+          <option
+            disabled
+            value=""
+          >
+            割り当てるプロフィールを選択してください
+          </option>
+          {profiles.map((profile) => (
+            <option
+              key={profile.profileId}
+              value={profile.profileId}
             >
-              <span>{user!.username}</span>
-              <Button
-                size="sm"
-                onClick={() => handleSubmit(user!.username!)}
-              >
-                リクエストを送信
-              </Button>
-            </li>
+              {profile.name}
+            </option>
           ))}
-        </ul>
-      )}
+        </select>
+      </div>
+      <div className="">
+        {users && (
+          <ul className="space-y-2">
+            {users.items!.map((user) => (
+              <li
+                key={user!.sub}
+                className="flex items-center justify-between p-3 rounded-lg bg-gray5 hover:bg-gray3 transition-colors"
+              >
+                <span>{user!.username}</span>
+                <Button
+                  size="sm"
+                  onClick={() => handleSubmit(user!.username!)}
+                >
+                  リクエストを送信
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

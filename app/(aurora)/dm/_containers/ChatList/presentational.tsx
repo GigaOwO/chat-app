@@ -1,31 +1,30 @@
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import { ScrollArea } from '@/_components/ui/scroll-area';
-import { Skeleton } from '@/_components/ui/skeleton';
 import { Alert, AlertDescription } from '@/_components/ui/alert';
 import { ProfileImage } from '@/_components/ProfileImage';
 import { getThemeColorFromCustomData } from '@/_lib/utils/theme';
-import type { Friends, Profiles } from '@/_lib/graphql/API';
+import type { ChatWithProfile } from './container';
 
-interface FriendsListPresentationProps {
-  friends: Array<{ friend: Friends; profile: Profiles }>;
+interface ChatListPresentationProps {
+  chats: ChatWithProfile[];
   loading: boolean;
   error: string | null;
-  onSelectFriend: (friendId: string) => void;
+  onSelectChat: (friendId: string) => void;
 }
 
-export function FriendsListPresentation({
-  friends,
+export function ChatListPresentation({
+  chats,
   loading,
   error,
-  onSelectFriend
-}: FriendsListPresentationProps) {
+  onSelectChat
+}: ChatListPresentationProps) {
   if (loading) {
     return (
       <div className="space-y-2">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="flex items-center gap-2 p-2">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <Skeleton className="h-4 w-32" />
+            <div className="h-10 w-10 rounded-full bg-gray2 animate-pulse" />
+            <div className="h-4 w-32 bg-gray2 animate-pulse" />
           </div>
         ))}
       </div>
@@ -40,10 +39,10 @@ export function FriendsListPresentation({
     );
   }
 
-  if (friends.length === 0) {
+  if (chats.length === 0) {
     return (
       <div className="text-center text-gray1 py-4">
-        フレンドがいません
+        チャットがありません
       </div>
     );
   }
@@ -51,13 +50,13 @@ export function FriendsListPresentation({
   return (
     <ScrollArea className="h-full pr-4">
       <div className="space-y-1">
-        {friends.map(({ friend, profile }) => {
+        {chats.map(({ conversation, profile }) => {
           const themeColor = getThemeColorFromCustomData(profile);
           
           return (
             <button
-              key={friend.friendId}
-              onClick={() => onSelectFriend(friend.friendId)}
+              key={conversation.conversationId}
+              onClick={() => onSelectChat(profile.userId)}
               className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray3 transition-colors"
             >
               <Avatar className="h-10 w-10">

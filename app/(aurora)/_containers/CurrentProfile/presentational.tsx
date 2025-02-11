@@ -118,8 +118,6 @@ export function CurrentProfilePresentation({
         isOpen={isFriendsOpen}
         onClose={onFriendsClose}
         userId={user?.userId || ''}
-        username={user?.username || ''}
-        profileId={profile.profileId}
         initialRequests={pendingRequests}
       />
     </>

@@ -8,8 +8,6 @@ interface FriendsContainerProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
-  username: string;
-  profileId: string;
   initialRequests: FriendRequests[];
 }
 
@@ -17,11 +15,9 @@ export function FriendsContainer({
   isOpen,
   onClose,
   userId,
-  username,
-  profileId,
   initialRequests
 }: FriendsContainerProps) {
-  const [activeTab, setActiveTab] = useState<'requests' | 'search'>('requests');
+  const [activeTab, setActiveTab] = useState<'friend' | 'requests' | 'search'>('friend');
 
   return (
     <FriendsModalPresentation
@@ -30,8 +26,6 @@ export function FriendsContainer({
       activeTab={activeTab}
       onTabChange={setActiveTab}
       userId={userId}
-      username={username}
-      profileId={profileId}
       initialRequests={initialRequests}
     />
   );
