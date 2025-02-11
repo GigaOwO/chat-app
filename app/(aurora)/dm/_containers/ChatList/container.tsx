@@ -12,7 +12,9 @@ import { useMessages } from '@/_lib/hooks/useMessages';
 import { generateClient } from 'aws-amplify/api';
 import { 
   onCreateMessages, 
-  onUpdateConversations 
+  onUpdateConversations,
+  onCreateConversationParticipants,
+  onCreateConversations
 } from '@/_lib/graphql/subscriptions';
 import type { 
   Conversations, 
@@ -44,7 +46,7 @@ export function ChatListContainer() {
   const { fetchConversation } = useConversations();
   const { 
     fetchConversationParticipantsByUserId,
-    fetchConversationParticipants,
+    fetchConversationParticipants 
   } = useConversationParticipants();
   const { fetchMessagesByConversationId } = useMessages();
   const { fetchProfile } = useProfiles();
@@ -143,79 +145,106 @@ export function ChatListContainer() {
     };
   }, [currentProfile?.userId, fetchChatData]);
 
-  // メッセージの作成を監視するサブスクリプション
+  // サブスクリプションの設定
   useEffect(() => {
     if (!currentProfile?.userId) return;
 
-    const messageSubscription = client.graphql({
-      query: onCreateMessages
-    }).subscribe({
-      next: async ({ data }) => {
-        const newMessage = data.onCreateMessages;
-        if (!newMessage) return;
+    const subscriptions = [
+      // メッセージ作成のサブスクリプション
+      client.graphql({
+        query: onCreateMessages
+      }).subscribe({
+        next: async ({ data }) => {
+          const newMessage = data.onCreateMessages;
+          if (!newMessage) return;
 
-        // 新しいメッセージを含むチャットを更新
-        setChats(prevChats => {
-          const chatIndex = prevChats.findIndex(
-            chat => chat.conversation.conversationId === newMessage.conversationId
-          );
+          setChats(prevChats => {
+            const chatIndex = prevChats.findIndex(
+              chat => chat.conversation.conversationId === newMessage.conversationId
+            );
 
-          if (chatIndex === -1) return prevChats;
+            if (chatIndex === -1) return prevChats;
 
-          const updatedChats = [...prevChats];
-          updatedChats[chatIndex] = {
-            ...updatedChats[chatIndex],
-            lastMessage: newMessage,
-            conversation: {
-              ...updatedChats[chatIndex].conversation,
-              lastMessageAt: newMessage.createdAt
-            }
-          };
+            const updatedChats = [...prevChats];
+            updatedChats[chatIndex] = {
+              ...updatedChats[chatIndex],
+              lastMessage: newMessage,
+              conversation: {
+                ...updatedChats[chatIndex].conversation,
+                lastMessageAt: newMessage.createdAt
+              }
+            };
 
-          return sortChatsByLastMessage(updatedChats);
-        });
-      },
-      error: (error) => {
-        console.error('Message subscription error:', error);
-      }
-    });
+            return sortChatsByLastMessage(updatedChats);
+          });
+        }
+      }),
 
-    // 会話の更新を監視するサブスクリプション
-    const conversationSubscription = client.graphql({
-      query: onUpdateConversations
-    }).subscribe({
-      next: ({ data }) => {
-        const updatedConversation = data.onUpdateConversations;
-        if (!updatedConversation) return;
+      // 会話更新のサブスクリプション
+      client.graphql({
+        query: onUpdateConversations
+      }).subscribe({
+        next: ({ data }) => {
+          const updatedConversation = data.onUpdateConversations;
+          if (!updatedConversation) return;
 
-        // 更新された会話を含むチャットを更新
-        setChats(prevChats => {
-          const chatIndex = prevChats.findIndex(
-            chat => chat.conversation.conversationId === updatedConversation.conversationId
-          );
+          setChats(prevChats => {
+            const chatIndex = prevChats.findIndex(
+              chat => chat.conversation.conversationId === updatedConversation.conversationId
+            );
 
-          if (chatIndex === -1) return prevChats;
+            if (chatIndex === -1) return prevChats;
 
-          const updatedChats = [...prevChats];
-          updatedChats[chatIndex] = {
-            ...updatedChats[chatIndex],
-            conversation: updatedConversation
-          };
+            const updatedChats = [...prevChats];
+            updatedChats[chatIndex] = {
+              ...updatedChats[chatIndex],
+              conversation: updatedConversation
+            };
 
-          return sortChatsByLastMessage(updatedChats);
-        });
-      },
-      error: (error) => {
-        console.error('Conversation subscription error:', error);
-      }
-    });
+            return sortChatsByLastMessage(updatedChats);
+          });
+        }
+      }),
 
-    // クリーンアップ関数
+      // 新しい会話作成のサブスクリプション
+      client.graphql({
+        query: onCreateConversations
+      }).subscribe({
+        next: ({ data }) => {
+          const newConversation = data.onCreateConversations;
+          if (!newConversation) return;
+          // 新しい会話が作成された時は、参加者の追加を待つ
+          // 参加者の追加は別のサブスクリプションで処理
+        }
+      }),
+
+      // 会話参加者追加のサブスクリプション
+      client.graphql({
+        query: onCreateConversationParticipants
+      }).subscribe({
+        next: async ({ data }) => {
+          const newParticipant = data.onCreateConversationParticipants;
+          if (!newParticipant || newParticipant.userId !== currentProfile.userId) return;
+
+          const newChat = await fetchChatData(newParticipant);
+          if (!newChat) return;
+
+          setChats(prevChats => {
+            const exists = prevChats.some(
+              chat => chat.conversation.conversationId === newChat.conversation.conversationId
+            );
+            if (exists) return prevChats;
+
+            return sortChatsByLastMessage([...prevChats, newChat]);
+          });
+        }
+      })
+    ];
+
     return () => {
-      messageSubscription.unsubscribe();
-      conversationSubscription.unsubscribe();
+      subscriptions.forEach(sub => sub.unsubscribe());
     };
-  }, [currentProfile?.userId]);
+  }, [currentProfile?.userId, fetchChatData]);
 
   // チャット選択のハンドラー
   const handleSelectChat = useCallback((friendId: string) => {

@@ -45,7 +45,7 @@ export function FriendsModalPresentation({
 
           <div className="p-6 h-[calc(80vh-48px)] overflow-y-auto">
             <TabsContent value="friend" className="m-0">
-              <FetchFriend />
+              <FetchFriend onclose={onClose} />
             </TabsContent>
             <TabsContent value="requests" className="m-0">
               <FetchFriendRequest
