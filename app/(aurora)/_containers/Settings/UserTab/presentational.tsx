@@ -41,6 +41,13 @@ export function UserTabPresentation ({user,setUser}:{user:UserContext|null,setUs
       setMessage(null);
       setIsPossibleName(true);
       setUser({...user,username});
+
+      const input : UpdateUserAttributesInput = {
+        userAttributes:{
+          preferred_username: username
+        }
+      }
+      await updateUserAttributes(input);
     }else{
       setMessage("ユーザー名は既に使用されています");
       setIsPossibleName(false);
