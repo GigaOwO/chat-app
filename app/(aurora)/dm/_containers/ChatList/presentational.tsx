@@ -24,7 +24,10 @@ export function ChatListPresentation({
         {[...Array(5)].map((_, i) => (
           <div key={i} className="flex items-center gap-2 p-2">
             <div className="h-10 w-10 rounded-full bg-gray2 animate-pulse" />
-            <div className="h-4 w-32 bg-gray2 animate-pulse" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-32 bg-gray2 animate-pulse" />
+              <div className="h-3 w-24 bg-gray2 animate-pulse" />
+            </div>
           </div>
         ))}
       </div>
@@ -50,8 +53,9 @@ export function ChatListPresentation({
   return (
     <ScrollArea className="h-full pr-4">
       <div className="space-y-1">
-        {chats.map(({ conversation, profile }) => {
+        {chats.map(({ conversation, profile, lastMessage }) => {
           const themeColor = getThemeColorFromCustomData(profile);
+          const messagePreview = lastMessage?.content || '新しい会話を始めましょう';
           
           return (
             <button
@@ -59,7 +63,7 @@ export function ChatListPresentation({
               onClick={() => onSelectChat(profile.userId)}
               className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray3 transition-colors"
             >
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 flex-shrink-0">
                 {profile.avatarKey ? (
                   <ProfileImage
                     path={profile.avatarKey}
@@ -79,9 +83,24 @@ export function ChatListPresentation({
                   </AvatarFallback>
                 )}
               </Avatar>
-              <span className="text-sm font-medium text-white1 text-left">
-                {profile.name}
-              </span>
+              <div className="flex-1 text-left space-y-1 min-w-0">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-white1 truncate">
+                    {profile.name}
+                  </span>
+                  {lastMessage && (
+                    <span className="text-xs text-gray1">
+                      {new Date(lastMessage.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray1 truncate">
+                  {messagePreview}
+                </p>
+              </div>
             </button>
           );
         })}
