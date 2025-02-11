@@ -55,8 +55,8 @@ export function useConversationParticipants() {
       const response = await client.graphql({
         query: getConversationParticipantsByUserId,
         variables: { userId, first: limit, after: nextToken }
-      }) as { data: { listConversationParticipants: ConversationParticipantsConnection } };
-      return response.data.listConversationParticipants;
+      }) as { data: { queryConversationParticipantsByUserIdCreatedAtIndex: ConversationParticipantsConnection } };
+      return response.data.queryConversationParticipantsByUserIdCreatedAtIndex;
     } catch (err) {
       setError(err as Error);
       return null;

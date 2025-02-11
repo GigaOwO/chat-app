@@ -22,11 +22,15 @@ export const getConversationParticipants = gql`
 
 // ユーザーIDで会話参加を検索
 export const getConversationParticipantsByUserId = gql`
-  query getConversationParticipantsByUserId($userId: String!, $first: Int, $after: String) {
-    listConversationParticipants(
-      filter: { userId: { eq: $userId } }
-      limit: $first
-      nextToken: $after
+  query getConversationParticipantsByUserId(
+    $userId: String!
+    $first: Int
+    $after: String
+  ) {
+    queryConversationParticipantsByUserIdCreatedAtIndex(
+      userId: $userId
+      first: $first
+      after: $after
     ) {
       items {
         conversationId

@@ -44,7 +44,7 @@ export function ChatListContainer() {
   const { fetchConversation } = useConversations();
   const { 
     fetchConversationParticipantsByUserId,
-    fetchConversationParticipants 
+    fetchConversationParticipants,
   } = useConversationParticipants();
   const { fetchMessagesByConversationId } = useMessages();
   const { fetchProfile } = useProfiles();

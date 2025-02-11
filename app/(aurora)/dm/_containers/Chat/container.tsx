@@ -17,6 +17,7 @@ import {
 } from '@/_lib/graphql/API';
 import { v4 as uuidv4 } from 'uuid';
 import { onCreateMessages, onUpdateMessages } from '@/_lib/graphql/subscriptions';
+import { useConversationParticipants } from '@/_lib/hooks/useConversationParticipants';
 
 const client = generateClient();
 
@@ -29,9 +30,11 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
   const { fetchProfile } = useProfiles();
   const { fetchFriend } = useFriends();
   const { fetchMessagesByConversationId, addMessage } = useMessages();
-  const { 
+  const {
     fetchConversationParticipantsByUserId,
     addConversationParticipant,
+  } = useConversationParticipants();
+  const {
     addConversation,
     fetchConversation
   } = useConversations();
