@@ -7,8 +7,8 @@ import decryptUseCase from '@/_lib/Crypto/decryptUseCase'
 import { Amplify } from 'aws-amplify'
 import { amplifyConfig } from '@/_lib/amplify/amplifyConfig'
 import { generateClient } from 'aws-amplify/api'
-import { getProfile } from '@/_lib/Featchers/Profiles/featcher'
-import { Profiles } from '@/_lib/graphql/API'
+import { getProfile, getProfilesByUserId } from '@/_lib/Featchers/Profiles/featcher'
+import { Profiles, ProfilesConnection } from '@/_lib/graphql/API'
 
 Amplify.configure(amplifyConfig, { ssr: true });
 // 認証が必要なパス
@@ -56,30 +56,46 @@ async function ProfileRedirect(request: NextRequest, userId: string|undefined, p
     return NextResponse.next();
   }
 
-  const cookie = request.cookies.get('profileId');
-  if (!cookie) {
-    return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
-  }
-
-  const profileId = await decryptUseCase(cookie.value);
-  if (!profileId) {
-    return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
-  }
-
   try {
+    // プロフィールの存在チェック
     const client = generateClient();
     const response = await client.graphql({
-      query: getProfile,
-      variables: { userId, profileId }
-    }) as { data: { getProfiles: Profiles } };
+      query: getProfilesByUserId,
+      variables: { userId }
+    }) as { data: { queryProfilesByUserIdOrderIndex: ProfilesConnection } };
 
-    // プロフィールが見つかった場合は次へ進む
-    if (response.data.getProfiles) {
-      return NextResponse.next();
+    // プロフィールが存在しない場合は作成画面へ
+    if (!response.data.queryProfilesByUserIdOrderIndex.items?.length) {
+      return NextResponse.redirect(new URL('/profile/create', request.url));
     }
 
-    // プロフィールが見つからない場合は選択画面へ
-    return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
+    const cookie = request.cookies.get('profileId');
+    if (!cookie) {
+      return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
+    }
+
+    const profileId = await decryptUseCase(cookie.value);
+    if (!profileId) {
+      return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
+    }
+
+    try {
+      const profileResponse = await client.graphql({
+        query: getProfile,
+        variables: { userId, profileId }
+      }) as { data: { getProfiles: Profiles } };
+
+      // プロフィールが見つかった場合は次へ進む
+      if (profileResponse.data.getProfiles) {
+        return NextResponse.next();
+      }
+
+      // プロフィールが見つからない場合は選択画面へ
+      return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
+    } catch (error) {
+      console.error('Profile fetch error:', error);
+      return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));
+    }
   } catch (error) {
     console.error('ProfileRedirect error:', error);
     return NextResponse.redirect(new URL(`/profile/select/?next=${path}`, request.url));

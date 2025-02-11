@@ -85,8 +85,8 @@ export function FetchFriend({ onclose }: { onclose: () => void }) {
                   path={profile.avatarKey}
                   alt={profile.name}
                   fallbackText={profile.name.charAt(0).toUpperCase()}
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   className="rounded-full"
                 />
               ) : (

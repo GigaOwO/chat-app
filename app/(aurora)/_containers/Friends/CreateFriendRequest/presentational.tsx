@@ -48,7 +48,17 @@ export function CreateFriendRequestForm({
   const search = useDebouncedCallback((username: string) => {
     if (username.trim()) {
       searchUsers(username, 10)
-        .then(setUsers)
+        .then((results) => {
+          if (results?.items) {
+            const filteredResults = {
+              ...results,
+              items: results.items.filter(user => user?.sub !== senderId)
+            };
+            setUsers(filteredResults);
+          } else {
+            setUsers(results);
+          }
+        })
         .catch(() => setError('ユーザーの検索に失敗しました'));
     } else {
       setUsers(null);
@@ -63,13 +73,18 @@ export function CreateFriendRequestForm({
 
   const handleSubmit = async (selectedUsername: string) => {
     if (!selectedProfileId) {
-      setError('プロファイルが選択されていません');
+      setError('プロフィールが選択されていません');
       return;
     }
-
+  
     const user = users?.items?.find((user) => user?.username === selectedUsername);
     if (!user) return;
-
+  
+    if (user.sub === senderId) {
+      setError('自分自身にフレンドリクエストを送ることはできません');
+      return;
+    }
+  
     try {
       const requestId = uuidv4();
       const input: CreateFriendRequestsInput = {
@@ -81,7 +96,7 @@ export function CreateFriendRequestForm({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-
+  
       const result = await addFriendRequest(input);
       if (result) {
         setUsername('');
