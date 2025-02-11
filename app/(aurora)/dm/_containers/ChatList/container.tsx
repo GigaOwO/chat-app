@@ -5,14 +5,21 @@ import { useRouter } from 'next/navigation';
 import { ChatListPresentation } from './presentational';
 import { useProfileContext } from '../../../_containers/Profile/context';
 import { useConversations } from '@/_lib/hooks/useConversations';
+import { useConversationParticipants } from '@/_lib/hooks/useConversationParticipants';
 import { useProfiles } from '@/_lib/hooks/useProfiles';
 import { useFriends } from '@/_lib/hooks/useFriends';
+import { useMessages } from '@/_lib/hooks/useMessages';
 import { generateClient } from 'aws-amplify/api';
 import { 
   onCreateMessages, 
   onUpdateConversations 
 } from '@/_lib/graphql/subscriptions';
-import type { Conversations, Profiles, Messages } from '@/_lib/graphql/API';
+import type { 
+  Conversations, 
+  Profiles, 
+  Messages,
+  ConversationParticipants
+} from '@/_lib/graphql/API';
 
 export interface ChatWithProfile {
   conversation: Conversations;
@@ -34,10 +41,12 @@ function sortChatsByLastMessage(chatsToSort: ChatWithProfile[]) {
 export function ChatListContainer() {
   const router = useRouter();
   const { currentProfile, isLoading: profileLoading } = useProfileContext();
+  const { fetchConversation } = useConversations();
   const { 
-    fetchConversationParticipantsByUserId, 
-    fetchConversation 
-  } = useConversations();
+    fetchConversationParticipantsByUserId,
+    fetchConversationParticipants 
+  } = useConversationParticipants();
+  const { fetchMessagesByConversationId } = useMessages();
   const { fetchProfile } = useProfiles();
   const { fetchFriend } = useFriends();
   
@@ -46,52 +55,51 @@ export function ChatListContainer() {
   const [loading, setLoading] = useState(true);
 
   // チャットデータを取得する関数
-  const fetchChatData = useCallback(async (
-    participantId: string, 
-    conversationId: string,
-    currentUserId: string
-  ) => {
+  const fetchChatData = useCallback(async (participant: ConversationParticipants): Promise<ChatWithProfile | null> => {
+    if (!currentProfile?.userId) return null;
+
     try {
-      // 1. 会話を取得
-      const conversation = await fetchConversation(conversationId);
+      const conversation = await fetchConversation(participant.conversationId);
       if (!conversation) return null;
 
-      // 2. 他の参加者を取得
-      const otherParticipationsResponse = await fetchConversationParticipantsByUserId(
-        conversationId
-      );
-      
-      if (!otherParticipationsResponse?.items) return null;
+      const participants = await fetchConversationParticipants(participant.conversationId);
+      if (!participants?.items) return null;
 
-      const otherParticipant = otherParticipationsResponse.items.find(
-        p => p && p.userId !== currentUserId
+      const otherParticipant = participants.items.find(
+        p => p && p.userId !== currentProfile.userId
       );
-
       if (!otherParticipant) return null;
 
-      // 3. フレンド関係を取得
-      const friendRelation = await fetchFriend(currentUserId, otherParticipant.userId);
+      const friendRelation = await fetchFriend(
+        currentProfile.userId,
+        otherParticipant.userId
+      );
       if (!friendRelation) return null;
 
-      // 4. 相手のプロフィールを取得
       const friendProfile = await fetchProfile(
         otherParticipant.userId,
         friendRelation.friendProfileId
       );
-
       if (!friendProfile) return null;
+
+      const messages = await fetchMessagesByConversationId(
+        conversation.conversationId,
+        1
+      );
+      const lastMessage = messages?.items?.[0] || undefined;
 
       return {
         conversation,
-        profile: friendProfile
+        profile: friendProfile,
+        lastMessage
       };
     } catch (err) {
-      console.error(`Error loading chat ${conversationId}:`, err);
+      console.error(`Error loading chat ${participant.conversationId}:`, err);
       return null;
     }
-  }, []);
+  }, [currentProfile?.userId]);
 
-  // チャットリストの初期読み込み
+  // メインのデータ取得useEffect
   useEffect(() => {
     let mounted = true;
 
@@ -100,19 +108,16 @@ export function ChatListContainer() {
       
       try {
         setError(null);
-        const participations = await fetchConversationParticipantsByUserId(currentProfile.userId);
+        setLoading(true);
+        const participations = await fetchConversationParticipantsByUserId(
+          currentProfile.userId
+        );
         
         if (!participations?.items || !mounted) return;
 
         const chatPromises = participations.items
-          .filter(p => p !== null)
-          .map(participant => 
-            fetchChatData(
-              participant!.userId, 
-              participant!.conversationId, 
-              currentProfile.userId
-            )
-          );
+          .filter((p): p is ConversationParticipants => p !== null)
+          .map(participant => fetchChatData(participant));
 
         const results = await Promise.all(chatPromises);
         if (!mounted) return;
@@ -138,31 +143,35 @@ export function ChatListContainer() {
     };
   }, [currentProfile?.userId, fetchChatData]);
 
-  // サブスクリプションの設定
+  // メッセージの作成を監視するサブスクリプション
   useEffect(() => {
     if (!currentProfile?.userId) return;
 
     const messageSubscription = client.graphql({
       query: onCreateMessages
     }).subscribe({
-      next: ({ data }) => {
+      next: async ({ data }) => {
         const newMessage = data.onCreateMessages;
         if (!newMessage) return;
 
+        // 新しいメッセージを含むチャットを更新
         setChats(prevChats => {
-          const updatedChats = prevChats.map(chat => {
-            if (chat.conversation.conversationId === newMessage.conversationId) {
-              return {
-                ...chat,
-                lastMessage: newMessage,
-                conversation: {
-                  ...chat.conversation,
-                  lastMessageAt: newMessage.createdAt
-                }
-              };
+          const chatIndex = prevChats.findIndex(
+            chat => chat.conversation.conversationId === newMessage.conversationId
+          );
+
+          if (chatIndex === -1) return prevChats;
+
+          const updatedChats = [...prevChats];
+          updatedChats[chatIndex] = {
+            ...updatedChats[chatIndex],
+            lastMessage: newMessage,
+            conversation: {
+              ...updatedChats[chatIndex].conversation,
+              lastMessageAt: newMessage.createdAt
             }
-            return chat;
-          });
+          };
+
           return sortChatsByLastMessage(updatedChats);
         });
       },
@@ -171,6 +180,7 @@ export function ChatListContainer() {
       }
     });
 
+    // 会話の更新を監視するサブスクリプション
     const conversationSubscription = client.graphql({
       query: onUpdateConversations
     }).subscribe({
@@ -178,16 +188,20 @@ export function ChatListContainer() {
         const updatedConversation = data.onUpdateConversations;
         if (!updatedConversation) return;
 
+        // 更新された会話を含むチャットを更新
         setChats(prevChats => {
-          const updatedChats = prevChats.map(chat => {
-            if (chat.conversation.conversationId === updatedConversation.conversationId) {
-              return {
-                ...chat,
-                conversation: updatedConversation
-              };
-            }
-            return chat;
-          });
+          const chatIndex = prevChats.findIndex(
+            chat => chat.conversation.conversationId === updatedConversation.conversationId
+          );
+
+          if (chatIndex === -1) return prevChats;
+
+          const updatedChats = [...prevChats];
+          updatedChats[chatIndex] = {
+            ...updatedChats[chatIndex],
+            conversation: updatedConversation
+          };
+
           return sortChatsByLastMessage(updatedChats);
         });
       },
@@ -196,12 +210,14 @@ export function ChatListContainer() {
       }
     });
 
+    // クリーンアップ関数
     return () => {
       messageSubscription.unsubscribe();
       conversationSubscription.unsubscribe();
     };
   }, [currentProfile?.userId]);
 
+  // チャット選択のハンドラー
   const handleSelectChat = useCallback((friendId: string) => {
     router.push(`/dm/${friendId}`);
   }, [router]);
