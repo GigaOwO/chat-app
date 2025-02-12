@@ -15,7 +15,7 @@ export function LogoutButton() {
       await signOut()
       router.push('/signin')
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('ログアウトエラー:', error)
     } finally {
       setIsLoading(false)
     }
@@ -27,7 +27,7 @@ export function LogoutButton() {
       disabled={isLoading}
       variant="ghost"
     >
-      {isLoading ? 'Signing out...' : 'Sign out'}
+      {isLoading ? 'ログアウト中...' : 'ログアウト'}
     </Button>
   )
 }

@@ -33,20 +33,19 @@ export function SignUpForm({ csrfToken }: Props) {
         options: {
           userAttributes: {
             email,
-            preferred_username: username,  // これがLambdaトリガーでusernameとして使用される
+            preferred_username: username,
           },
         }
       })
 
       if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
-        // 確認コード入力画面へ遷移
         const userParams = new URLSearchParams({
           email
         })
         router.push(`/signup/confirm?${userParams.toString()}`)
       }
     } catch (err: unknown) {
-      console.error('Error during sign up:', err)
+      console.error('サインアップエラー:', err)
       if (err instanceof Error && err.message.includes('Username already exists')) {
         setError('このメールアドレスは既に登録されています')
       } else {
@@ -60,14 +59,14 @@ export function SignUpForm({ csrfToken }: Props) {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Sign Up</CardTitle>
-        <CardDescription>Create your account to get started</CardDescription>
+        <CardTitle>アカウント作成</CardTitle>
+        <CardDescription>新しいアカウントを作成してください</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         {csrfToken && <input type="hidden" name="csrf" value={csrfToken} />}
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">UserID</Label>
+            <Label htmlFor="username">ユーザーID</Label>
             <Input
               id="username"
               type="text"
@@ -77,7 +76,7 @@ export function SignUpForm({ csrfToken }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">メールアドレス</Label>
             <Input
               id="email"
               type="email"
@@ -87,7 +86,7 @@ export function SignUpForm({ csrfToken }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">パスワード</Label>
             <Input
               id="password"
               type="password"
@@ -107,7 +106,7 @@ export function SignUpForm({ csrfToken }: Props) {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? '処理中...' : 'サインアップ'}
+            {isLoading ? '処理中...' : 'アカウントを作成'}
           </Button>
           <Button
             type="button"
@@ -115,7 +114,7 @@ export function SignUpForm({ csrfToken }: Props) {
             className="w-full"
             onClick={() => router.push('/signin')}
           >
-            すでにアカウントをお持ちですか？ サインイン
+            すでにアカウントをお持ちの方はこちら
           </Button>
         </CardFooter>
       </form>
