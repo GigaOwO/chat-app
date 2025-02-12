@@ -187,10 +187,10 @@ export function ChatPresentation({
                       })}
                     </span>
                     <div
-                      className={`rounded-lg p-3 whitespace-pre-wrap break-words ${
+                      className={`rounded-lg p-2 whitespace-pre-wrap break-words ${
                         isCurrentUser
-                          ? 'bg-blue-600 text-white ml-auto'
-                          : 'bg-gray2 text-white1'
+                          ? 'text-white ml-auto'
+                          : 'text-white1'
                       }`}
                     >
                       <MessageContent content={message.content} />
