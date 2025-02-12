@@ -14,7 +14,9 @@ import {
   onCreateMessages, 
   onUpdateConversations,
   onCreateConversationParticipants,
-  onCreateConversations
+  onCreateConversations,
+  onCreateFriends,
+  onUpdateFriends
 } from '@/_lib/graphql/subscriptions';
 import { 
   Conversations, 
@@ -29,6 +31,9 @@ export interface ChatWithProfile {
   conversation: Conversations;
   profile: Profiles;
   lastMessage?: Messages;
+  isGroup: boolean;
+  participants?: Profiles[];
+  groupName?: string;
 }
 
 const client = generateClient();
@@ -84,7 +89,7 @@ export function ChatListContainer() {
 
   // チャットデータを取得する関数
   const fetchChatData = useCallback(async (participant: ConversationParticipants): Promise<ChatWithProfile | null> => {
-    if (!currentProfile?.userId || !friends.length) return null;
+    if (!currentProfile?.userId) return null;
 
     try {
       const conversation = await fetchConversation(participant.conversationId);
@@ -93,32 +98,62 @@ export function ChatListContainer() {
       const participants = await fetchConversationParticipants(participant.conversationId);
       if (!participants?.items) return null;
 
-      const otherParticipant = participants.items.find(
-        p => p && p.userId !== currentProfile.userId
-      );
-      if (!otherParticipant) return null;
-
-      // フレンドリストに存在するかチェック
-      const friend = friends.find(f => f.friendId === otherParticipant.userId);
-      if (!friend) return null;
-
-      const friendProfile = await fetchProfile(
-        otherParticipant.userId,
-        friend.friendProfileId
-      );
-      if (!friendProfile) return null;
-
+      const isGroup = conversation.type === 'GROUP';
       const messages = await fetchMessagesByConversationId(
         conversation.conversationId,
         1
       );
       const lastMessage = messages?.items?.[0] || undefined;
 
-      return {
-        conversation,
-        profile: friendProfile,
-        lastMessage
-      };
+      if (isGroup) {
+        // グループチャットの場合
+        const participantProfiles = await Promise.all(
+          participants.items
+            .filter(p => p && p.userId !== currentProfile.userId)
+            .map(async p => {
+              if (!p) return null;
+              const friend = friends.find(f => f.friendId === p.userId);
+              if (!friend) return null;
+              return await fetchProfile(p.userId, friend.friendProfileId);
+            })
+        );
+
+        const validProfiles = participantProfiles.filter((p): p is Profiles => p !== null);
+        
+        if (validProfiles.length === 0) return null;
+
+        return {
+          conversation,
+          profile: validProfiles[0], // 代表者のプロフィール
+          lastMessage,
+          isGroup: true,
+          participants: validProfiles,
+          groupName: conversation.name || `グループ (${validProfiles.length + 1})`
+        };
+      } else {
+        // DMの場合
+        const otherParticipant = participants.items.find(
+          p => p && p.userId !== currentProfile.userId
+        );
+        if (!otherParticipant) return null;
+
+        // フレンドリストに存在するかチェック
+        const friend = friends.find(f => f.friendId === otherParticipant.userId);
+        if (!friend) return null;
+
+        const friendProfile = await fetchProfile(
+          otherParticipant.userId,
+          friend.friendProfileId
+        );
+        if (!friendProfile) return null;
+
+        return {
+          conversation,
+          profile: friendProfile,
+          lastMessage,
+          isGroup: false
+        };
+      }
     } catch (err) {
       console.error(`Error loading chat ${participant.conversationId}:`, err);
       return null;
@@ -130,7 +165,7 @@ export function ChatListContainer() {
     let mounted = true;
 
     const loadChats = async () => {
-      if (!currentProfile?.userId || !friends.length) {
+      if (!currentProfile?.userId) {
         setChats([]);
         setLoading(false);
         return;
@@ -171,17 +206,81 @@ export function ChatListContainer() {
     return () => {
       mounted = false;
     };
-  }, [currentProfile?.userId, friends, fetchChatData, fetchConversationParticipantsByUserId]);
+  }, [currentProfile?.userId, fetchChatData, fetchConversationParticipantsByUserId]);
 
   // サブスクリプションの設定
   useEffect(() => {
     if (!currentProfile?.userId) return;
 
     const subscriptions = [
+      // フレンド作成のサブスクリプション
+      (client.graphql({
+        query: onCreateFriends
+      })).subscribe({
+        next: async ({ data }) => {
+          const newFriend = data.onCreateFriends;
+          if (!newFriend || newFriend.userId !== currentProfile.userId) return;
+
+          setFriends(prevFriends => {
+            const exists = prevFriends.some(f => f.friendId === newFriend.friendId);
+            if (exists) return prevFriends;
+            return newFriend.status === FriendStatus.ACTIVE 
+              ? [...prevFriends, newFriend]
+              : prevFriends;
+          });
+
+          // フレンドリストが更新されたら、チャットリストも再取得
+          const participations = await fetchConversationParticipantsByUserId(
+            currentProfile.userId
+          );
+          
+          if (!participations?.items) return;
+
+          const chatPromises = participations.items
+            .filter((p): p is ConversationParticipants => p !== null)
+            .map(participant => fetchChatData(participant));
+
+          const results = await Promise.all(chatPromises);
+          const validChats = results.filter((chat): chat is ChatWithProfile => chat !== null);
+          setChats(sortChatsByLastMessage(validChats));
+        }
+      }),
+
+      // フレンド更新のサブスクリプション
+      (client.graphql({
+        query: onUpdateFriends
+      })).subscribe({
+        next: async ({ data }) => {
+          const updatedFriend = data.onUpdateFriends;
+          if (!updatedFriend || updatedFriend.userId !== currentProfile.userId) return;
+
+          setFriends(prevFriends => {
+            return prevFriends.map(friend =>
+              friend.friendId === updatedFriend.friendId ? updatedFriend : friend
+            ).filter(friend => friend.status === FriendStatus.ACTIVE);
+          });
+
+          // フレンドの状態が更新されたら、チャットリストも再取得
+          const participations = await fetchConversationParticipantsByUserId(
+            currentProfile.userId
+          );
+          
+          if (!participations?.items) return;
+
+          const chatPromises = participations.items
+            .filter((p): p is ConversationParticipants => p !== null)
+            .map(participant => fetchChatData(participant));
+
+          const results = await Promise.all(chatPromises);
+          const validChats = results.filter((chat): chat is ChatWithProfile => chat !== null);
+          setChats(sortChatsByLastMessage(validChats));
+        }
+      }),
+
       // メッセージ作成のサブスクリプション
-      client.graphql({
+      (client.graphql({
         query: onCreateMessages
-      }).subscribe({
+      })).subscribe({
         next: async ({ data }) => {
           const newMessage = data.onCreateMessages;
           if (!newMessage) return;
@@ -209,9 +308,9 @@ export function ChatListContainer() {
       }),
 
       // 会話更新のサブスクリプション
-      client.graphql({
+      (client.graphql({
         query: onUpdateConversations
-      }).subscribe({
+      })).subscribe({
         next: ({ data }) => {
           const updatedConversation = data.onUpdateConversations;
           if (!updatedConversation) return;
@@ -235,9 +334,9 @@ export function ChatListContainer() {
       }),
 
       // 新しい会話作成のサブスクリプション
-      client.graphql({
+      (client.graphql({
         query: onCreateConversations
-      }).subscribe({
+      })).subscribe({
         next: ({ data }) => {
           const newConversation = data.onCreateConversations;
           if (!newConversation) return;
@@ -247,9 +346,9 @@ export function ChatListContainer() {
       }),
 
       // 会話参加者追加のサブスクリプション
-      client.graphql({
+      (client.graphql({
         query: onCreateConversationParticipants
-      }).subscribe({
+      })).subscribe({
         next: async ({ data }) => {
           const newParticipant = data.onCreateConversationParticipants;
           if (!newParticipant || newParticipant.userId !== currentProfile.userId) return;
@@ -275,9 +374,17 @@ export function ChatListContainer() {
   }, [currentProfile?.userId, fetchChatData]);
 
   // チャット選択のハンドラー
-  const handleSelectChat = useCallback((friendId: string) => {
-    router.push(`/dm/${friendId}`);
-  }, [router]);
+  const handleSelectChat = useCallback((conversationId: string) => {
+    const chat = chats.find(c => c.conversation.conversationId === conversationId);
+    if (!chat) return;
+
+    // グループチャットとDMで異なるルーティング
+    const path = chat.isGroup
+      ? `/dm/group/${conversationId}`
+      : `/dm/${chat.profile.userId}`;
+    
+    router.push(path);
+  }, [router, chats]);
 
   return (
     <ChatListPresentation

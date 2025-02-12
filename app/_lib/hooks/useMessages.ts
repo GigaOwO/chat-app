@@ -8,6 +8,7 @@ import {
   updateMessage,
   deleteMessage,
 } from '@/_lib/Featchers/Messages/featcher';
+import { onCreateMessages } from '@/_lib/graphql/subscriptions';
 import type {
   CreateMessagesInput,
   UpdateMessagesInput,
@@ -131,6 +132,28 @@ export function useMessages() {
     }
   }, []);
 
+  // メッセージのサブスクリプション
+  const subscribeToNewMessages = useCallback((conversationId: string, callbacks: {
+    next: (message: Messages) => void;
+    error: (error: Error) => void;
+  }) => {
+    const subscription = client.graphql({
+      query: onCreateMessages,
+      variables: { conversationId }
+    }).subscribe({
+      next: ({ data }) => {
+        if (data?.onCreateMessages) {
+          callbacks.next(data.onCreateMessages as Messages);
+        }
+      },
+      error: (error: Error) => {
+        callbacks.error(error);
+      }
+    });
+
+    return subscription;
+  }, []);
+
   return {
     loading: state.loading,
     error: state.error,
@@ -140,5 +163,6 @@ export function useMessages() {
     addMessage,
     modifyMessage,
     removeMessage,
+    subscribeToNewMessages,
   };
 }
