@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation';
 import type { ProfilesConnection } from '@/_lib/graphql/API';
 
 interface PageProps {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }
 
 export default async function SelectProfilePage({ searchParams }: PageProps) {
@@ -16,7 +16,7 @@ export default async function SelectProfilePage({ searchParams }: PageProps) {
   const nextPath = params.next || '/dm';
 
   const user = await runWithAmplifyServerContext({
-    nextServerContext: { cookies: () => cookies() },
+    nextServerContext: { cookies: async () => await cookies() },
     operation: async (contextSpec) => {
       try {
         return await getCurrentUser(contextSpec);
