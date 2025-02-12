@@ -8,7 +8,6 @@ import { ProfileImage } from '@/_components/ProfileImage';
 interface ProfileSwitcherPresentationProps {
   profiles: Profiles[];
   isLoading: boolean;
-  switchingProfileId: string | null;
   getThemeColorById: (profileId: string) => string;
   onProfileSwitch: (profileId: string) => Promise<void>;
 }
@@ -29,7 +28,6 @@ function hexToRgba(hex: string, opacity: number): string {
 export function ProfileSwitcherPresentation({
   profiles,
   isLoading,
-  switchingProfileId,
   getThemeColorById,
   onProfileSwitch
 }: ProfileSwitcherPresentationProps) {
@@ -45,7 +43,6 @@ export function ProfileSwitcherPresentation({
     <div className="flex gap-2">
       {profiles.map((profile) => {
         const themeColor = getThemeColorById(profile.profileId);
-        const isSwitching = switchingProfileId === profile.profileId;
         const tooltipBgColor = hexToRgba(themeColor, 0.9);
         
         return (
@@ -56,16 +53,13 @@ export function ProfileSwitcherPresentation({
               group relative flex gap-2 items-center justify-center h-12 w-12 rounded-lg
               transition-all duration-300 ease-in-out
               hover:scale-105
-              ${isSwitching ? 'animate-pulse' : ''}
             `}
             style={{ backgroundColor: themeColor }}
-            disabled={switchingProfileId !== null}
           >
             <div className="transform transition-transform duration-300 group-hover:-rotate-12">
               <Avatar className={`
                 h-6 w-6
                 transition-all duration-300
-                ${isSwitching ? 'animate-spin' : ''}
               `}>
                 {profile.avatarKey ? (
                   <ProfileImage
@@ -85,7 +79,7 @@ export function ProfileSwitcherPresentation({
               </Avatar>
             </div>
             
-            <div 
+            <div
               className="absolute -top-8 scale-0 transition-all rounded p-2 text-xs text-white group-hover:scale-100"
               style={{ backgroundColor: tooltipBgColor }}
             >

@@ -26,7 +26,7 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ friendId }: ChatContainerProps) {
-  const { currentProfile } = useProfileContext();
+  const { currentProfile, isSwitching } = useProfileContext();
   const { fetchProfile } = useProfiles();
   const { fetchFriend } = useFriends();
   const { fetchMessagesByConversationId, addMessage } = useMessages();
@@ -224,6 +224,7 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
       friendProfile={friendProfile}
       loading={loading}
       error={error}
+      isSwitching={isSwitching}
       onSendMessage={handleSendMessage}
     />
   );

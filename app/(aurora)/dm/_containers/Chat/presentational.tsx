@@ -14,6 +14,7 @@ interface ChatPresentationProps {
   friendProfile: Profiles | null;
   loading: boolean;
   error: string | null;
+  isSwitching: boolean;
   onSendMessage: (content: string) => Promise<void>;
 }
 
@@ -37,6 +38,7 @@ export function ChatPresentation({
   friendProfile,
   loading,
   error,
+  isSwitching,
   onSendMessage
 }: ChatPresentationProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -52,7 +54,7 @@ export function ChatPresentation({
   }, [messages]);
 
   // ローディング中の表示
-  if (loading && !messages.length) {
+  if ((loading && !messages.length) || isSwitching) {
     return (
       <div className="flex flex-col h-full">
         <div className="p-4 border-b border-gray2 flex items-center gap-3 bg-gray3">
