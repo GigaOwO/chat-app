@@ -18,6 +18,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { onCreateMessages, onUpdateMessages } from '@/_lib/graphql/subscriptions';
 import { useConversationParticipants } from '@/_lib/hooks/useConversationParticipants';
+import { useRouter } from 'next/navigation';
 
 const client = generateClient();
 
@@ -44,6 +45,7 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   // すべての初期化処理を一つのuseEffectにまとめる
   useEffect(() => {
@@ -56,7 +58,10 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
         // 1. フレンド関係とプロフィールの取得
         const relation = await fetchFriend(currentProfile.userId, friendId);
         if (!relation || !mounted) return;
-        
+
+        if(relation.userProfileId !== currentProfile.profileId) {
+          router.push('/dm');
+        }
         const profile = await fetchProfile(friendId, relation.friendProfileId);
         if (!profile || !mounted) return;
 
