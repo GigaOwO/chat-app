@@ -18,6 +18,7 @@ export function SignUpForm({ csrfToken }: Props) {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -26,6 +27,12 @@ export function SignUpForm({ csrfToken }: Props) {
     setIsLoading(true)
     setError(undefined)
     
+    if (password !== confirmPassword) {
+      setError('パスワードが一致しません')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const { nextStep } = await signUp({
         username: email,
@@ -93,6 +100,19 @@ export function SignUpForm({ csrfToken }: Props) {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+              title="パスワードは8文字以上で、大文字・小文字・数字・特殊文字を含む必要があります"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">パスワード（確認）</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               minLength={8}
               pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
               title="パスワードは8文字以上で、大文字・小文字・数字・特殊文字を含む必要があります"
