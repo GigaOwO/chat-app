@@ -18,20 +18,25 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { onCreateMessages, onUpdateMessages } from '@/_lib/graphql/subscriptions';
 import { useConversationParticipants } from '@/_lib/hooks/useConversationParticipants';
+import { useRouter } from 'next/navigation';
+import type { ExtendedParticipant } from './presentational';
 
 const client = generateClient();
 
 interface ChatContainerProps {
-  friendId: string;
+  friendId?: string;
+  groupId?: string;
 }
 
-export function ChatContainer({ friendId }: ChatContainerProps) {
-  const { currentProfile } = useProfileContext();
-  const { fetchProfile } = useProfiles();
+export function ChatContainer({ friendId, groupId }: ChatContainerProps) {
+  const { currentProfile, isSwitching } = useProfileContext();
+  const router = useRouter();
+  const { fetchProfile, fetchProfilesByUserId } = useProfiles();
   const { fetchFriend } = useFriends();
   const { fetchMessagesByConversationId, addMessage } = useMessages();
   const {
     fetchConversationParticipantsByUserId,
+    fetchConversationParticipants,
     addConversationParticipant,
   } = useConversationParticipants();
   const {
@@ -41,100 +46,153 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
 
   const [messages, setMessages] = useState<Messages[]>([]);
   const [friendProfile, setFriendProfile] = useState<Profiles | null>(null);
+  const [participants, setParticipants] = useState<ExtendedParticipant[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isGroup = !!groupId;
 
   // すべての初期化処理を一つのuseEffectにまとめる
   useEffect(() => {
     let mounted = true;
 
     const initialize = async () => {
-      if (!currentProfile?.userId || !friendId) return;
+      if (!currentProfile?.userId) return;
+      if (!friendId && !groupId) return;
 
       try {
-        // 1. フレンド関係とプロフィールの取得
-        const relation = await fetchFriend(currentProfile.userId, friendId);
-        if (!relation || !mounted) return;
-        
-        const profile = await fetchProfile(friendId, relation.friendProfileId);
-        if (!profile || !mounted) return;
-
-        setFriendProfile(profile);
-
-        // 2. 会話の初期化
-        const participations = await fetchConversationParticipantsByUserId(currentProfile.userId);
-        if (!mounted) return;
-
-        let chatId = null;
-
-        if (participations?.items) {
-          for (const participation of participations.items) {
-            if (!participation) continue;
-            
-            const conversation = await fetchConversation(participation.conversationId);
-            if (!conversation) continue;
-
-            const otherParticipation = await fetchConversationParticipantsByUserId(friendId);
-            if (!otherParticipation?.items) continue;
-
-            const isMatch = otherParticipation.items.some(
-              p => p?.conversationId === participation.conversationId
-            );
-
-            if (isMatch) {
-              chatId = conversation.conversationId;
-              break;
-            }
-          }
-        }
-
-        if (!chatId) {
-          // 新しい会話を作成
-          const newConversationId = uuidv4();
-          const result = await addConversation({
-            conversationId: newConversationId,
-            type: ConversationType.DIRECT,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          });
-
-          if (result) {
-            await Promise.all([
-              addConversationParticipant({
-                conversationId: newConversationId,
-                userId: currentProfile.userId,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              }),
-              addConversationParticipant({
-                conversationId: newConversationId,
-                userId: friendId,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              })
-            ]);
-
-            chatId = newConversationId;
-          }
-        }
-
-        if (!mounted) return;
-        setConversationId(chatId);
-
-        // 3. メッセージの取得
-        if (chatId) {
-          const response = await fetchMessagesByConversationId(chatId);
-          if (!mounted) return;
+        if (isGroup) {
+          // グループチャットの初期化
+          setLoading(true);
           
-          if (response?.items) {
-            setMessages(response.items
+          // 参加者情報を取得
+          const participantsData = await fetchConversationParticipants(groupId);
+          if (!participantsData?.items || !mounted) return;
+
+          // 参加者のプロフィールを並列で取得
+          const participantPromises = participantsData.items
+            .filter(participant => participant !== null)
+            .map(async participant => {
+              const profiles = await fetchProfilesByUserId(participant!.userId);
+              if (!profiles?.items?.[0]) return null;
+              return {
+                ...participant,
+                lastReadAt: participant!.lastReadAt || null,
+                profile: profiles.items[0]
+              } as ExtendedParticipant;
+            });
+
+          // メッセージと参加者プロフィールを並列で取得
+          const [messagesResponse, resolvedParticipants] = await Promise.all([
+            fetchMessagesByConversationId(groupId),
+            Promise.all(participantPromises)
+          ]);
+
+          if (!mounted) return;
+
+          // 参加者リストをセット
+          const validParticipants = resolvedParticipants.filter((p): p is ExtendedParticipant => p !== null);
+          setParticipants(validParticipants);
+          setConversationId(groupId);
+
+          // メッセージをセット
+          if (messagesResponse?.items) {
+            setMessages(messagesResponse.items
               .filter((m): m is Messages => m !== null)
               .sort((a, b) => 
                 new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
               )
             );
           }
+
+        } else {
+          // 1on1チャットの初期化
+          const relation = await fetchFriend(currentProfile.userId, friendId!);
+          if (!relation || !mounted) return;
+
+          if(relation.userProfileId !== currentProfile.profileId) {
+            router.push('/dm');
+            return;
+          }
+
+          const profile = await fetchProfile(friendId!, relation.friendProfileId);
+          if (!profile || !mounted) return;
+
+          setFriendProfile(profile);
+
+          // 会話を検索または作成
+          const participations = await fetchConversationParticipantsByUserId(currentProfile.userId);
+          if (!mounted) return;
+
+          let chatId = null;
+
+          if (participations?.items) {
+            for (const participation of participations.items) {
+              if (!participation) continue;
+              
+              const conversation = await fetchConversation(participation.conversationId);
+              if (!conversation) continue;
+
+              const otherParticipation = await fetchConversationParticipantsByUserId(friendId!);
+              if (!otherParticipation?.items) continue;
+
+              const isMatch = otherParticipation.items.some(
+                p => p?.conversationId === participation.conversationId
+              );
+
+              if (isMatch) {
+                chatId = conversation.conversationId;
+                break;
+              }
+            }
+          }
+
+          if (!chatId) {
+            // 新しい会話を作成
+            const newConversationId = uuidv4();
+            const result = await addConversation({
+              conversationId: newConversationId,
+              type: ConversationType.DIRECT,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
+
+            if (result) {
+              await Promise.all([
+                addConversationParticipant({
+                  conversationId: newConversationId,
+                  userId: currentProfile.userId,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                }),
+                addConversationParticipant({
+                  conversationId: newConversationId,
+                  userId: friendId!,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                })
+              ]);
+
+              chatId = newConversationId;
+            }
+          }
+
+          // chatIdが取得できたらメッセージを取得
+          if (chatId) {
+            const messagesResponse = await fetchMessagesByConversationId(chatId);
+            if (!mounted) return;
+            if (messagesResponse?.items) {
+              setMessages(messagesResponse.items
+                .filter((m): m is Messages => m !== null)
+                .sort((a, b) => 
+                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                )
+              );
+            }
+          }
+
+          if (!mounted) return;
+          setConversationId(chatId);
         }
 
         setError(null);
@@ -155,7 +213,7 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
     return () => {
       mounted = false;
     };
-  }, [currentProfile?.userId, friendId]);
+  }, [currentProfile?.userId, friendId, groupId]);
 
   // リアルタイム更新のサブスクリプション
   useEffect(() => {
@@ -217,13 +275,21 @@ export function ChatContainer({ friendId }: ChatContainerProps) {
     }
   };
 
+  // プロファイル切り替え中は何もレンダリングしない
+  if (isSwitching) {
+    return null;
+  }
+
   return (
     <ChatPresentation
       messages={messages}
       currentProfile={currentProfile}
       friendProfile={friendProfile}
+      participants={participants}
       loading={loading}
       error={error}
+      isSwitching={isSwitching}
+      isGroup={isGroup}
       onSendMessage={handleSendMessage}
     />
   );

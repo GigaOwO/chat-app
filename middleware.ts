@@ -85,7 +85,7 @@ async function ProfileRedirect(request: NextRequest, userId: string|undefined, p
         variables: { userId, profileId }
       }) as { data: { getProfiles: Profiles } };
 
-      // プロフィールが見つかった場合は次へ進む
+    // プロフィールが見つかった場合は次へ進む
       if (profileResponse.data.getProfiles) {
         return NextResponse.next();
       }

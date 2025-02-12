@@ -39,10 +39,21 @@ export function FetchFriend({ onclose }: { onclose: () => void }) {
     const loadProfiles = async () => {
       if (friendDetails.length > 0) {
         const profileIds = friendDetails.map((friend) => friend?.friendProfileId);
-        const profiles = (await Promise.all(profileIds.map((profileId) => fetchProfilesByProfileId(profileId,1))))
-        if(profiles.length > 0){
-          setFriendProfiles(profiles[0]?.items?.filter((p): p is Profiles => p !== null) || []);
-        }
+        const profileResponses = await Promise.all(
+          profileIds.map((profileId) => fetchProfilesByProfileId(profileId, 1))
+        );
+        
+        // 全てのプロフィール結果を処理
+        const allProfiles = profileResponses
+          .flatMap(response => response?.items || [])
+          .filter((p): p is Profiles => p !== null);
+        
+        // プロフィールIDで重複を除去
+        const uniqueProfiles = Array.from(
+          new Map(allProfiles.map(profile => [profile.profileId, profile])).values()
+        );
+        
+        setFriendProfiles(uniqueProfiles);
       }
     };
     loadProfiles();

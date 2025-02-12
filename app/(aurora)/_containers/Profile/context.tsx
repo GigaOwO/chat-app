@@ -14,6 +14,7 @@ export interface ProfileContextValue {
   currentProfile: Profiles | null;
   otherProfiles: Profiles[];
   isLoading: boolean;
+  isSwitching: boolean;
   switchProfile: (profileId: string) => Promise<void>;
   getCurrentThemeColor: () => string;
   getThemeColorById: (profileId: string) => string;
@@ -43,6 +44,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [otherProfiles, setOtherProfiles] = useState<Profiles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [allProfiles, setAllProfiles] = useState<Profiles[]>([]);
+  const [isSwitching, setIsSwitching] = useState(false);
   
   const { getCookie, setCookie } = useCookie();
   const { decrypt, encrypt } = useCrypto();
@@ -130,6 +132,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const switchProfile = async (profileId: string) => {
+    setIsSwitching(true);
     try {
       const newCurrent = allProfiles.find(p => p.profileId === profileId) || null;
       const newOthers = allProfiles.filter(p => p.profileId !== profileId);
@@ -147,6 +150,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error switching profile:', error);
+    } finally {
+      setIsSwitching(false);
     }
   };
 
@@ -158,6 +163,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     currentProfile,
     otherProfiles,
     isLoading,
+    isSwitching,
     switchProfile,
     getCurrentThemeColor,
     getThemeColorById,
