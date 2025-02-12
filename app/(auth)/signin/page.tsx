@@ -1,9 +1,13 @@
-import { SignInContainer } from './_containers/SignIn/container'
+import { headers } from 'next/headers';
+import { SignInContainer } from '@/features/auth/components/signin/container';
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  const headersList = await headers();
+  const csrfToken = headersList.get('X-CSRF-Token');
+
   return (
     <div className="container mx-auto py-8">
-      <SignInContainer />
+      <SignInContainer csrfToken={csrfToken} />
     </div>
-  )
+  );
 }
