@@ -7,6 +7,8 @@ import { useCrypto } from '@/_lib/hooks/useCrypto';
 import type { Profiles } from '@/_lib/graphql/API';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { THEME_COLORS } from '../ThemeColors/constants';
+import { generateClient } from 'aws-amplify/api';
+import { onCreateProfiles, onUpdateProfiles, onDeleteProfiles } from '@/_lib/graphql/subscriptions';
 
 export interface ProfileContextValue {
   currentProfile: Profiles | null;
@@ -15,6 +17,7 @@ export interface ProfileContextValue {
   switchProfile: (profileId: string) => Promise<void>;
   getCurrentThemeColor: () => string;
   getThemeColorById: (profileId: string) => string;
+  refreshProfiles: () => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
@@ -33,6 +36,8 @@ const getThemeColorFromCustomData = (profile: Profiles | null): string => {
   }
 }
 
+const client = generateClient();
+
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [currentProfile, setCurrentProfile] = useState<Profiles | null>(null);
   const [otherProfiles, setOtherProfiles] = useState<Profiles[]>([]);
@@ -50,41 +55,79 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return getThemeColorFromCustomData(profile || null);
   }
 
-  useEffect(() => {
-    const loadProfiles = async () => {
-      try {
-        setIsLoading(true);
-        const { userId } = await getCurrentUser();
+  const loadProfiles = async () => {
+    try {
+      setIsLoading(true);
+      const { userId } = await getCurrentUser();
+      
+      const profilesResponse = await fetchProfilesByUserId(userId);
+      
+      if (profilesResponse?.items) {
+        const profiles = profilesResponse.items
+          .filter((p): p is Profiles => p !== null)
+          .sort((a, b) => a.order - b.order);
         
-        const profilesResponse = await fetchProfilesByUserId(userId);
+        setAllProfiles(profiles);
         
-        if (profilesResponse?.items) {
-          const profiles = profilesResponse.items
-            .filter((p): p is Profiles => p !== null)
-            .sort((a, b) => a.order - b.order);
-          
-          setAllProfiles(profiles);
-          
-          const encryptedProfileId = await getCookie('profileId');
-          const currentProfileId = encryptedProfileId ? await decrypt(encryptedProfileId) : null;
-          
-          const current = profiles.find(p => p.profileId === currentProfileId) || profiles[0];
-          const others = profiles.filter(p => p.profileId !== current?.profileId);
-          
-          setCurrentProfile(current);
-          setOtherProfiles(others);
-        }
-      } catch (error) {
-        console.error('Error loading profiles:', error);
-        setCurrentProfile(null);
-        setOtherProfiles([]);
-      } finally {
-        setIsLoading(false);
+        const encryptedProfileId = await getCookie('profileId');
+        const currentProfileId = encryptedProfileId ? await decrypt(encryptedProfileId) : null;
+        
+        const current = profiles.find(p => p.profileId === currentProfileId) || profiles[0];
+        const others = profiles.filter(p => p.profileId !== current?.profileId);
+        
+        setCurrentProfile(current);
+        setOtherProfiles(others);
       }
-    };
+    } catch (error) {
+      console.error('Error loading profiles:', error);
+      setCurrentProfile(null);
+      setOtherProfiles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // 初期ロードとサブスクリプションの設定
+  useEffect(() => {
     loadProfiles();
-  }, [fetchProfilesByUserId, getCookie, decrypt]);
+
+    // サブスクリプションの設定
+    const subscriptions = [
+      // プロフィール作成の監視
+      client.graphql({
+        query: onCreateProfiles
+      }).subscribe({
+        next: async () => {
+          await loadProfiles();
+        },
+        error: (error) => console.error('Subscription error:', error)
+      }),
+
+      // プロフィール更新の監視
+      client.graphql({
+        query: onUpdateProfiles
+      }).subscribe({
+        next: async () => {
+          await loadProfiles();
+        },
+        error: (error) => console.error('Subscription error:', error)
+      }),
+
+      // プロフィール削除の監視
+      client.graphql({
+        query: onDeleteProfiles
+      }).subscribe({
+        next: async () => {
+          await loadProfiles();
+        },
+        error: (error) => console.error('Subscription error:', error)
+      })
+    ];
+
+    return () => {
+      subscriptions.forEach(sub => sub.unsubscribe());
+    };
+  }, []);
 
   const switchProfile = async (profileId: string) => {
     try {
@@ -107,13 +150,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshProfiles = async () => {
+    await loadProfiles();
+  };
+
   const contextValue: ProfileContextValue = {
     currentProfile,
     otherProfiles,
     isLoading,
     switchProfile,
     getCurrentThemeColor,
-    getThemeColorById
+    getThemeColorById,
+    refreshProfiles
   };
 
   return (

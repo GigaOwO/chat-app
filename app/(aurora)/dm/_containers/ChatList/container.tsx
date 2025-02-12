@@ -16,11 +16,13 @@ import {
   onCreateConversationParticipants,
   onCreateConversations
 } from '@/_lib/graphql/subscriptions';
-import type { 
+import { 
   Conversations, 
   Profiles, 
   Messages,
-  ConversationParticipants
+  ConversationParticipants,
+  Friends,
+  FriendStatus
 } from '@/_lib/graphql/API';
 
 export interface ChatWithProfile {
@@ -50,15 +52,39 @@ export function ChatListContainer() {
   } = useConversationParticipants();
   const { fetchMessagesByConversationId } = useMessages();
   const { fetchProfile } = useProfiles();
-  const { fetchFriend } = useFriends();
+  const { fetchFriendsByUserProfileId } = useFriends();
   
   const [chats, setChats] = useState<ChatWithProfile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [friends, setFriends] = useState<Friends[]>([]);
+
+  // フレンドリストの取得
+  useEffect(() => {
+    const loadFriends = async () => {
+      if (!currentProfile?.profileId) return;
+      
+      try {
+        const response = await fetchFriendsByUserProfileId(currentProfile.profileId);
+        if (response?.items) {
+          setFriends(response.items
+            .filter((f): f is Friends => 
+              f !== null && f.status === FriendStatus.ACTIVE
+            )
+          );
+        }
+      } catch (err) {
+        console.error('Error loading friends:', err);
+        setError('フレンドリストの読み込みに失敗しました');
+      }
+    };
+
+    loadFriends();
+  }, [currentProfile?.profileId, fetchFriendsByUserProfileId]);
 
   // チャットデータを取得する関数
   const fetchChatData = useCallback(async (participant: ConversationParticipants): Promise<ChatWithProfile | null> => {
-    if (!currentProfile?.userId) return null;
+    if (!currentProfile?.userId || !friends.length) return null;
 
     try {
       const conversation = await fetchConversation(participant.conversationId);
@@ -72,15 +98,13 @@ export function ChatListContainer() {
       );
       if (!otherParticipant) return null;
 
-      const friendRelation = await fetchFriend(
-        currentProfile.userId,
-        otherParticipant.userId
-      );
-      if (!friendRelation) return null;
+      // フレンドリストに存在するかチェック
+      const friend = friends.find(f => f.friendId === otherParticipant.userId);
+      if (!friend) return null;
 
       const friendProfile = await fetchProfile(
         otherParticipant.userId,
-        friendRelation.friendProfileId
+        friend.friendProfileId
       );
       if (!friendProfile) return null;
 
@@ -99,14 +123,18 @@ export function ChatListContainer() {
       console.error(`Error loading chat ${participant.conversationId}:`, err);
       return null;
     }
-  }, [currentProfile?.userId]);
+  }, [currentProfile?.userId, friends, fetchConversation, fetchConversationParticipants, fetchProfile, fetchMessagesByConversationId]);
 
   // メインのデータ取得useEffect
   useEffect(() => {
     let mounted = true;
 
     const loadChats = async () => {
-      if (!currentProfile?.userId) return;
+      if (!currentProfile?.userId || !friends.length) {
+        setChats([]);
+        setLoading(false);
+        return;
+      }
       
       try {
         setError(null);
@@ -143,7 +171,7 @@ export function ChatListContainer() {
     return () => {
       mounted = false;
     };
-  }, [currentProfile?.userId, fetchChatData]);
+  }, [currentProfile?.userId, friends, fetchChatData, fetchConversationParticipantsByUserId]);
 
   // サブスクリプションの設定
   useEffect(() => {

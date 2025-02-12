@@ -9,12 +9,13 @@ import type { Profiles } from '@/_lib/graphql/API';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import { getThemeColorFromCustomData } from '@/_lib/utils/theme';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { ProfileImage } from '@/_components/ProfileImage';
 
 interface ProfileTabPresentationProps {
   profiles: Profiles[];
   selectedProfile: Profiles | null;
+  isCreating: boolean;
   onProfileSelect: (profile: Profiles) => void;
   onBackToList: () => void;
   onProfileSubmit: (formData: {
@@ -23,6 +24,13 @@ interface ProfileTabPresentationProps {
     themeColor: string;
     avatarKey: string | null;
   }) => Promise<void>;
+  onCreateProfile: (formData: {
+    name: string;
+    bio: string;
+    themeColor: string;
+    avatarKey: string | null;
+  }) => Promise<void>;
+  onCreateNew: () => void;
   isLoading: boolean;
 }
 
@@ -36,9 +44,12 @@ interface FormState {
 export function ProfileTabPresentation({
   profiles,
   selectedProfile,
+  isCreating,
   onProfileSelect,
   onBackToList,
   onProfileSubmit,
+  onCreateProfile,
+  onCreateNew,
   isLoading
 }: ProfileTabPresentationProps) {
   const [error, setError] = useState<string | null>(null);
@@ -67,15 +78,26 @@ export function ProfileTabPresentation({
         avatarKey: selectedProfile.avatarKey || null,
         themeColor: themeColor
       });
+    } else if (!isCreating) {
+      setFormState({
+        name: '',
+        bio: '',
+        avatarKey: null,
+        themeColor: '1D282E'
+      });
     }
-  }, [selectedProfile]);
+  }, [selectedProfile, isCreating]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     
     try {
-      await onProfileSubmit(formState);
+      if (isCreating) {
+        await onCreateProfile(formState);
+      } else {
+        await onProfileSubmit(formState);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
@@ -96,129 +118,149 @@ export function ProfileTabPresentation({
     return <div>Loading...</div>;
   }
 
-  if (selectedProfile) {
-    return (
-      <div className="space-y-6 text-white1">
-        <div className="flex items-center gap-2 bg-black1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onBackToList}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h3 className="text-lg font-medium">プロフィールを編集</h3>
-        </div>
+  const renderForm = () => (
+    <form onSubmit={handleSubmit} className="space-y-6 text-white1">
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onBackToList}
+          className="text-white1"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h3 className="text-xl font-medium text-white1">
+          {isCreating ? 'プロフィールを作成' : 'プロフィールを編集'}
+        </h3>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="md:flex md:gap-8">
-            <div className="md:flex-1 space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">
-                  名前
-                </label>
-                <Input
-                  id="name"
-                  value={formState.name}
-                  onChange={(e) => setFormState(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="bio" className="text-sm font-medium">
-                  自己紹介
-                </label>
-                <Input
-                  id="bio"
-                  value={formState.bio}
-                  onChange={(e) => setFormState(prev => ({ ...prev, bio: e.target.value }))}
-                  className="w-full"
-                />
-              </div>
-
-              <ThemeColorPicker
-                selectedColor={formState.themeColor}
-                onColorSelect={(color) => setFormState(prev => ({ ...prev, themeColor: color }))}
-              />
-            </div>
-
-            <div className="mt-6 md:mt-0 md:w-64">
-              <ImageUpload
-                onUploadComplete={handleImageUpload}
-                onUploadError={handleImageUploadError}
-              />
-              {formState.avatarKey && (
-                <div className="mt-4">
-                  <Avatar className="h-32 w-32">
-                    <ProfileImage
-                      path={formState.avatarKey}
-                      alt={formState.name}
-                      fallbackText={formState.name.charAt(0).toUpperCase()}
-                      width={128}
-                      height={128}
-                      className="rounded-full"
-                      themeColor={formState.themeColor}
-                    />
-                  </Avatar>
-                </div>
-              )}
-            </div>
+      <div className="md:flex md:gap-8">
+        <div className="md:flex-1 space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">
+              名前
+            </label>
+            <Input
+              id="name"
+              value={formState.name}
+              onChange={(e) => setFormState(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full bg-gray5 text-white1"
+              required
+            />
           </div>
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+          <div className="space-y-2">
+            <label htmlFor="bio" className="text-sm font-medium">
+              自己紹介
+            </label>
+            <Input
+              id="bio"
+              value={formState.bio}
+              onChange={(e) => setFormState(prev => ({ ...prev, bio: e.target.value }))}
+              className="w-full bg-gray5 text-white1"
+            />
+          </div>
 
-          <Button type="submit" disabled={isLoading} className='bg-gray2 hover:bg-gray3'>
-            {isLoading ? '保存中...' : '保存'}
-          </Button>
-        </form>
+          <ThemeColorPicker
+            selectedColor={formState.themeColor}
+            onColorSelect={(color) => setFormState(prev => ({ ...prev, themeColor: color }))}
+          />
+        </div>
+
+        <div className="mt-6 md:mt-0 md:w-64">
+          <ImageUpload
+            onUploadComplete={handleImageUpload}
+            onUploadError={handleImageUploadError}
+          />
+          {formState.avatarKey && (
+            <div className="mt-4">
+              <Avatar className="h-32 w-32">
+                <ProfileImage
+                  path={formState.avatarKey}
+                  alt={formState.name}
+                  fallbackText={formState.name.charAt(0).toUpperCase()}
+                  width={128}
+                  height={128}
+                  className="rounded-full"
+                  themeColor={formState.themeColor}
+                />
+              </Avatar>
+            </div>
+          )}
+        </div>
       </div>
-    );
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Button 
+        type="submit" 
+        disabled={isLoading} 
+        className='bg-gray2 hover:bg-gray3 text-white1'
+      >
+        {isLoading ? '保存中...' : isCreating ? '作成' : '保存'}
+      </Button>
+    </form>
+  );
+
+  if (selectedProfile || isCreating) {
+    return renderForm();
   }
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-medium w-full border-b border-gray1 pb-2 text-white1">プロフィール</h3>
+      <div className="flex justify-between items-center border-b border-gray1 pb-2">
+        <h3 className="text-xl font-medium text-white1">プロフィール</h3>
+        <Button
+          onClick={onCreateNew}
+          className="bg-gray2 hover:bg-gray3 text-white1"
+          size="sm"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          新規作成
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 gap-3">
-      {profiles.map((profile) => {
-        const themeColor = getThemeColorFromCustomData(profile);
-        
-        return (
-          <button
-            key={profile.profileId}
-            onClick={() => onProfileSelect(profile)}
-            className="flex items-center gap-4 p-3 rounded-lg transition-all hover:bg-gray-50"
-            style={{ backgroundColor: themeColor}}
-          >
-            <Avatar className="h-6 w-6">
-              {profile.avatarKey ? (
-                <ProfileImage
-                  path={profile.avatarKey}
-                  alt={profile.name}
-                  fallbackText={profile.name.charAt(0).toUpperCase()}
-                  width={48}
-                  height={48}
-                  className="rounded-full"
-                  themeColor={themeColor}
-                />
-              ) : (
-                <AvatarFallback className="bg-zinc-700 text-zinc-100 text-xs">
-                  {profile.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <div className="text-left">
-              <h4 className="font-medium text-white1">{profile.name}</h4>
-            </div>
-          </button>
-        );
-      })}
+        {profiles.map((profile) => {
+          const themeColor = getThemeColorFromCustomData(profile);
+          
+          return (
+            <button
+              key={profile.profileId}
+              onClick={() => onProfileSelect(profile)}
+              className="flex items-center gap-4 p-3 rounded-lg transition-all hover:bg-gray3"
+              style={{ backgroundColor: themeColor }}
+            >
+              <Avatar className="h-10 w-10">
+                {profile.avatarKey ? (
+                  <ProfileImage
+                    path={profile.avatarKey}
+                    alt={profile.name}
+                    fallbackText={profile.name.charAt(0).toUpperCase()}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                    themeColor={themeColor}
+                  />
+                ) : (
+                  <AvatarFallback className="bg-zinc-700 text-zinc-100 text-xs">
+                    {profile.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="text-left">
+                <h4 className="font-medium text-white1">{profile.name}</h4>
+                {profile.bio && (
+                  <p className="text-sm text-gray-300 truncate">{profile.bio}</p>
+                )}
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

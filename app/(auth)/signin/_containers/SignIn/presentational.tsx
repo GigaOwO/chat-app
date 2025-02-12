@@ -39,7 +39,7 @@ export function SignInForm({ csrfToken }: Props) {
         router.push(`/signup/confirm?${userParams.toString()}`)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : 'エラーが発生しました')
     } finally {
       setIsLoading(false)
     }
@@ -48,14 +48,14 @@ export function SignInForm({ csrfToken }: Props) {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Sign In</CardTitle>
-        <CardDescription>Welcome back! Please sign in to your account</CardDescription>
+        <CardTitle>サインイン</CardTitle>
+        <CardDescription>アカウントにサインインしてください</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         {csrfToken && <input type="hidden" name="csrf" value={csrfToken} />}
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">メールアドレス</Label>
             <Input
               id="email"
               type="email"
@@ -65,7 +65,7 @@ export function SignInForm({ csrfToken }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">パスワード</Label>
             <Input
               id="password"
               type="password"
@@ -82,7 +82,7 @@ export function SignInForm({ csrfToken }: Props) {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'ログイン中...' : 'サインイン'}
+            {isLoading ? 'サインイン中...' : 'サインイン'}
           </Button>
           <Button
             type="button"
@@ -90,7 +90,7 @@ export function SignInForm({ csrfToken }: Props) {
             className="w-full"
             onClick={() => router.push('/signup')}
           >
-            アカウントを持っていませんか? サインアップ
+            アカウントをお持ちでない方はこちら
           </Button>
         </CardFooter>
       </form>

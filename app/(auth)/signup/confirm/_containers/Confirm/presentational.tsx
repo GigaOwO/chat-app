@@ -29,11 +29,11 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
       })
 
       if (isSignUpComplete) {
-        // 確認完了後、自動的にサインイン画面へ遷移
+        // 確認完了後、サインイン画面へ遷移
         router.push('/signin')
       }
     } catch (err: Error | unknown) {
-      console.error('Error during confirmation:', err)
+      console.error('確認エラー:', err)
       
       if (err instanceof Error && err.message?.includes('Invalid verification code')) {
         setError('確認コードが正しくありません')
@@ -55,10 +55,9 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
       await resendSignUpCode({
         username: email
       })
-      // 成功メッセージを表示する代わりに、コードが送信されたことを知らせる
       setConfirmationCode('')  // 入力フィールドをクリア
     } catch (err) {
-      console.error('Error resending code:', err)
+      console.error('コード再送信エラー:', err)
       setError(err instanceof Error ? err.message : '確認コードの再送信に失敗しました')
     } finally {
       setIsResending(false)
@@ -70,7 +69,7 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
       <CardHeader>
         <CardTitle>メールアドレスの確認</CardTitle>
         <CardDescription>
-          {email}宛に送信された確認コードを入力してください
+          確認コードを{email}に送信しました
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -122,7 +121,7 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
             className="w-full"
             onClick={() => router.push('/signup')}
           >
-            サインアップし直す
+            アカウント作成からやり直す
           </Button>
         </CardFooter>
       </form>
