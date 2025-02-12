@@ -7,10 +7,10 @@ type Props = {
 }
 
 export async function SignUpConfirmContainer({ searchParams }: Props) {
-  const headersList = await headers()
-  const csrfToken = headersList.get('X-CSRF-Token')
+  const headersList = headers()
+  const csrfToken = (await headersList).get('X-CSRF-Token')
 
-  const params = await searchParams
+  const params = searchParams
   const email = params.email
 
   if (!email) {
