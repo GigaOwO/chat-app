@@ -129,6 +129,7 @@ export function ProfileTabContainer({ currentProfile }: ProfileTabContainerProps
       onCreateProfile={handleCreateProfile}
       onCreateNew={handleCreateNew}
       onDeleteProfile={removeProfile}
+      currentProfile={currentProfile}
       isLoading={isLoading || loading}
     />
   );

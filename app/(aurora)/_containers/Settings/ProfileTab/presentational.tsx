@@ -33,6 +33,7 @@ interface ProfileTabPresentationProps {
   }) => Promise<void>;
   onCreateNew: () => void;
   onDeleteProfile: (input: DeleteProfilesInput) => Promise<Profiles|null>;
+  currentProfile: Profiles | null;
   isLoading: boolean;
 }
 
@@ -53,6 +54,7 @@ export function ProfileTabPresentation({
   onCreateProfile,
   onCreateNew,
   onDeleteProfile,
+  currentProfile,
   isLoading
 }: ProfileTabPresentationProps) {
   const [error, setError] = useState<string | null>(null);
@@ -119,7 +121,9 @@ export function ProfileTabPresentation({
           profileId: selectedProfile.profileId,
           userId: selectedProfile.userId
         });
-        await setCookieUseCase({name:'profileId', value:'', maxAge:0});
+        if(selectedProfile.profileId === currentProfile?.profileId){
+          await setCookieUseCase({name:'profileId', value:'', maxAge:0});
+        }
         if (deletedProfile) {
           onBackToList();
         }
