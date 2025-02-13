@@ -90,6 +90,7 @@ export function SignUpForm({ csrfToken }: Props) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
