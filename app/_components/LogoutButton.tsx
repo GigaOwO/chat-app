@@ -13,8 +13,8 @@ export function LogoutButton() {
   const handleSignOut = async () => {
     setIsLoading(true)
     try {
-      await signOut()
       await setCookieUseCase({name: 'profileId', value: '', maxAge: 0})
+      await signOut()
       router.push('/signin')
     } catch (error) {
       console.error('ログアウトエラー:', error)
