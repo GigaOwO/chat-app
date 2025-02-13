@@ -5,12 +5,13 @@ import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
 import { ThemeColorPicker } from '../../ThemeColors/picker';
 import ImageUpload from '@/_components/ImageUpload';
-import type { Profiles } from '@/_lib/graphql/API';
+import type { DeleteProfilesInput, Profiles } from '@/_lib/graphql/API';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/_components/ui/avatar';
 import { getThemeColorFromCustomData } from '@/_lib/utils/theme';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { ProfileImage } from '@/_components/ProfileImage';
+import { setCookieUseCase } from '@/_lib/cookie/setCookieUseCase';
 
 interface ProfileTabPresentationProps {
   profiles: Profiles[];
@@ -31,6 +32,7 @@ interface ProfileTabPresentationProps {
     avatarKey: string | null;
   }) => Promise<void>;
   onCreateNew: () => void;
+  onDeleteProfile: (input: DeleteProfilesInput) => Promise<Profiles|null>;
   isLoading: boolean;
 }
 
@@ -50,9 +52,11 @@ export function ProfileTabPresentation({
   onProfileSubmit,
   onCreateProfile,
   onCreateNew,
+  onDeleteProfile,
   isLoading
 }: ProfileTabPresentationProps) {
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteModal, setIsDeleteModal] = useState(false);
   const [formState, setFormState] = useState<FormState>({
     name: '',
     bio: '',
@@ -102,6 +106,28 @@ export function ProfileTabPresentation({
       setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   };
+
+  const handleDeleteModal = async () => {
+    setIsDeleteModal(true);
+  }
+
+  const handleDelete = async () => {
+    setError(null);
+    try {
+      if (selectedProfile) {
+        const deletedProfile = await onDeleteProfile({
+          profileId: selectedProfile.profileId,
+          userId: selectedProfile.userId
+        });
+        await setCookieUseCase({name:'profileId', value:'', maxAge:0});
+        if (deletedProfile) {
+          onBackToList();
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+    }
+  }
 
   const handleImageUpload = (path: string) => {
     setFormState(prev => ({
@@ -195,16 +221,49 @@ export function ProfileTabPresentation({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-
-      <Button 
-        type="submit" 
-        disabled={isLoading} 
-        className='bg-gray2 hover:bg-gray3 text-white1'
-      >
-        {isLoading ? '保存中...' : isCreating ? '作成' : '保存'}
-      </Button>
+      <div className="flex space-x-4">
+        <Button 
+          type="submit" 
+          disabled={isLoading} 
+          className='bg-gray2 hover:bg-gray3 text-white1'
+        >
+          {isLoading ? '保存中...' : isCreating ? '作成' : '保存'}
+        </Button>
+        {selectedProfile && (
+          <Button 
+            type="button" 
+            onClick={handleDeleteModal}
+            className='bg-red-700 hover:bg-red-800 text-white1'
+          >
+            削除
+          </Button>
+        )}
+      </div>
     </form>
   );
+
+  if(isDeleteModal){
+    return (
+      <div className="w-full h-2/3 flex flex-col justify-center items-center">
+        <h3 className="text-xl font-bold text-white1">プロフィールを削除</h3>
+        <p className="text-gray-300 mt-2">本当に削除しますか？</p>
+        <div className="flex justify-end mt-6 space-x-4">
+          <Button 
+            onClick={handleDelete}
+            className="bg-red-700 hover:bg-red-800 text-white1"
+          >
+            削除
+          </Button>
+          <Button 
+            onClick={() => setIsDeleteModal(false)}
+            className="bg-gray2 hover:bg-gray3 text-white1"
+          >
+            キャンセル
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (selectedProfile || isCreating) {
     return renderForm();

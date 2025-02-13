@@ -14,7 +14,7 @@ interface ProfileTabContainerProps {
 export function ProfileTabContainer({ currentProfile }: ProfileTabContainerProps) {
   const [selectedProfile, setSelectedProfile] = useState<Profiles | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const { fetchProfilesByUserId, modifyProfile, addProfile, loading } = useProfiles();
+  const { fetchProfilesByUserId, modifyProfile, addProfile, removeProfile, loading } = useProfiles();
   const { refreshProfiles } = useProfileContext();
   const [profiles, setProfiles] = useState<Profiles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,6 +128,7 @@ export function ProfileTabContainer({ currentProfile }: ProfileTabContainerProps
       onProfileSubmit={handleProfileSubmit}
       onCreateProfile={handleCreateProfile}
       onCreateNew={handleCreateNew}
+      onDeleteProfile={removeProfile}
       isLoading={isLoading || loading}
     />
   );
