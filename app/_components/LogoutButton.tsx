@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/_components/ui/button'
+import { setCookieUseCase } from '@/_lib/cookie/setCookieUseCase'
 import { signOut } from 'aws-amplify/auth'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -13,6 +14,7 @@ export function LogoutButton() {
     setIsLoading(true)
     try {
       await signOut()
+      await setCookieUseCase({name: 'profileId', value: '', maxAge: 0})
       router.push('/signin')
     } catch (error) {
       console.error('ログアウトエラー:', error)
