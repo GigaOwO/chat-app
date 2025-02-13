@@ -86,6 +86,7 @@ export function SignUpConfirmForm({ csrfToken, email }: SignUpConfirmFormProps) 
               placeholder="000000"
               maxLength={6}
               className="text-center text-xl tracking-widest"
+              autoComplete="off"
             />
           </div>
           
